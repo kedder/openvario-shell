@@ -1,0 +1,13 @@
+# Configuration script to Travis-CI
+language: python
+python:
+  - "3.7"
+install:
+  - pip install pipenv coveralls
+  - pipenv install --dev
+script:
+  - pytest --cov=ovshell --cov-report=term tests
+  - black --check setup.py src tests
+  - mypy src tests
+after_success:
+  coveralls
