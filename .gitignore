@@ -1,0 +1,11 @@
+__pycache__
+*.egg-info
+dist
+tags
+.tags
+.env
+tmp
+htmlcov
+.coverage
+.mypy_cache
+mypy-reports
