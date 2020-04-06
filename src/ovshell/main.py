@@ -4,6 +4,9 @@ import asyncio
 
 import urwid
 
+from ovshell.app import OpenvarioShellImpl, ScreenManagerImpl
+from ovshell.ui.mainmenu import MainMenuView
+
 parser = argparse.ArgumentParser(description="Shell for Openvario")
 
 
@@ -32,8 +35,8 @@ def debounce_esc(keys, raw):
     return filtered
 
 
-def startui(urwidloop) -> None:
-    pass
+def startui(shell: OpenvarioShellImpl) -> None:
+    shell.screen.push_activity(MainMenuView())
 
 
 def run(argv) -> None:
@@ -58,17 +61,19 @@ def run(argv) -> None:
         ("remark", "dark gray", "black", ""),
     ]
 
-    btxt = urwid.BigText("Openvario", urwid.font.Thin6x6Font())
-    splash = urwid.Filler(urwid.Padding(btxt, "center", "clip"), "middle")
+    # btxt = urwid.BigText("Openvario", urwid.font.Thin6x6Font())
+    # splash = urwid.Filler(urwid.Padding(btxt, "center", "clip"), "middle")
 
     asyncioloop = asyncio.get_event_loop()
     evl = urwid.AsyncioEventLoop(loop=asyncioloop)
 
+    screen = ScreenManagerImpl()
     urwidloop = urwid.MainLoop(
-        splash, palette=palette, event_loop=evl, input_filter=debounce_esc
+        screen.layout, palette=palette, event_loop=evl, input_filter=debounce_esc
     )
 
-    asyncioloop.call_soon(startui, urwidloop)
+    shell = OpenvarioShellImpl(screen)
+    asyncioloop.call_soon(startui, shell)
 
     try:
         urwidloop.run()
