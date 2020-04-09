@@ -5,7 +5,7 @@ import asyncio
 import urwid
 
 from ovshell.app import OpenvarioShellImpl, ScreenManagerImpl
-from ovshell.ui.mainmenu import MainMenuView
+from ovshell.ui.mainmenu import MainMenuActivity
 
 parser = argparse.ArgumentParser(description="Shell for Openvario")
 
@@ -35,8 +35,8 @@ def debounce_esc(keys, raw):
     return filtered
 
 
-def startui(shell: OpenvarioShellImpl) -> None:
-    shell.screen.push_activity(MainMenuView())
+def startui(app: OpenvarioShellImpl) -> None:
+    app.screen.push_activity(MainMenuActivity(app))
 
 
 def run(argv) -> None:
