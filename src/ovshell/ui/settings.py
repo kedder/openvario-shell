@@ -99,13 +99,24 @@ class SettingActivatorImpl(SettingActivator):
         menu = urwid.Pile(menuitems)
         filler = urwid.Filler(menu, "top")
         box = urwid.LineBox(filler)
-        self.popup_launcher.popup = box
+        signals = widget.KeySignals(box)
+        urwid.connect_signal(
+            signals, "cancel", self._simple_choice_cancelled, user_args=[handler]
+        )
+        self.popup_launcher.popup = signals
         self.popup_launcher.open_pop_up()
 
     def _simple_choice_clicked(
         self, handler: SettingsSimpleChoiceHandler, key: str, w: urwid.Widget
     ) -> None:
         handler.selected(key)
+        self.popup_launcher.close_pop_up()
+
+    def _simple_choice_cancelled(
+        self, handler: SettingsSimpleChoiceHandler, w: urwid.Widget
+    ) -> None:
+        handler.cancelled()
+        self.popup_launcher.close_pop_up()
 
 
 class SettingsActivity:

@@ -18,3 +18,22 @@ class SelectableListItem(urwid.Button):
 
     def _btnclicked(self, btn):
         self._emit("selected")
+
+
+class KeySignals(urwid.WidgetWrap):
+    signals = ["cancel", "menu"]
+    signal_map = {
+        "esc": "cancel",
+        "f1": "menu",
+    }
+    def __init__(self, widget):
+        super().__init__(widget)
+
+    def keypress(self, size, key):
+        unhandled = self._w.keypress(size, key)
+        if not unhandled:
+            return
+        if key in self.signal_map:
+            self._emit(self.signal_map[key])
+            return
+        return key
