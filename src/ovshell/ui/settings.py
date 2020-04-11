@@ -1,4 +1,4 @@
-from typing import Iterable, Sequence, Tuple
+from typing import Iterable, Sequence, Tuple, Optional
 from typing_extensions import Protocol
 from abc import abstractmethod
 
@@ -163,6 +163,8 @@ class SettingsActivity:
 
 
 class SettingsPopUpLauncher(urwid.PopUpLauncher):
+    popup: Optional[urwid.Widget]
+
     def __init__(self, setting: Setting, widget: urwid.Widget) -> None:
         super().__init__(widget)
         self.popup = None
