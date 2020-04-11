@@ -4,8 +4,8 @@ from ovshell.protocol import OpenVarioShell
 from ovshell import widget
 from ovshell.ui.settings import SettingsActivity
 
-class MainMenuActivity:
 
+class MainMenuActivity:
     def __init__(self, app: OpenVarioShell) -> None:
         self.app = app
 

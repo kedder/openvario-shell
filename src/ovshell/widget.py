@@ -1,5 +1,6 @@
 import urwid
 
+
 class PlainButton(urwid.Button):
     def __init__(self, text: str) -> None:
         super().__init__(text)
@@ -26,6 +27,7 @@ class KeySignals(urwid.WidgetWrap):
         "esc": "cancel",
         "f1": "menu",
     }
+
     def __init__(self, widget):
         super().__init__(widget)
 

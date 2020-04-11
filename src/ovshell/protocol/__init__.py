@@ -1,4 +1,4 @@
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Union, Optional, Callable
 from typing_extensions import Protocol
 from abc import abstractmethod
 
@@ -8,7 +8,15 @@ BasicType = Union[int, str, float]
 JsonType = Optional[Union[BasicType, List[BasicType], Dict[str, BasicType]]]
 
 
-class StoredSettings:
+class Extension(Protocol):
+    id: str
+    title: str
+
+
+ExtensionFactory = Callable[[str, "OpenVarioShell"], Extension]
+
+
+class StoredSettings(Protocol):
     def setdefault(self, key: str, value: JsonType) -> None:
         pass
 

@@ -1,8 +1,10 @@
-from typing import List, Tuple
+from typing import List, Tuple, Iterable, Type, cast
+import pkg_resources
 
 import urwid
 
 from ovshell.protocol import ScreenManager, Activity, OpenVarioShell
+from ovshell.protocol import Extension, ExtensionFactory
 from ovshell import widget
 from ovshell import settings
 
@@ -43,9 +45,27 @@ class ScreenManagerImpl(ScreenManager):
         self.pop_activity()
 
 
+class ExtensionManagerImpl:
+    _extensions: List[Extension]
+
+    def __init__(self):
+        self._extensions = []
+
+    def load_all(self, app: OpenVarioShell) -> None:
+        for entry_point in pkg_resources.iter_entry_points("ovshell.extensions"):
+            extfactory = cast(ExtensionFactory, entry_point.load())
+            ext = extfactory(entry_point.name, app)
+            self._extensions.append(ext)
+            print(f"Loaded extension: {ext.title}")
+
+    def list_extensions(self) -> Iterable[Extension]:
+        return self._extensions
+
+
 class OpenvarioShellImpl(OpenVarioShell):
     def __init__(self, screen: ScreenManager, settings_fname: str) -> None:
         self.screen = screen
         self.settings = settings.StoredSettingsImpl.load(settings_fname)
         self.devices = None
         self.processes = None
+        self.extensions = ExtensionManagerImpl()

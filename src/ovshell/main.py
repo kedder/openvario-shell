@@ -69,10 +69,15 @@ def run(argv) -> None:
 
     screen = ScreenManagerImpl()
     urwidloop = urwid.MainLoop(
-        screen.layout, palette=palette, event_loop=evl, input_filter=debounce_esc, pop_ups=True
+        screen.layout,
+        palette=palette,
+        event_loop=evl,
+        input_filter=debounce_esc,
+        pop_ups=True,
     )
 
     shell = OpenvarioShellImpl(screen, "ovshell.conf")
+    shell.extensions.load_all(shell)
     asyncioloop.call_soon(startui, shell)
 
     try:
