@@ -72,7 +72,7 @@ def run(argv) -> None:
         screen.layout, palette=palette, event_loop=evl, input_filter=debounce_esc, pop_ups=True
     )
 
-    shell = OpenvarioShellImpl(screen)
+    shell = OpenvarioShellImpl(screen, "ovshell.conf")
     asyncioloop.call_soon(startui, shell)
 
     try:

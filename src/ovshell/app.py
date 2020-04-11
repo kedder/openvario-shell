@@ -4,6 +4,7 @@ import urwid
 
 from ovshell.protocol import ScreenManager, Activity, OpenVarioShell
 from ovshell import widget
+from ovshell import settings
 
 
 class ScreenManagerImpl(ScreenManager):
@@ -43,7 +44,8 @@ class ScreenManagerImpl(ScreenManager):
 
 
 class OpenvarioShellImpl(OpenVarioShell):
-    def __init__(self, screen: ScreenManager) -> None:
+    def __init__(self, screen: ScreenManager, settings_fname: str) -> None:
         self.screen = screen
+        self.settings = settings.StoredSettingsImpl.load(settings_fname)
         self.devices = None
         self.processes = None
