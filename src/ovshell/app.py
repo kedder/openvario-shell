@@ -3,6 +3,7 @@ from typing import List, Tuple
 import urwid
 
 from ovshell.protocol import ScreenManager, Activity, OpenVarioShell
+from ovshell import widget
 
 
 class ScreenManagerImpl(ScreenManager):
@@ -16,22 +17,29 @@ class ScreenManagerImpl(ScreenManager):
         splash = urwid.Filler(urwid.Padding(btxt, "center", "clip"), "middle")
         self._main_view.original_widget = splash
         return urwid.Frame(
-            self._main_view, header=urwid.Text("Header"), footer=urwid.Text("Footer"),
+            self._main_view, header=urwid.Text("Header"), footer=urwid.Text("Footer")
         )
 
     def push_activity(self, activity: Activity) -> None:
         w = activity.create()
-        self._main_view.original_widget = w
+        signals = widget.KeySignals(w)
+        urwid.connect_signal(
+            signals, "cancel", self._cancel_activity, user_args=[activity]
+        )
+        self._main_view.original_widget = signals
         activity.activate()
-        self._act_stack.append((activity, w))
+        self._act_stack.append((activity, signals))
 
     def pop_activity(self) -> None:
         oldact, oldw = self._act_stack.pop()
         oldact.destroy()
 
         newact, curw = self._act_stack[-1]
-        self._main_view.original_widget = self._act_stack[-1]
+        self._main_view.original_widget = curw
         newact.activate()
+
+    def _cancel_activity(self, activity: Activity, w: urwid.Widget) -> None:
+        self.pop_activity()
 
 
 class OpenvarioShellImpl(OpenVarioShell):
