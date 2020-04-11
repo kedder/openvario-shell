@@ -69,7 +69,7 @@ def run(argv) -> None:
 
     screen = ScreenManagerImpl()
     urwidloop = urwid.MainLoop(
-        screen.layout, palette=palette, event_loop=evl, input_filter=debounce_esc
+        screen.layout, palette=palette, event_loop=evl, input_filter=debounce_esc, pop_ups=True
     )
 
     shell = OpenvarioShellImpl(screen)
