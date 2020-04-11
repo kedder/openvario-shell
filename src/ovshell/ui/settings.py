@@ -1,34 +1,13 @@
-from typing import Sequence, Tuple, Optional, cast
-from typing_extensions import Protocol
+from typing import Sequence, Tuple, Optional, List
 from abc import abstractmethod
 
 import urwid
 
-from ovshell.protocol import OpenVarioShell
 from ovshell import widget
 from ovshell import protocol
 
 
-class SettingActivator(Protocol):
-    @abstractmethod
-    def open_value_popup(self, content: urwid.Widget) -> None:
-        pass
-
-    @abstractmethod
-    def close_value_popup(self) -> None:
-        pass
-
-
-class Setting(Protocol):
-    title: str
-    value_label: str
-    priority: int
-
-    def activate(self, activator: SettingActivator) -> None:
-        pass
-
-
-class StaticChoiceSetting(Setting):
+class StaticChoiceSetting(protocol.Setting):
     title: str
     value: str
     value_label: str
@@ -48,7 +27,7 @@ class StaticChoiceSetting(Setting):
     def get_choices(self) -> Sequence[Tuple[str, str]]:
         pass
 
-    def activate(self, activator: SettingActivator) -> None:
+    def activate(self, activator: protocol.SettingActivator) -> None:
         self._popup_simple_choice(activator)
 
     def cancelled(self) -> None:
@@ -59,7 +38,7 @@ class StaticChoiceSetting(Setting):
         self.value = self.read()
         self.value_label = chdict.get(self.value, "N/A")
 
-    def _popup_simple_choice(self, activator: SettingActivator) -> None:
+    def _popup_simple_choice(self, activator: protocol.SettingActivator) -> None:
         # Generate choice widget
         menuitems = []
         focus = None
@@ -83,70 +62,20 @@ class StaticChoiceSetting(Setting):
         activator.open_value_popup(signals)
 
     def _choice_clicked(
-        self, activator: SettingActivator, key: str, w: urwid.Widget
+        self, activator: protocol.SettingActivator, key: str, w: urwid.Widget
     ) -> None:
         self.store(key)
         self._update()
         activator.close_value_popup()
 
-    def _choice_cancelled(self, activator: SettingActivator, w: urwid.Widget) -> None:
+    def _choice_cancelled(
+        self, activator: protocol.SettingActivator, w: urwid.Widget
+    ) -> None:
         self.cancelled()
         activator.close_value_popup()
 
 
-class RotationSetting(StaticChoiceSetting):
-    title = "Screen rotation"
-    config_key = "core.screen_orientation"
-    priority = 80
-
-    def __init__(self, app: protocol.OpenVarioShell):
-        self.app = app
-        super().__init__()
-
-    def read(self) -> Optional[str]:
-        return cast(Optional[str], self.app.settings.get(self.config_key))
-
-    def store(self, value: Optional[str]) -> None:
-        self.app.settings.set(self.config_key, value, save=True)
-
-    def get_choices(self) -> Sequence[Tuple[str, str]]:
-        return [
-            ("0", "Landscape"),
-            ("1", "Portrait (90)"),
-            ("2", "Landscape (180)"),
-            ("3", "Portrait (270)"),
-        ]
-
-
-class LanguageSetting(StaticChoiceSetting):
-    title = "Language"
-    config_key = "core.language"
-    priority = 70
-
-    def __init__(self, app: protocol.OpenVarioShell):
-        self.app = app
-        super().__init__()
-
-    def read(self) -> Optional[str]:
-        return cast(Optional[str], self.app.settings.get(self.config_key))
-
-    def store(self, value: Optional[str]) -> None:
-        self.app.settings.set(self.config_key, value, save=True)
-
-    def get_choices(self) -> Sequence[Tuple[str, str]]:
-        return [
-            ("en_EN.UTF-8", "English"),
-            ("de_DE.UTF-8", "German"),
-            ("fr_FR.UTF-8", "French"),
-            ("ru_RU.UTF-8", "Russian"),
-        ]
-
-
-def get_settings(app: protocol.OpenVarioShell) -> Sequence[Setting]:
-    return [RotationSetting(app), LanguageSetting(app)]
-
-
-class SettingActivatorImpl(SettingActivator):
+class SettingActivatorImpl(protocol.SettingActivator):
     def __init__(self, popup_launcher: "SettingsPopUpLauncher"):
         self.popup_launcher = popup_launcher
 
@@ -161,7 +90,7 @@ class SettingActivatorImpl(SettingActivator):
 class SettingRowItem(urwid.WidgetWrap):
     ignore_focus = False
 
-    def __init__(self, setting: Setting) -> None:
+    def __init__(self, setting: protocol.Setting) -> None:
         self._setting = setting
         self._title_w = urwid.Text(setting.title)
         self._value_w = urwid.Text(setting.value_label)
@@ -191,7 +120,7 @@ class SettingRowItem(urwid.WidgetWrap):
 class SettingsPopUpLauncher(urwid.PopUpLauncher):
     popup: Optional[urwid.Widget]
 
-    def __init__(self, setting: Setting, widget: urwid.Widget) -> None:
+    def __init__(self, setting: protocol.Setting, widget: urwid.Widget) -> None:
         super().__init__(widget)
         self.popup = None
 
@@ -203,7 +132,7 @@ class SettingsPopUpLauncher(urwid.PopUpLauncher):
 
 
 class SettingsActivity:
-    def __init__(self, app: OpenVarioShell) -> None:
+    def __init__(self, app: protocol.OpenVarioShell) -> None:
         self.app = app
 
     def create(self) -> urwid.Widget:
@@ -211,7 +140,7 @@ class SettingsActivity:
         logo = urwid.Padding(btxt, "left", "clip")
 
         menuitems = []
-        for setting in get_settings(self.app):
+        for setting in self._get_settings():
             menuitems.append(SettingRowItem(setting))
 
         m_back = widget.SelectableListItem("Back")
@@ -221,6 +150,13 @@ class SettingsActivity:
             urwid.Pile([logo, urwid.Padding(menu, align=urwid.CENTER)]), "top"
         )
         return view
+
+    def _get_settings(self) -> Sequence[protocol.Setting]:
+        settings: List[protocol.Setting] = []
+        for ext in self.app.extensions.list_extensions():
+            settings.extend(ext.list_settings())
+
+        return sorted(settings, key=lambda s: -s.priority)
 
     def activate(self) -> None:
         pass

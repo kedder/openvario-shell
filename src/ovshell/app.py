@@ -6,6 +6,7 @@ import urwid
 from ovshell.protocol import ScreenManager, Activity, OpenVarioShell
 from ovshell.protocol import Extension, ExtensionFactory
 from ovshell import widget
+from ovshell import protocol
 from ovshell import settings
 
 
@@ -45,7 +46,7 @@ class ScreenManagerImpl(ScreenManager):
         self.pop_activity()
 
 
-class ExtensionManagerImpl:
+class ExtensionManagerImpl(protocol.ExtensionManager):
     _extensions: List[Extension]
 
     def __init__(self):
