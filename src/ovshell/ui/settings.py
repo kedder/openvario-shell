@@ -88,8 +88,6 @@ class SettingActivatorImpl(protocol.SettingActivator):
 
 
 class SettingRowItem(urwid.WidgetWrap):
-    ignore_focus = False
-
     def __init__(self, setting: protocol.Setting) -> None:
         self._setting = setting
         self._title_w = urwid.Text(setting.title)

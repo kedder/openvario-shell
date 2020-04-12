@@ -41,6 +41,16 @@ class Setting(Protocol):
         pass
 
 
+class App(Protocol):
+    name: str
+    title: str
+    description: str
+    priority: int
+
+    def launch(self) -> None:
+        pass
+
+
 class Activity(Protocol):
     @abstractmethod
     def create(self) -> urwid.Widget:
@@ -67,9 +77,11 @@ class Extension(Protocol):
     id: str
     title: str
 
-    @abstractmethod
     def list_settings(self) -> Sequence[Setting]:
-        pass
+        return []
+
+    def list_apps(self) -> Sequence[App]:
+        return []
 
 
 ExtensionFactory = Callable[[str, "OpenVarioShell"], Extension]
