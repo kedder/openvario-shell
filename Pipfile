@@ -13,6 +13,4 @@ black = "==19.10b0"
 [packages]
 openvario-shell = {editable = true,path = "."}
 urwid = "*"
-
-[requires]
-python_version = "3.7"
+typing-extensions = "*"
