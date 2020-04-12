@@ -1,5 +1,5 @@
 from ovshell import protocol
-from ovcore import ext
+from ovshell_core import ext
 
 
 def extension(id: str, app: protocol.OpenVarioShell) -> protocol.Extension:

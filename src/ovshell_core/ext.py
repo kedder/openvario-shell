@@ -1,7 +1,7 @@
 from typing import Sequence
 from ovshell import protocol
 
-from ovcore import settings
+from ovshell_core import settings
 
 
 class CoreExtension(protocol.Extension):

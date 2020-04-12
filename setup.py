@@ -37,7 +37,7 @@ setup(
     data_files=[],
     entry_points={
         "console_scripts": ["ovshell=ovshell.main:main"],
-        "ovshell.extensions": ["core=ovcore:extension"],
+        "ovshell.extensions": ["core=ovshell_core:extension"],
     },
     project_urls={},
 )
