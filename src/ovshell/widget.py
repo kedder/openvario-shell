@@ -32,10 +32,20 @@ class KeySignals(urwid.WidgetWrap):
         super().__init__(widget)
 
     def keypress(self, size, key):
-        unhandled = self._w.keypress(size, key)
+        unhandled = key
+
+        # Widgets that are not selectable might not be able to handle
+        # keypresses
+        if self._w.selectable():
+            unhandled = self._w.keypress(size, key)
+
         if not unhandled:
             return
         if key in self.signal_map:
             self._emit(self.signal_map[key])
             return
         return key
+
+    def selectable(self):
+        # We need this widget to be selectable in order to receive keypresses
+        return True

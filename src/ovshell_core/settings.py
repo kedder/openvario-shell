@@ -14,7 +14,7 @@ class RotationSetting(StaticChoiceSetting):
         super().__init__()
 
     def read(self) -> Optional[str]:
-        return cast(Optional[str], self.app.settings.get(self.config_key))
+        return self.app.settings.get(self.config_key, str)
 
     def store(self, value: Optional[str]) -> None:
         self.app.settings.set(self.config_key, value, save=True)
@@ -38,7 +38,7 @@ class LanguageSetting(StaticChoiceSetting):
         super().__init__()
 
     def read(self) -> Optional[str]:
-        return cast(Optional[str], self.app.settings.get(self.config_key))
+        return self.app.settings.get(self.config_key, str)
 
     def store(self, value: Optional[str]) -> None:
         self.app.settings.set(self.config_key, value, save=True)

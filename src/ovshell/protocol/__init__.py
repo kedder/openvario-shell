@@ -1,21 +1,33 @@
-from typing import Dict, List, Union, Optional, Callable, Sequence, Iterable
+from typing import (
+    Dict,
+    List,
+    Union,
+    Optional,
+    Callable,
+    Sequence,
+    Iterable,
+    TypeVar,
+    Type,
+)
 from typing_extensions import Protocol
 from abc import abstractmethod
 
 import urwid
 
 BasicType = Union[int, str, float]
-JsonType = Optional[Union[BasicType, List[BasicType], Dict[str, BasicType]]]
+JsonType = Union[BasicType, List[BasicType], Dict[str, BasicType]]
+
+JT = TypeVar("JT", bound=JsonType)
 
 
 class StoredSettings(Protocol):
     def setdefault(self, key: str, value: JsonType) -> None:
         pass
 
-    def set(self, key: str, value: JsonType, save: bool = False):
+    def set(self, key: str, value: Optional[JsonType], save: bool = False):
         pass
 
-    def get(self, key: str, default=None) -> Optional[JsonType]:
+    def get(self, key: str, type: Type[JT], default: JT = None) -> Optional[JT]:
         pass
 
     def save(self) -> None:
