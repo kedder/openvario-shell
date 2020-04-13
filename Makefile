@@ -29,3 +29,9 @@ mypy-report:
 		--txt-report mypy-reports/txt
 	@cat mypy-reports/txt/index.txt
 	@echo "HTML report generated in mypy-reports/html/index.html"
+
+.PHONY: reset-rootfs
+reset-rootfs:
+	mkdir -p var
+	rm -rf var/rootfs
+	cp -r rootfs-ref var/rootfs

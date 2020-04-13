@@ -9,3 +9,4 @@ htmlcov
 .coverage
 .mypy_cache
 mypy-reports
+var
