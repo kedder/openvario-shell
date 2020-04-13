@@ -132,7 +132,6 @@ class SettingsPopUpLauncher(urwid.PopUpLauncher):
         return {"left": -1, "top": 1, "overlay_width": 30, "overlay_height": 10}
 
 
-
 class SettingsActivity:
     def __init__(self, shell: protocol.OpenVarioShell) -> None:
         self.shell = shell

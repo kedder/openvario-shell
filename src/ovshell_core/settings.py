@@ -1,4 +1,5 @@
-from typing import Optional, cast, Sequence, Tuple
+from typing import Optional, Sequence, Tuple
+import re
 
 from ovshell import protocol
 from ovshell.ui.settings import StaticChoiceSetting
@@ -17,6 +18,7 @@ class RotationSetting(StaticChoiceSetting):
         return self.shell.settings.get(self.config_key, str)
 
     def store(self, value: Optional[str]) -> None:
+        self._apply_rotation(value or "0")
         self.shell.settings.set(self.config_key, value, save=True)
 
     def get_choices(self) -> Sequence[Tuple[str, str]]:
@@ -26,6 +28,16 @@ class RotationSetting(StaticChoiceSetting):
             ("2", "Landscape (180)"),
             ("3", "Portrait (270)"),
         ]
+
+    def _apply_rotation(self, rotation: str) -> None:
+        os = self.shell.os
+        os.mount_boot()
+        rchar = rotation.encode()
+        uenvconf = os.read_file("/boot/config.uEnv")
+        uenvconf = re.sub(rb"rotation=[0-3]", b"rotation=" + rchar, uenvconf)
+        os.write_file("/boot/config.uEnv", uenvconf)
+        os.write_file("/sys/class/graphics/fbcon/rotate", rchar)
+        os.unmount_boot()
 
 
 class LanguageSetting(StaticChoiceSetting):

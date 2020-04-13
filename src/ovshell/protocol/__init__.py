@@ -105,6 +105,24 @@ class ScreenManager(Protocol):
         pass
 
 
+class OpenVarioOS(Protocol):
+    @abstractmethod
+    def mount_boot(self) -> None:
+        pass
+
+    @abstractmethod
+    def unmount_boot(self) -> None:
+        pass
+
+    @abstractmethod
+    def read_file(self, filename: str) -> bytes:
+        pass
+
+    @abstractmethod
+    def write_file(self, filename: str, content: bytes) -> None:
+        pass
+
+
 class Extension(Protocol):
     id: str
     title: str
@@ -129,6 +147,7 @@ class OpenVarioShell(Protocol):
     screen: ScreenManager
     settings: StoredSettings
     extensions: ExtensionManager
+    os: OpenVarioOS
 
     @abstractmethod
     def quit(self) -> None:

@@ -8,6 +8,7 @@ from ovshell.protocol import Extension, ExtensionFactory
 from ovshell import widget
 from ovshell import protocol
 from ovshell import settings
+from ovshell import ovos
 
 
 class TopBar(urwid.WidgetWrap):
@@ -101,6 +102,7 @@ class ExtensionManagerImpl(protocol.ExtensionManager):
 class OpenvarioShellImpl(OpenVarioShell):
     def __init__(self, screen: ScreenManager, settings_fname: str) -> None:
         self.screen = screen
+        self.os = ovos.OpenVarioOSSimulator("var/rootfs")
         self.settings = settings.StoredSettingsImpl.load(settings_fname)
         self.devices = None
         self.processes = None
