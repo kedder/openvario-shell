@@ -130,3 +130,7 @@ class OpenVarioShell(Protocol):
     screen: ScreenManager
     settings: StoredSettings
     extensions: ExtensionManager
+
+    @abstractmethod
+    def quit(self) -> None:
+        pass

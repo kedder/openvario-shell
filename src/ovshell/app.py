@@ -95,3 +95,6 @@ class OpenvarioShellImpl(OpenVarioShell):
         self.devices = None
         self.processes = None
         self.extensions = ExtensionManagerImpl()
+
+    def quit(self) -> None:
+        raise urwid.ExitMainLoop()
