@@ -10,6 +10,17 @@ from ovshell import protocol
 from ovshell import settings
 
 
+class TopBar(urwid.WidgetWrap):
+    def __init__(self) -> None:
+        w = urwid.Text("Openvario")
+        super().__init__(urwid.AttrMap(w, "topbar"))
+
+
+class FooterBar(urwid.WidgetWrap):
+    def __init__(self) -> None:
+        super().__init__(urwid.AttrMap(urwid.Divider(), "bg"))
+
+
 class ScreenManagerImpl(ScreenManager):
     def __init__(self) -> None:
         self._main_view = urwid.WidgetPlaceholder(urwid.SolidFill(" "))
@@ -20,9 +31,7 @@ class ScreenManagerImpl(ScreenManager):
         btxt = urwid.BigText("Openvario", urwid.font.Thin6x6Font())
         splash = urwid.Filler(urwid.Padding(btxt, "center", "clip"), "middle")
         self._main_view.original_widget = splash
-        return urwid.Frame(
-            self._main_view, header=urwid.Text("Header"), footer=urwid.Text("Footer")
-        )
+        return urwid.Frame(self._main_view, header=TopBar(), footer=FooterBar())
 
     def push_activity(self, activity: Activity) -> None:
         w = activity.create()
