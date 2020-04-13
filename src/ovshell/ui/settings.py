@@ -132,13 +132,13 @@ class SettingsPopUpLauncher(urwid.PopUpLauncher):
         return {"left": -1, "top": 1, "overlay_width": 30, "overlay_height": 10}
 
 
+
 class SettingsActivity:
     def __init__(self, shell: protocol.OpenVarioShell) -> None:
         self.shell = shell
 
     def create(self) -> urwid.Widget:
-        btxt = urwid.BigText("Settings", urwid.font.Thin6x6Font())
-        logo = urwid.Padding(btxt, "left", "clip")
+        header = widget.ActivityHeader("Settings")
 
         menuitems = []
         for setting in self._get_settings():
@@ -148,7 +148,7 @@ class SettingsActivity:
         menu = urwid.Pile(menuitems + [urwid.Divider(), m_back])
 
         view = urwid.Filler(
-            urwid.Pile([logo, urwid.Padding(menu, align=urwid.CENTER)]), "top"
+            urwid.Pile([header, urwid.Padding(menu, align=urwid.CENTER)]), "top"
         )
         return view
 

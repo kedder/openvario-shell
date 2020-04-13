@@ -3,6 +3,7 @@ from typing import Sequence, List, Optional
 import urwid
 
 from ovshell import protocol
+from ovshell import widget
 
 
 class AppRowItem(urwid.WidgetWrap):
@@ -31,8 +32,7 @@ class AppsActivity(protocol.Activity):
         self.shell = shell
 
     def create(self) -> urwid.Widget:
-        btxt = urwid.BigText("Apps", urwid.font.Thin6x6Font())
-        logo = urwid.Padding(btxt, "left", "clip")
+        header = widget.ActivityHeader("Applications")
 
         menuitems = []
         for app in self._get_apps():
@@ -41,7 +41,7 @@ class AppsActivity(protocol.Activity):
         menu = urwid.Pile(menuitems)
 
         view = urwid.Filler(
-            urwid.Pile([logo, urwid.Padding(menu, align=urwid.CENTER)]), "top"
+            urwid.Pile([header, urwid.Padding(menu, align=urwid.CENTER)]), "top"
         )
         return view
 

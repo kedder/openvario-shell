@@ -24,6 +24,29 @@ class SelectableListItem(urwid.Button):
         self._emit("selected")
 
 
+class ActivityHeader(urwid.WidgetWrap):
+    def __init__(self, title: str) -> None:
+        w = urwid.Text("  " + title)
+        w = urwid.AttrMap(
+            urwid.Pile(
+                [
+                    urwid.Divider(),
+                    w,
+                    urwid.Divider(),
+                    urwid.AttrMap(
+                        urwid.Divider("\N{LIGHT SHADE}"), "screen header divider"
+                    ),
+                    urwid.AttrMap(
+                        urwid.Divider("\N{MEDIUM SHADE}"), "screen header divider"
+                    ),
+                ]
+            ),
+            "screen header",
+        )
+
+        super().__init__(urwid.Pile([w, urwid.Divider()]))
+
+
 class KeySignals(urwid.WidgetWrap):
     signals = ["cancel", "menu"]
     signal_map = {
