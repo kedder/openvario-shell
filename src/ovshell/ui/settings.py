@@ -130,8 +130,8 @@ class SettingsPopUpLauncher(urwid.PopUpLauncher):
 
 
 class SettingsActivity:
-    def __init__(self, app: protocol.OpenVarioShell) -> None:
-        self.app = app
+    def __init__(self, shell: protocol.OpenVarioShell) -> None:
+        self.shell = shell
 
     def create(self) -> urwid.Widget:
         btxt = urwid.BigText("Settings", urwid.font.Thin6x6Font())
@@ -151,7 +151,7 @@ class SettingsActivity:
 
     def _get_settings(self) -> Sequence[protocol.Setting]:
         settings: List[protocol.Setting] = []
-        for ext in self.app.extensions.list_extensions():
+        for ext in self.shell.extensions.list_extensions():
             settings.extend(ext.list_settings())
 
         return sorted(settings, key=lambda s: -s.priority)

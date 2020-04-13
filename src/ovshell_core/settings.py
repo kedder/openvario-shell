@@ -9,15 +9,15 @@ class RotationSetting(StaticChoiceSetting):
     config_key = "core.screen_orientation"
     priority = 80
 
-    def __init__(self, app: protocol.OpenVarioShell):
-        self.app = app
+    def __init__(self, shell: protocol.OpenVarioShell):
+        self.shell = shell
         super().__init__()
 
     def read(self) -> Optional[str]:
-        return self.app.settings.get(self.config_key, str)
+        return self.shell.settings.get(self.config_key, str)
 
     def store(self, value: Optional[str]) -> None:
-        self.app.settings.set(self.config_key, value, save=True)
+        self.shell.settings.set(self.config_key, value, save=True)
 
     def get_choices(self) -> Sequence[Tuple[str, str]]:
         return [
@@ -33,15 +33,15 @@ class LanguageSetting(StaticChoiceSetting):
     config_key = "core.language"
     priority = 70
 
-    def __init__(self, app: protocol.OpenVarioShell):
-        self.app = app
+    def __init__(self, shell: protocol.OpenVarioShell):
+        self.shell = shell
         super().__init__()
 
     def read(self) -> Optional[str]:
-        return self.app.settings.get(self.config_key, str)
+        return self.shell.settings.get(self.config_key, str)
 
     def store(self, value: Optional[str]) -> None:
-        self.app.settings.set(self.config_key, value, save=True)
+        self.shell.settings.set(self.config_key, value, save=True)
 
     def get_choices(self) -> Sequence[Tuple[str, str]]:
         return [
