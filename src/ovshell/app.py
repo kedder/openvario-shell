@@ -26,7 +26,7 @@ class ScreenManagerImpl(ScreenManager):
 
     def push_activity(self, activity: Activity) -> None:
         w = activity.create()
-        signals = widget.KeySignals(w)
+        signals = widget.KeySignals(urwid.AttrMap(w, widget.NORMAL_ATTR_MAP))
         urwid.connect_signal(
             signals, "cancel", self._cancel_activity, user_args=[activity]
         )
@@ -37,6 +37,7 @@ class ScreenManagerImpl(ScreenManager):
     def push_modal(self, activity: Activity, options: protocol.ModalOptions) -> None:
         bg = self._main_view.original_widget
         modal_w = activity.create()
+        modal_w = urwid.AttrMap(modal_w, widget.LIGHT_ATTR_MAP)
         signals = widget.KeySignals(modal_w)
         urwid.connect_signal(
             signals, "cancel", self._cancel_activity, user_args=[activity]

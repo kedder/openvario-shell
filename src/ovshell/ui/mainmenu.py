@@ -29,7 +29,7 @@ class DialogActivity(protocol.Activity):
         msg = urwid.Text(self.message)
 
         buttons = urwid.GridFlow(
-            self.button_widgets, cell_width=15, h_sep=2, v_sep=1, align="center",
+            self.button_widgets, cell_width=11, h_sep=2, v_sep=1, align="center",
         )
 
         view = urwid.LineBox(urwid.Pile([msg, urwid.Divider(), buttons]), self.title)
@@ -74,7 +74,7 @@ class MainMenuActivity(protocol.Activity):
                     # urwid.Text(self._get_version(), align=urwid.CENTER),
                     urwid.Padding(
                         urwid.LineBox(menu, "Main Menu", title_align="left"),
-                        width=("relative", 80),
+                        width=("relative", 40),
                         align=urwid.CENTER,
                     ),
                 ]
@@ -100,7 +100,8 @@ class MainMenuActivity(protocol.Activity):
             "Do you really want to shut down Openvario?",
         )
         confirm.add_button("Shut Down", self._on_shutdown)
-        confirm.add_button("Exit to Shell", self._on_exit)
+        confirm.add_button("Restart", self._on_restart)
+        confirm.add_button("Shell", self._on_exit)
         confirm.add_button("Cancel", lambda: True)
         self.shell.screen.push_modal(confirm, confirm.modal_opts)
 
@@ -109,6 +110,10 @@ class MainMenuActivity(protocol.Activity):
         return True
 
     def _on_exit(self) -> bool:
+        self.shell.quit()
+        return True
+
+    def _on_restart(self) -> bool:
         self.shell.quit()
         return True
 

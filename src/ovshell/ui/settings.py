@@ -55,7 +55,10 @@ class StaticChoiceSetting(protocol.Setting):
 
         filler = urwid.Filler(menu, "top")
         box = urwid.LineBox(filler)
+        box = urwid.AttrMap(box, widget.LIGHT_ATTR_MAP)
+
         signals = widget.KeySignals(box)
+
         urwid.connect_signal(
             signals, "cancel", self._choice_cancelled, user_args=[activator]
         )

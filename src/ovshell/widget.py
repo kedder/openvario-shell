@@ -1,5 +1,8 @@
 import urwid
 
+NORMAL_ATTR_MAP = {None: "bg"}
+LIGHT_ATTR_MAP = {None: "bg light", "bg": "bg light", "li normal": "li normal light"}
+
 
 class PlainButton(urwid.Button):
     def __init__(self, text: str) -> None:

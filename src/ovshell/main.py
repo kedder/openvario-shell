@@ -59,6 +59,9 @@ def run(argv) -> None:
         ("error banner", "white", "dark red", ""),
         ("progress", "light magenta", "black", ""),
         ("remark", "dark gray", "black", ""),
+        # Light color scheme (for modals and popups)
+        ("bg light", "black", "white", ""),
+        ("li normal light", "dark blue", "white", ""),
     ]
 
     # btxt = urwid.BigText("Openvario", urwid.font.Thin6x6Font())
