@@ -12,22 +12,9 @@ class AppOutputActivity(protocol.Activity):
         self.message = message
 
     def create(self) -> urwid.Widget:
-        # btxt = urwid.BigText("XCSoar", urwid.font.Thin6x6Font())
-        # logo = urwid.Padding(btxt, "center", "clip")
-
         term = urwid.Text(self.message)
-        view = urwid.LineBox(urwid.Filler(term, "top"), "Error")
-
-        bg = self.shell.screen._main_view.original_widget
-        ovl = urwid.Overlay(
-            view,
-            bg,
-            align="center",
-            width=("relative", 90),
-            valign="middle",
-            height=("relative", 90),
-        )
-        return ovl
+        view = urwid.LineBox(term, "Error")
+        return view
 
 
 class XCSoarApp(protocol.App):
@@ -43,15 +30,21 @@ class XCSoarApp(protocol.App):
         # self.shell.screen.push_activity(AppOutputActivity(self.shell))
         binary = self.shell.settings.get("xcsoar.binary", str)
         assert binary is not None
+        modal_opts = protocol.ModalOptions(
+            align="center", width=("relative", 90), valign="middle", height="pack",
+        )
         try:
             completed = subprocess.run([binary, "-fly"], capture_output=True)
         except FileNotFoundError as e:
-            self.shell.screen.push_activity(AppOutputActivity(self.shell, str(e)))
+            self.shell.screen.push_modal(
+                AppOutputActivity(self.shell, str(e)), modal_opts
+            )
             return
 
         if completed.returncode != 0:
-            self.shell.screen.push_activity(
-                AppOutputActivity(self.shell, completed.stderr.decode("utf-8"))
+            self.shell.screen.push_modal(
+                AppOutputActivity(self.shell, completed.stderr.decode("utf-8")),
+                modal_opts,
             )
 
 
