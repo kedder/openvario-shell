@@ -6,11 +6,14 @@ from typing import (
     Callable,
     Sequence,
     Iterable,
+    Tuple,
     TypeVar,
     Type,
+    TypedDict,
 )
 from typing_extensions import Protocol
 from abc import abstractmethod
+from dataclasses import dataclass
 
 import urwid
 
@@ -75,6 +78,20 @@ class Activity(Protocol):
         pass
 
 
+@dataclass
+class ModalOptions:
+    align: str
+    width: Union[str, int, Tuple[str, int]]
+    valign: str
+    height: Union[str, int, Tuple[str, int]]
+    min_width: Optional[int] = None
+    min_height: Optional[int] = None
+    left: int = 0
+    right: int = 0
+    top: int = 0
+    bottom: int = 0
+
+
 class ScreenManager(Protocol):
     @abstractmethod
     def push_activity(self, activity: Activity) -> None:
@@ -82,6 +99,10 @@ class ScreenManager(Protocol):
 
     @abstractmethod
     def pop_activity(self) -> None:
+        pass
+
+    @abstractmethod
+    def push_modal(self, activity: Activity, options: ModalOptions) -> None:
         pass
 
 

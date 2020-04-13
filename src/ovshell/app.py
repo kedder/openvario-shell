@@ -1,4 +1,4 @@
-from typing import List, Tuple, Iterable, Type, cast
+from typing import List, Tuple, Iterable, cast
 import pkg_resources
 
 import urwid
@@ -33,6 +33,31 @@ class ScreenManagerImpl(ScreenManager):
         self._main_view.original_widget = signals
         activity.activate()
         self._act_stack.append((activity, signals))
+
+    def push_modal(self, activity: Activity, options: protocol.ModalOptions) -> None:
+        bg = self._main_view.original_widget
+        modal_w = activity.create()
+        signals = widget.KeySignals(modal_w)
+        urwid.connect_signal(
+            signals, "cancel", self._cancel_activity, user_args=[activity]
+        )
+        modal = urwid.Overlay(
+            signals,
+            bg,
+            align=options.align,
+            width=options.width,
+            valign=options.valign,
+            height=options.height,
+            min_width=options.min_width,
+            min_height=options.min_height,
+            left=options.left,
+            right=options.right,
+            top=options.top,
+            bottom=options.bottom,
+        )
+        self._main_view.original_widget = modal
+        activity.activate()
+        self._act_stack.append((activity, modal))
 
     def pop_activity(self) -> None:
         oldact, oldw = self._act_stack.pop()
