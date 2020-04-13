@@ -9,7 +9,6 @@ from typing import (
     Tuple,
     TypeVar,
     Type,
-    TypedDict,
 )
 from typing_extensions import Protocol
 from abc import abstractmethod
