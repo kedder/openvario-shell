@@ -143,8 +143,7 @@ class SettingsActivity:
         for setting in self._get_settings():
             menuitems.append(SettingRowItem(setting))
 
-        m_back = widget.SelectableListItem("Back")
-        menu = urwid.Pile(menuitems + [urwid.Divider(), m_back])
+        menu = urwid.Pile(menuitems)
 
         view = urwid.Filler(
             urwid.Pile([header, urwid.Padding(menu, align=urwid.CENTER)]), "top"

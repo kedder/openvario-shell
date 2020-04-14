@@ -34,12 +34,12 @@ class XCSoarApp(protocol.App):
         modal_opts = protocol.ModalOptions(
             align="center", width=("relative", 90), valign="middle", height="pack",
         )
+        lang = self.shell.settings.get("core.language", str, "en_US.UTF-8")
+        assert lang is not None
         env = os.environ.copy()
-        env['LANG'] = self.shell.settings.get("core.language", str, "en_US.UTF-8")
+        env["LANG"] = lang
         try:
-            completed = subprocess.run(
-                [binary, "-fly"], capture_output=True, env=env
-            )
+            completed = subprocess.run([binary, "-fly"], capture_output=True, env=env)
         except FileNotFoundError as e:
             self.shell.screen.push_modal(
                 AppOutputActivity(self.shell, str(e)), modal_opts

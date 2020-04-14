@@ -20,11 +20,11 @@ black:
 
 .PHONY: mypy
 mypy:
-	mypy src tests
+	mypy src tests/*
 
 .PHONY: mypy-report
 mypy-report:
-	mypy src tests \
+	mypy src tests/* \
 		--html-report mypy-reports/html \
 		--txt-report mypy-reports/txt
 	@cat mypy-reports/txt/index.txt
