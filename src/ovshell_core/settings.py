@@ -31,13 +31,17 @@ class RotationSetting(StaticChoiceSetting):
 
     def _apply_rotation(self, rotation: str) -> None:
         os = self.shell.os
-        os.mount_boot()
         rchar = rotation.encode()
+
+        os.mount_boot()
         uenvconf = os.read_file("/boot/config.uEnv")
         uenvconf = re.sub(rb"rotation=[0-3]", b"rotation=" + rchar, uenvconf)
         os.write_file("/boot/config.uEnv", uenvconf)
-        os.write_file("/sys/class/graphics/fbcon/rotate", rchar)
         os.unmount_boot()
+
+        # For some weird reason 90 degree rotation is inverted for fbcon
+        fbcon_rotmap = {"0": b"0", "1": b"3", "2": b"2", "3": b"1"}
+        os.write_file("/sys/class/graphics/fbcon/rotate_all", fbcon_rotmap[rotation])
 
 
 class LanguageSetting(StaticChoiceSetting):
