@@ -34,9 +34,6 @@ class ActivityHeader(urwid.WidgetWrap):
                     w,
                     urwid.Divider(),
                     urwid.AttrMap(
-                        urwid.Divider("\N{LIGHT SHADE}"), "screen header divider"
-                    ),
-                    urwid.AttrMap(
                         urwid.Divider("\N{MEDIUM SHADE}"), "screen header divider"
                     ),
                 ]
