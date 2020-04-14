@@ -1,5 +1,6 @@
 from typing import Sequence
 import subprocess
+import os
 
 from ovshell import protocol
 
@@ -27,14 +28,18 @@ class XCSoarApp(protocol.App):
         self.shell = shell
 
     def launch(self) -> None:
-        # self.shell.screen.push_activity(AppOutputActivity(self.shell))
         binary = self.shell.settings.get("xcsoar.binary", str)
         assert binary is not None
+
         modal_opts = protocol.ModalOptions(
             align="center", width=("relative", 90), valign="middle", height="pack",
         )
+        env = os.environ.copy()
+        env['LANG'] = self.shell.settings.get("core.language", str, "en_US.UTF-8")
         try:
-            completed = subprocess.run([binary, "-fly"], capture_output=True)
+            completed = subprocess.run(
+                [binary, "-fly"], capture_output=True, env=env
+            )
         except FileNotFoundError as e:
             self.shell.screen.push_modal(
                 AppOutputActivity(self.shell, str(e)), modal_opts
