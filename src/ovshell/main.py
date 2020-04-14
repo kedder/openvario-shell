@@ -1,3 +1,4 @@
+import os
 import sys
 import argparse
 import asyncio
@@ -8,6 +9,19 @@ from ovshell.app import OpenvarioShellImpl, ScreenManagerImpl
 from ovshell.ui.mainmenu import MainMenuActivity
 
 parser = argparse.ArgumentParser(description="Shell for Openvario")
+parser.add_argument(
+    "--config",
+    default=os.environ.get("OVSHELL_CONFIG", ".ovshell.conf"),
+    required=False,
+    help="Use provided configuration file.",
+)
+parser.add_argument(
+    "--sim",
+    metavar="ROOTFS",
+    default=os.environ.get("OVSHELL_ROOTFS"),
+    required=False,
+    help="Run in simulated mode (on provided root filesystem).",
+)
 
 
 def debounce_esc(keys, raw):
@@ -81,7 +95,7 @@ def run(argv) -> None:
         pop_ups=True,
     )
 
-    shell = OpenvarioShellImpl(screen, "ovshell.conf")
+    shell = OpenvarioShellImpl(screen, config=args.config, rootfs=args.sim)
     shell.extensions.load_all(shell)
     asyncioloop.call_soon(startui, shell)
 

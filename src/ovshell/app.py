@@ -1,4 +1,4 @@
-from typing import List, Tuple, Iterable, cast
+from typing import List, Tuple, Iterable, Optional, cast
 import pkg_resources
 
 import urwid
@@ -100,10 +100,16 @@ class ExtensionManagerImpl(protocol.ExtensionManager):
 
 
 class OpenvarioShellImpl(OpenVarioShell):
-    def __init__(self, screen: ScreenManager, settings_fname: str) -> None:
+    def __init__(
+        self, screen: ScreenManager, config: str, rootfs: Optional[str]
+    ) -> None:
         self.screen = screen
-        self.os = ovos.OpenVarioOSSimulator("var/rootfs")
-        self.settings = settings.StoredSettingsImpl.load(settings_fname)
+        if rootfs is None:
+            self.os = ovos.OpenVarioOSImpl()
+        else:
+            print(f"Simulating Openvario on {rootfs}")
+            self.os = ovos.OpenVarioOSSimulator(rootfs)
+        self.settings = settings.StoredSettingsImpl.load(config)
         self.devices = None
         self.processes = None
         self.extensions = ExtensionManagerImpl()

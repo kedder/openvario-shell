@@ -1,19 +1,15 @@
 import os
+import subprocess
 
 from ovshell import protocol
 
 
 class OpenVarioOSImpl(protocol.OpenVarioOS):
-    _rootfs: str = "/"
-
-    def __init__(self):
-        pass
-
     def mount_boot(self) -> None:
-        pass
+        subprocess.run(["mount", "/dev/mmcblk0p1", "/boot"], check=True)
 
     def unmount_boot(self) -> None:
-        pass
+        subprocess.run(["umount", "/boot"], check=True)
 
     def read_file(self, filename: str) -> bytes:
         fpath = self._normalize_path(filename)
@@ -27,7 +23,7 @@ class OpenVarioOSImpl(protocol.OpenVarioOS):
 
     def _normalize_path(self, fname: str) -> str:
         assert fname.startswith("/"), "Absolute path is required"
-        return os.path.join(self._rootfs, fname[1:])
+        return fname
 
 
 class OpenVarioOSSimulator(OpenVarioOSImpl):
@@ -43,3 +39,7 @@ class OpenVarioOSSimulator(OpenVarioOSImpl):
     def unmount_boot(self) -> None:
         mountpath = os.path.join(self._rootfs, "boot")
         os.unlink(mountpath)
+
+    def _normalize_path(self, fname: str) -> str:
+        fname = super()._normalize_path(fname)
+        return os.path.join(self._rootfs, fname[1:])
