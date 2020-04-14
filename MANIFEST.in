@@ -1,0 +1,5 @@
+graft src/ovshell*
+graft tests
+include LICENSE
+global-exclude __pycache__
+global-exclude *.py[co]
