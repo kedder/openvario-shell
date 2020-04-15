@@ -159,10 +159,30 @@ class ExtensionManager(Protocol):
         pass
 
 
+@dataclass
+class AppInfo:
+    id: str
+    app: App
+    extension: Extension
+    pinned: bool
+
+
+class AppManager(Protocol):
+    def list(self) -> Iterable[AppInfo]:
+        pass
+
+    def pin(self, app: AppInfo, persist: bool = False) -> None:
+        pass
+
+    def unpin(self, app: AppInfo, persist: bool = False) -> None:
+        pass
+
+
 class OpenVarioShell(Protocol):
     screen: ScreenManager
     settings: StoredSettings
     extensions: ExtensionManager
+    apps: AppManager
     os: OpenVarioOS
 
     @abstractmethod

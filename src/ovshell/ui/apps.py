@@ -1,4 +1,4 @@
-from typing import Sequence, List, Optional
+from typing import Optional
 
 import urwid
 
@@ -7,10 +7,10 @@ from ovshell import widget
 
 
 class AppRowItem(urwid.WidgetWrap):
-    def __init__(self, app: protocol.App) -> None:
-        self._app = app
-        self._title_w = urwid.Text(app.title)
-        self._descr_w = urwid.Text(app.description)
+    def __init__(self, appinfo: protocol.AppInfo) -> None:
+        self._app = appinfo.app
+        self._title_w = urwid.Text(appinfo.app.title)
+        self._descr_w = urwid.Text(appinfo.app.description)
         cols = urwid.Columns(
             [("weight", 1, self._title_w), ("weight", 3, self._descr_w)]
         )
@@ -35,8 +35,8 @@ class AppsActivity(protocol.Activity):
         header = widget.ActivityHeader("Applications")
 
         menuitems = []
-        for app in self._get_apps():
-            menuitems.append(AppRowItem(app))
+        for appinfo in self.shell.apps.list():
+            menuitems.append(AppRowItem(appinfo))
 
         menu = urwid.Pile(menuitems)
 
@@ -44,10 +44,3 @@ class AppsActivity(protocol.Activity):
             urwid.Pile([header, urwid.Padding(menu, align=urwid.CENTER)]), "top"
         )
         return view
-
-    def _get_apps(self) -> Sequence[protocol.App]:
-        settings: List[protocol.App] = []
-        for ext in self.shell.extensions.list_extensions():
-            settings.extend(ext.list_apps())
-
-        return sorted(settings, key=lambda s: -s.priority)
