@@ -60,13 +60,19 @@ class MainMenuActivity(protocol.Activity):
         btxt = urwid.BigText("Openvario", urwid.font.Thin6x6Font())
         logo = urwid.Padding(btxt, "center", "clip")
 
-        m_apps = widget.SelectableListItem("Apps")
+        m_pinned_apps = self._get_pinned_apps()
+        if m_pinned_apps:
+            m_pinned_apps.append(urwid.Divider())
+
+        m_apps = widget.SelectableListItem("Applications")
         urwid.connect_signal(m_apps, "click", self._on_apps)
         m_settings = widget.SelectableListItem("Settings")
         urwid.connect_signal(m_settings, "click", self._on_settings)
         m_shutdown = widget.SelectableListItem("Shut down")
         urwid.connect_signal(m_shutdown, "click", self._on_quit)
-        menu = urwid.Pile([m_apps, m_settings, urwid.Divider(), m_shutdown])
+        menu = urwid.Pile(
+            m_pinned_apps + [m_apps, m_settings, urwid.Divider(), m_shutdown]
+        )
 
         view = urwid.Filler(
             urwid.Pile(
@@ -86,6 +92,20 @@ class MainMenuActivity(protocol.Activity):
         urwid.connect_signal(view, "cancel", self._on_quit)
         return view
 
+    def _get_pinned_apps(self) -> urwid.Widget:
+        m_items = []
+        for appinfo in self.shell.apps.list():
+            if not appinfo.pinned:
+                continue
+
+            button = widget.SelectableListItem(appinfo.app.title)
+            urwid.connect_signal(
+                button, "click", self._on_pinned_app, user_args=[appinfo]
+            )
+            m_items.append(button)
+
+        return m_items
+
     def _on_settings(self, w: urwid.Widget) -> None:
         settings_act = SettingsActivity(self.shell)
         self.shell.screen.push_activity(settings_act)
@@ -93,6 +113,9 @@ class MainMenuActivity(protocol.Activity):
     def _on_apps(self, w: urwid.Widget) -> None:
         apps_act = AppsActivity(self.shell)
         self.shell.screen.push_activity(apps_act)
+
+    def _on_pinned_app(self, appinfo: protocol.AppInfo, w: urwid.Widget) -> None:
+        appinfo.app.launch()
 
     def _on_quit(self, w: urwid.Widget) -> None:
         confirm = DialogActivity(
