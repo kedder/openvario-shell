@@ -97,6 +97,7 @@ def run(argv) -> None:
 
     shell = OpenvarioShellImpl(screen, config=args.config, rootfs=args.sim)
     shell.extensions.load_all(shell)
+    shell.apps.install_new_apps()
     asyncioloop.call_soon(startui, shell)
 
     try:

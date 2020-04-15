@@ -69,6 +69,10 @@ class App(Protocol):
     description: str
     priority: int
 
+    def install(self, appinfo: "AppInfo") -> None:
+        pass
+
+    @abstractmethod
     def launch(self) -> None:
         pass
 

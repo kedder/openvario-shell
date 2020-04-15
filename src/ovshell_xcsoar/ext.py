@@ -33,6 +33,9 @@ class XCSoarApp(protocol.App):
     def __init__(self, shell: protocol.OpenVarioShell) -> None:
         self.shell = shell
 
+    def install(self, appinfo: protocol.AppInfo) -> None:
+        self.shell.apps.pin(appinfo)
+
     def launch(self) -> None:
         self._set_orientation_in_profile()
         env = self._prep_environment()

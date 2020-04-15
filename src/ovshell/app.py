@@ -131,6 +131,23 @@ class AppManagerImpl(protocol.AppManager):
         pinned.remove(app.id)
         self._set_pinned(pinned, persist)
 
+    def install_new_apps(self) -> List[protocol.AppInfo]:
+        installed = self.shell.settings.get("ovshell.installed_apps", list) or []
+        newapps = []
+        for appinfo in self.list():
+            if appinfo.id in installed:
+                continue
+
+            print(f"Installing new app {appinfo.id}")
+            appinfo.app.install(appinfo)
+            installed.append(appinfo.id)
+            newapps.append(appinfo)
+
+        if newapps:
+            self.shell.settings.set("ovshell.installed_apps", sorted(installed), True)
+
+        return newapps
+
     def _get_pinned(self) -> Set[str]:
         return set(self.shell.settings.get("ovshell.pinned_apps", list) or [])
 
