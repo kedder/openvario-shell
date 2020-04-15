@@ -2,6 +2,7 @@ from typing import Callable, List
 
 import urwid
 
+import ovshell
 from ovshell import protocol
 from ovshell import widget
 from ovshell.ui.settings import SettingsActivity
@@ -71,7 +72,7 @@ class MainMenuActivity(protocol.Activity):
             urwid.Pile(
                 [
                     logo,
-                    # urwid.Text(self._get_version(), align=urwid.CENTER),
+                    urwid.Text(self._get_version(), align=urwid.CENTER),
                     urwid.Padding(
                         urwid.LineBox(menu, "Main Menu", title_align="left"),
                         width=("relative", 40),
@@ -122,3 +123,6 @@ class MainMenuActivity(protocol.Activity):
 
     def destroy(self) -> None:
         pass
+
+    def _get_version(self) -> str:
+        return f"Version {ovshell.__version__}"
