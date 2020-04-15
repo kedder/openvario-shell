@@ -44,3 +44,8 @@ class StoredSettingsImpl(protocol.StoredSettings):
     def get(self, key: str, type: Type[JT], default: JT = None) -> Optional[JT]:
         v = self._settings.get(key, default)
         return v if isinstance(v, type) else None
+
+    def getstrict(self, key: str, type: Type[JT]) -> JT:
+        v = self.get(key, type)
+        assert v is not None
+        return v

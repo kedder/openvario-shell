@@ -23,15 +23,23 @@ JT = TypeVar("JT", bound=JsonType)
 
 
 class StoredSettings(Protocol):
+    @abstractmethod
     def setdefault(self, key: str, value: JsonType) -> None:
         pass
 
+    @abstractmethod
     def set(self, key: str, value: Optional[JsonType], save: bool = False):
         pass
 
+    @abstractmethod
     def get(self, key: str, type: Type[JT], default: JT = None) -> Optional[JT]:
         pass
 
+    @abstractmethod
+    def getstrict(self, key: str, type: Type[JT]) -> JT:
+        pass
+
+    @abstractmethod
     def save(self) -> None:
         pass
 
@@ -120,6 +128,10 @@ class OpenVarioOS(Protocol):
 
     @abstractmethod
     def write_file(self, filename: str, content: bytes) -> None:
+        pass
+
+    @abstractmethod
+    def host_path(self, path: str) -> str:
         pass
 
 

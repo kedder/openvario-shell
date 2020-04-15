@@ -24,9 +24,9 @@ class RotationSetting(StaticChoiceSetting):
     def get_choices(self) -> Sequence[Tuple[str, str]]:
         return [
             ("0", "Landscape"),
-            ("1", "Portrait (90)"),
-            ("2", "Landscape (180)"),
-            ("3", "Portrait (270)"),
+            ("1", "Portrait (90°)"),
+            ("2", "Landscape (180°)"),
+            ("3", "Portrait (270°)"),
         ]
 
     def _apply_rotation(self, rotation: str) -> None:
@@ -40,7 +40,12 @@ class RotationSetting(StaticChoiceSetting):
         os.unmount_boot()
 
         # For some weird reason 90 degree rotation is inverted for fbcon
-        fbcon_rotmap = {"0": b"0", "1": b"3", "2": b"2", "3": b"1"}
+        fbcon_rotmap = {
+            "0": b"0",  # normal
+            "1": b"3",  # portrait (90)
+            "2": b"2",  # landscape (180)
+            "3": b"1",  # portrait (270)
+        }
         os.write_file("/sys/class/graphics/fbcon/rotate_all", fbcon_rotmap[rotation])
 
 
