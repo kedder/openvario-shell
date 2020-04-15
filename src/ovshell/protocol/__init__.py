@@ -123,6 +123,10 @@ class OpenVarioOS(Protocol):
         pass
 
     @abstractmethod
+    def file_exists(self, filename: str) -> bool:
+        pass
+
+    @abstractmethod
     def read_file(self, filename: str) -> bytes:
         pass
 
