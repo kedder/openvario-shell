@@ -52,6 +52,18 @@ class DialogActivity(protocol.Activity):
             self.screen.pop_activity()
 
 
+class FinalScreenActivity(protocol.Activity):
+    def __init__(self, message: str) -> None:
+        self.message = message
+
+    def create(self) -> urwid.Widget:
+        msg = urwid.Text(self.message)
+        haligned = urwid.Padding(msg, width=len(self.message), align="center")
+        valigned = urwid.Filler(haligned, "middle")
+        # Wrap in KeySignals to intercept all escape keypresses
+        return widget.KeySignals(valigned)
+
+
 class MainMenuActivity(protocol.Activity):
     def __init__(self, shell: protocol.OpenVarioShell) -> None:
         self.shell = shell
@@ -130,16 +142,20 @@ class MainMenuActivity(protocol.Activity):
         self.shell.screen.push_modal(confirm, confirm.modal_opts)
 
     def _on_shutdown(self) -> bool:
-        self.shell.quit()
-        return True
+        self.shell.screen.push_activity(
+            FinalScreenActivity("Openvario shutting down...")
+        )
+        self.shell.os.shut_down()
+        return False
 
     def _on_exit(self) -> bool:
         self.shell.quit()
         return True
 
     def _on_restart(self) -> bool:
-        self.shell.quit()
-        return True
+        self.shell.screen.push_activity(FinalScreenActivity("Openvario restarting..."))
+        self.shell.os.restart()
+        return False
 
     def activate(self) -> None:
         pass

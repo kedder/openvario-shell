@@ -1,3 +1,4 @@
+import sys
 import os
 import subprocess
 
@@ -28,6 +29,12 @@ class OpenVarioOSImpl(protocol.OpenVarioOS):
         assert fname.startswith("/"), "Absolute path is required"
         return fname
 
+    def shut_down(self) -> None:
+        subprocess.run(["halt"])
+
+    def restart(self) -> None:
+        subprocess.run(["reboot"])
+
 
 class OpenVarioOSSimulator(OpenVarioOSImpl):
     def __init__(self, rootfs: str) -> None:
@@ -46,3 +53,11 @@ class OpenVarioOSSimulator(OpenVarioOSImpl):
     def host_path(self, fname: str) -> str:
         fname = super().host_path(fname)
         return os.path.join(self._rootfs, fname[1:])
+
+    def shut_down(self) -> None:
+        print("Shut down requested")
+        sys.exit(1)
+
+    def restart(self) -> None:
+        print("Restart requested")
+        sys.exit(2)

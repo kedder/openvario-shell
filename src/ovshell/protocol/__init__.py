@@ -142,6 +142,14 @@ class OpenVarioOS(Protocol):
     def host_path(self, path: str) -> str:
         pass
 
+    @abstractmethod
+    def shut_down(self) -> None:
+        pass
+
+    @abstractmethod
+    def restart(self) -> None:
+        pass
+
 
 class Extension(Protocol):
     id: str
