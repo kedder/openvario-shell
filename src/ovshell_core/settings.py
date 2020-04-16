@@ -33,11 +33,12 @@ class RotationSetting(StaticChoiceSetting):
         os = self.shell.os
         rchar = rotation.encode()
 
-        os.mount_boot()
+        if not os.file_exists("/boot/config.uEnv"):
+            os.mount_boot()
+
         uenvconf = os.read_file("/boot/config.uEnv")
         uenvconf = re.sub(rb"rotation=[0-3]", b"rotation=" + rchar, uenvconf)
         os.write_file("/boot/config.uEnv", uenvconf)
-        os.unmount_boot()
 
         # For some weird reason 90 degree rotation is inverted for fbcon
         fbcon_rotmap = {

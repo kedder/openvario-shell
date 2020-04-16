@@ -91,6 +91,7 @@ class MainMenuActivity(protocol.Activity):
                 [
                     logo,
                     urwid.Text(self._get_version(), align=urwid.CENTER),
+                    urwid.Divider(),
                     urwid.Padding(
                         urwid.LineBox(menu, "Main Menu", title_align="left"),
                         width=("relative", 40),
