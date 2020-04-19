@@ -37,6 +37,13 @@ $ opkg install openvario-shell openvario-shell-autostart --force-removal-of-depe
 After executing these commands, `ovshell` command should be available. It will
 start automatically next time Openvario boots up.
 
+In case you didn't like it and would like to return to stock Openvario menu,
+run this command:
+
+```sh
+$ opkg install ovmenu-ng ovmenu-ng-autostart --force-removal-of-dependent-packages
+```
+
 ## Development
 
 It is not required to own or have access to Openvario device in order to
