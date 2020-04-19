@@ -42,7 +42,10 @@ class StaticChoiceSetting(protocol.Setting):
         # Generate choice widget
         menuitems = []
         focus = None
-        for key, label in self.get_choices():
+        choices = self.get_choices()
+        height = len(choices)
+        width = 0
+        for key, label in choices:
             mi = widget.SelectableListItem(label)
             urwid.connect_signal(
                 mi, "click", self._choice_clicked, user_args=[activator, key]
@@ -50,6 +53,9 @@ class StaticChoiceSetting(protocol.Setting):
             if self.value == key:
                 focus = mi
             menuitems.append(mi)
+
+            if len(label) > width:
+                width = len(label)
 
         menu = urwid.Pile(menuitems, focus)
 
@@ -62,7 +68,7 @@ class StaticChoiceSetting(protocol.Setting):
         urwid.connect_signal(
             signals, "cancel", self._choice_cancelled, user_args=[activator]
         )
-        activator.open_value_popup(signals)
+        activator.open_value_popup(signals, width + 2, height + 2)
 
     def _choice_clicked(
         self, activator: protocol.SettingActivator, key: str, w: urwid.Widget
@@ -82,8 +88,8 @@ class SettingActivatorImpl(protocol.SettingActivator):
     def __init__(self, popup_launcher: "SettingsPopUpLauncher"):
         self.popup_launcher = popup_launcher
 
-    def open_value_popup(self, content: urwid.Widget) -> None:
-        self.popup_launcher.popup = content
+    def open_value_popup(self, content: urwid.Widget, width: int, height: int) -> None:
+        self.popup_launcher.set_popup(content, width, height)
         self.popup_launcher.open_pop_up()
 
     def close_value_popup(self) -> None:
@@ -124,12 +130,24 @@ class SettingsPopUpLauncher(urwid.PopUpLauncher):
     def __init__(self, setting: protocol.Setting, widget: urwid.Widget) -> None:
         super().__init__(widget)
         self.popup = None
+        self.popup_width = 20
+        self.popup_height = 10
+
+    def set_popup(self, popup: urwid.Widget, width: int, height: int) -> None:
+        self.popup = popup
+        self.popup_width = width
+        self.popup_height = height
 
     def create_pop_up(self) -> urwid.Widget:
         return self.popup
 
     def get_pop_up_parameters(self) -> dict:
-        return {"left": -1, "top": 1, "overlay_width": 30, "overlay_height": 10}
+        return {
+            "left": -1,
+            "top": 1,
+            "overlay_width": self.popup_width,
+            "overlay_height": self.popup_height,
+        }
 
 
 class SettingsActivity:

@@ -46,7 +46,7 @@ class StoredSettings(Protocol):
 
 class SettingActivator(Protocol):
     @abstractmethod
-    def open_value_popup(self, content: urwid.Widget) -> None:
+    def open_value_popup(self, content: urwid.Widget, width: int, height: int) -> None:
         pass
 
     @abstractmethod
