@@ -103,6 +103,42 @@ class ConsoleFontSetting(StaticChoiceSetting):
         ]
 
 
+class ScreenBrightnessSetting(StaticChoiceSetting):
+    title = "Screen brightness"
+    priority = 75
+    brightness_fname = "/sys/class/backlight/lcd/brightness"
+
+    def __init__(self, shell: protocol.OpenVarioShell):
+        self.shell = shell
+        super().__init__()
+
+    def read(self) -> Optional[str]:
+        if not self.shell.os.file_exists(self.brightness_fname):
+            return None
+        br = self.shell.os.read_file(self.brightness_fname)
+        return br.decode().strip()
+
+    def store(self, value: Optional[str]) -> None:
+        if value is None:
+            return
+        if not self.shell.os.file_exists(self.brightness_fname):
+            return
+        self.shell.os.write_file(self.brightness_fname, value.encode())
+
+    def get_choices(self) -> Sequence[Tuple[str, str]]:
+        return [
+            ("2", "20%"),
+            ("3", "30%"),
+            ("4", "40%"),
+            ("5", "50%"),
+            ("6", "60%"),
+            ("7", "70%"),
+            ("8", "80%"),
+            ("9", "90%"),
+            ("10", "100%"),
+        ]
+
+
 def apply_font(os: protocol.OpenVarioOS, font_name: str) -> None:
     setfont = os.host_path("/usr/bin/setfont")
     subprocess.run([setfont, font_name], check=True)

@@ -17,6 +17,7 @@ class CoreExtension(protocol.Extension):
         return [
             settings.RotationSetting(self.shell),
             settings.LanguageSetting(self.shell),
+            settings.ScreenBrightnessSetting(self.shell),
             settings.ConsoleFontSetting(self.shell),
         ]
 
