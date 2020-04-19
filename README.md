@@ -21,6 +21,7 @@ device that is:
 * **Simple to develop and test** -- written in Python, can be tested without
   Openvario device at hand.
 
+![Main Menu](screenshots/mainmenu.png) ![Settings](screenshots/settings.png)
 
 ## Installation
 
