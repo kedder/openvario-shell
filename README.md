@@ -31,7 +31,7 @@ internet-connected Openvario device.
 $ echo src kedder-arm http://openvario.lebedev.lt/opkg/armv7vet2hf-neon/ >> /etc/opkg/customfeeds.conf
 $ echo src kedder-all http://openvario.lebedev.lt/opkg/all/ >> /etc/opkg/customfeeds.conf
 $ opkg update
-$ opkg install openvario-shell
+$ opkg install openvario-shell openvario-shell-autostart --force-removal-of-dependent-packages
 ```
 
 After executing these commands, `ovshell` command should be available. It will
