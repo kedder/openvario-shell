@@ -11,14 +11,22 @@ class CoreExtension(protocol.Extension):
         self.id = id
         self.shell = shell
         self._init_settings()
+        self._apply_font()
 
     def list_settings(self) -> Sequence[protocol.Setting]:
         return [
             settings.RotationSetting(self.shell),
             settings.LanguageSetting(self.shell),
+            settings.ConsoleFontSetting(self.shell),
         ]
 
     def _init_settings(self) -> None:
         config = self.shell.settings
         config.setdefault("core.screen_orientation", "0")
         config.setdefault("core.language", "en_EN.UTF-8")
+
+    def _apply_font(self) -> None:
+        config = self.shell.settings
+        font = config.get("core.font", str)
+        if font is not None:
+            settings.apply_font(self.shell.os, font)

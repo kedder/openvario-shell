@@ -1,5 +1,6 @@
 from typing import Optional, Sequence, Tuple
 import re
+import subprocess
 
 from ovshell import protocol
 from ovshell.ui.settings import StaticChoiceSetting
@@ -72,3 +73,36 @@ class LanguageSetting(StaticChoiceSetting):
             ("fr_FR.UTF-8", "French"),
             ("ru_RU.UTF-8", "Russian"),
         ]
+
+
+class ConsoleFontSetting(StaticChoiceSetting):
+    title = "Font"
+    priority = 50
+    config_key = "core.font"
+
+    def __init__(self, shell: protocol.OpenVarioShell):
+        self.shell = shell
+        super().__init__()
+
+    def read(self) -> Optional[str]:
+        return self.shell.settings.get(self.config_key, str)
+
+    def store(self, value: Optional[str]) -> None:
+        if value is not None:
+            apply_font(self.shell.os, value)
+        self.shell.settings.set(self.config_key, value, save=True)
+
+    def get_choices(self) -> Sequence[Tuple[str, str]]:
+        return [
+            ("zap-ext-vga09.psf", "9x8 bold"),
+            ("zap-ext-light16.psf", "16x8 light"),
+            ("zap-ext-vga16.psf", "16x8 bold"),
+            ("zap-ext-light18.psf", "18x8 light"),
+            ("zap-ext-light20.psf", "20x10 light"),
+            ("zap-ext-light24.psf", "24x10 light"),
+        ]
+
+
+def apply_font(os: protocol.OpenVarioOS, font_name: str) -> None:
+    setfont = os.host_path("/usr/bin/setfont")
+    subprocess.run([setfont, font_name], check=True)

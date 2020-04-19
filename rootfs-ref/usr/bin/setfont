@@ -1,0 +1,2 @@
+#!/bin/sh
+notify-send -t 1000 "Openvario: $0 $1"
