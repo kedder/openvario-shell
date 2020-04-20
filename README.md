@@ -29,8 +29,8 @@ The easiest way to install is using `opkg` package manager on
 internet-connected Openvario device.
 
 ```sh
-$ echo src kedder-arm http://openvario.lebedev.lt/opkg/armv7vet2hf-neon/ >> /etc/opkg/customfeeds.conf
-$ echo src kedder-all http://openvario.lebedev.lt/opkg/all/ >> /etc/opkg/customfeeds.conf
+$ echo src/gz kedder_core http://openvario.lebedev.lt/opkg/armv7vet2hf-neon/ >> /etc/opkg/customfeeds.conf
+$ echo src/gz kedder_all http://openvario.lebedev.lt/opkg/all/ >> /etc/opkg/customfeeds.conf
 $ opkg update
 $ opkg install openvario-shell openvario-shell-autostart --force-removal-of-dependent-packages
 ```
