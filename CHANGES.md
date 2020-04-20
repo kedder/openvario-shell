@@ -1,7 +1,7 @@
 Changelog for openvario-shell
 =============================
 
-0.2 (unreleased)
+0.2 (2020-04-20)
 ----------------
 
 - Initial release
