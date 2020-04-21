@@ -1,7 +1,9 @@
-from typing import List, Tuple, Iterable, Set, Optional, cast
+from typing import List, Tuple, Iterable, Set, Optional, Dict, cast
 import pkg_resources
+from dataclasses import dataclass
 
 import urwid
+from urwid import signals
 
 from ovshell.protocol import ScreenManager, Activity, OpenVarioShell
 from ovshell.protocol import Extension, ExtensionFactory
@@ -9,6 +11,13 @@ from ovshell import widget
 from ovshell import protocol
 from ovshell import settings
 from ovshell import ovos
+
+
+@dataclass
+class ActivityContext:
+    activity: protocol.Activity
+    widget: urwid.Widget
+    palette: Dict[str, Tuple]
 
 
 class TopBar(urwid.WidgetWrap):
@@ -27,7 +36,7 @@ class ScreenManagerImpl(ScreenManager):
         self._mainloop = mainloop
         self._main_view = urwid.WidgetPlaceholder(urwid.SolidFill(" "))
         self.layout = self._create_layout()
-        self._act_stack: List[Tuple[Activity, urwid.Widget]] = []
+        self._act_stack: List[ActivityContext] = []
 
         self._mainloop.widget = self.layout
 
@@ -37,15 +46,20 @@ class ScreenManagerImpl(ScreenManager):
         self._main_view.original_widget = splash
         return urwid.Frame(self._main_view, header=TopBar(), footer=FooterBar())
 
-    def push_activity(self, activity: Activity) -> None:
+    def push_activity(self, activity: Activity, palette: List[Tuple] = None) -> None:
         w = activity.create()
         signals = widget.KeySignals(urwid.AttrMap(w, widget.NORMAL_ATTR_MAP))
         urwid.connect_signal(
             signals, "cancel", self._cancel_activity, user_args=[activity]
         )
+        if palette is not None:
+            self._mainloop.screen.register_palette(palette)
+            self._mainloop.screen.clear()
         self._main_view.original_widget = signals
         activity.activate()
-        self._act_stack.append((activity, signals))
+        self._act_stack.append(
+            ActivityContext(activity, signals, palette=self._get_palette())
+        )
 
     def push_modal(self, activity: Activity, options: protocol.ModalOptions) -> None:
         bg = self._main_view.original_widget
@@ -71,18 +85,41 @@ class ScreenManagerImpl(ScreenManager):
         )
         self._main_view.original_widget = modal
         activity.activate()
-        self._act_stack.append((activity, modal))
+        self._act_stack.append(
+            ActivityContext(activity, modal, palette=self._get_palette())
+        )
 
     def pop_activity(self) -> None:
-        oldact, oldw = self._act_stack.pop()
-        oldact.destroy()
+        curactctx = self._act_stack.pop()
+        curactctx.activity.destroy()
 
-        newact, curw = self._act_stack[-1]
-        self._main_view.original_widget = curw
-        newact.activate()
+        prevactctx = self._act_stack[-1]
+        self._main_view.original_widget = prevactctx.widget
+        prevactctx.activity.activate()
+        self._reset_palette(prevactctx.palette)
 
     def _cancel_activity(self, activity: Activity, w: urwid.Widget) -> None:
         self.pop_activity()
+
+    def _get_palette(self) -> Dict[str, Tuple]:
+        return self._mainloop.screen._palette.copy()
+
+    def _reset_palette(self, palette: Dict[str, Tuple]):
+        # Reset the palette for activity. We use a bit of urwid implementation
+        # details here, because of lack of public way to do this.
+        self._mainloop.screen._palette = palette.copy()
+        for name, entry in palette.items():
+            (basic, mono, high_88, high_true) = entry
+            signals.emit_signal(
+                self._mainloop.screen,
+                urwid.UPDATE_PALETTE_ENTRY,
+                name,
+                basic,
+                mono,
+                high_88,
+                high_true,
+            )
+        self._mainloop.screen.clear()
 
 
 class ExtensionManagerImpl(protocol.ExtensionManager):

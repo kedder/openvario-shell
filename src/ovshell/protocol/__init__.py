@@ -105,7 +105,9 @@ class ModalOptions:
 
 class ScreenManager(Protocol):
     @abstractmethod
-    def push_activity(self, activity: Activity) -> None:
+    def push_activity(
+        self, activity: Activity, palette: Optional[List[Tuple]] = None
+    ) -> None:
         pass
 
     @abstractmethod
