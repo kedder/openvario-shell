@@ -86,14 +86,11 @@ def run(argv) -> None:
     asyncioloop = asyncio.get_event_loop()
     evl = urwid.AsyncioEventLoop(loop=asyncioloop)
 
-    screen = ScreenManagerImpl()
     urwidloop = urwid.MainLoop(
-        screen.layout,
-        palette=palette,
-        event_loop=evl,
-        input_filter=debounce_esc,
-        pop_ups=True,
+        None, palette=palette, event_loop=evl, input_filter=debounce_esc, pop_ups=True,
     )
+
+    screen = ScreenManagerImpl(urwidloop)
 
     shell = OpenvarioShellImpl(screen, config=args.config, rootfs=args.sim)
     shell.extensions.load_all(shell)

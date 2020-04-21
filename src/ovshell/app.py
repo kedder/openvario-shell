@@ -23,10 +23,13 @@ class FooterBar(urwid.WidgetWrap):
 
 
 class ScreenManagerImpl(ScreenManager):
-    def __init__(self) -> None:
+    def __init__(self, mainloop: urwid.MainLoop) -> None:
+        self._mainloop = mainloop
         self._main_view = urwid.WidgetPlaceholder(urwid.SolidFill(" "))
         self.layout = self._create_layout()
         self._act_stack: List[Tuple[Activity, urwid.Widget]] = []
+
+        self._mainloop.widget = self.layout
 
     def _create_layout(self) -> urwid.Widget:
         btxt = urwid.BigText("Openvario", urwid.font.Thin6x6Font())
