@@ -33,7 +33,7 @@ setup(
         "dev": ["black", "mypy"],
         "test": ["pytest", "pytest-coverage", "pytest-asyncio", "pytest-mock"],
     },
-    package_data={},
+    package_data={"ovshell": ["py.typed"]},
     data_files=[],
     entry_points={
         "console_scripts": ["ovshell=ovshell.main:main"],

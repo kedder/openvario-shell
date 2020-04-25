@@ -3,3 +3,4 @@ graft tests
 include LICENSE
 global-exclude __pycache__
 global-exclude *.py[co]
+global-include py.typed
