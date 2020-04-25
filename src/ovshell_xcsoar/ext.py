@@ -1,4 +1,4 @@
-from typing import Sequence, Dict
+from typing import Sequence, Dict, List
 import subprocess
 import os
 
@@ -69,10 +69,10 @@ class XCSoarApp(protocol.App):
         orientation = self.shell.settings.getstrict("core.screen_orientation", str)
         xcsoar_orient = orient_map[orientation]
 
-        prf_fname = self._find_xcsoar_profile()
-        prf = XCSoarProfile(prf_fname)
-        prf.set_orientation(xcsoar_orient)
-        prf.save()
+        for prf_fname in self._find_xcsoar_profiles():
+            prf = XCSoarProfile(prf_fname)
+            prf.set_orientation(xcsoar_orient)
+            prf.save()
 
     def _prep_environment(self) -> Dict[str, str]:
         env = os.environ.copy()
@@ -88,17 +88,16 @@ class XCSoarApp(protocol.App):
         binary = os.path(self.shell.settings.getstrict("xcsoar.binary", str))
         return [binary, "-fly"]
 
-    def _find_xcsoar_profile(self) -> str:
+    def _find_xcsoar_profiles(self) -> List[str]:
         xcs_home = self.shell.settings.getstrict("xcsoar.home", str)
         xcs_home = self.shell.os.path(xcs_home)
 
-        profiles = ["openvario.prf", "default.prf"]
-        for fname in profiles:
-            prf_fname = os.path.join(xcs_home, fname)
-            if os.path.exists(prf_fname):
-                return prf_fname
+        profiles = []
+        for fname in os.listdir(xcs_home):
+            if fname.endswith(".prf"):
+                profiles.append(os.path.join(xcs_home, fname))
 
-        raise RuntimeError(f"Cannot find XCSoar profile in {xcs_home}")
+        return profiles
 
 
 class AppOutputActivity(protocol.Activity):
@@ -142,7 +141,6 @@ class XCSoarProfile:
                 self.lines[n] = modified_line
                 self._dirty = v != value
                 break
-
         else:
             self.lines.append(modified_line)
             self._dirty = True
