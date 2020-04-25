@@ -20,8 +20,8 @@ class XCSoarExtension(protocol.Extension):
 
     def _init_settings(self) -> None:
         config = self.shell.settings
-        config.setdefault("xcsoar.binary", "/opt/XCSoar/bin/xcsoar")
-        config.setdefault("xcsoar.home", "/home/root/.xcsoar")
+        config.setdefault("xcsoar.binary", "//opt/XCSoar/bin/xcsoar")
+        config.setdefault("xcsoar.home", "//home/root/.xcsoar")
 
 
 class XCSoarApp(protocol.App):
@@ -70,7 +70,7 @@ class XCSoarApp(protocol.App):
         xcsoar_orient = orient_map[orientation]
 
         prf_fname = self._find_xcsoar_profile()
-        prf = XCSoarProfile(self.shell.os, prf_fname)
+        prf = XCSoarProfile(prf_fname)
         prf.set_orientation(xcsoar_orient)
         prf.save()
 
@@ -85,16 +85,17 @@ class XCSoarApp(protocol.App):
 
     def _make_commandline(self) -> Sequence[str]:
         os = self.shell.os
-        binary = os.host_path(self.shell.settings.getstrict("xcsoar.binary", str))
+        binary = os.path(self.shell.settings.getstrict("xcsoar.binary", str))
         return [binary, "-fly"]
 
     def _find_xcsoar_profile(self) -> str:
         xcs_home = self.shell.settings.getstrict("xcsoar.home", str)
+        xcs_home = self.shell.os.path(xcs_home)
 
         profiles = ["openvario.prf", "default.prf"]
         for fname in profiles:
             prf_fname = os.path.join(xcs_home, fname)
-            if self.shell.os.file_exists(prf_fname):
+            if os.path.exists(prf_fname):
                 return prf_fname
 
         raise RuntimeError(f"Cannot find XCSoar profile in {xcs_home}")
@@ -112,25 +113,26 @@ class AppOutputActivity(protocol.Activity):
 
 
 class XCSoarProfile:
-    def __init__(self, os: protocol.OpenVarioOS, filename: str) -> None:
+    def __init__(self, filename: str) -> None:
         self.os = os
         self.filename = filename
 
-        profile = os.read_file(filename)
-        self.lines = profile.split(b"\n")
+        with open(filename, "r") as f:
+            self.lines = f.readlines()
 
     def save(self) -> None:
-        content = b"\n".join(self.lines)
-        self.os.write_file(self.filename, content)
+        content = "\n".join(self.lines)
+        with open(self.filename, "w") as f:
+            f.write(content)
 
     def set_orientation(self, orientation: str) -> None:
         self._set_option("DisplayOrientation", orientation)
 
     def _set_option(self, key: str, value: str) -> None:
-        modified_line = f'{key}="{value}"'.encode()
+        modified_line = f'{key}="{value}"'
         bkey = key.encode()
         for n, line in enumerate(self.lines):
-            k, v = line.split(b"=", maxsplit=1)
+            k, v = line.split("=", maxsplit=1)
             if k == bkey:
                 self.lines[n] = modified_line
                 break

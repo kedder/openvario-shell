@@ -129,19 +129,7 @@ class OpenVarioOS(Protocol):
         pass
 
     @abstractmethod
-    def file_exists(self, filename: str) -> bool:
-        pass
-
-    @abstractmethod
-    def read_file(self, filename: str) -> bytes:
-        pass
-
-    @abstractmethod
-    def write_file(self, filename: str, content: bytes) -> None:
-        pass
-
-    @abstractmethod
-    def host_path(self, path: str) -> str:
+    def path(self, path: str) -> str:
         pass
 
     @abstractmethod

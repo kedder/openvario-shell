@@ -1,4 +1,5 @@
 from typing import Optional, Sequence, Tuple
+import os
 import re
 import subprocess
 
@@ -31,24 +32,29 @@ class RotationSetting(StaticChoiceSetting):
         ]
 
     def _apply_rotation(self, rotation: str) -> None:
-        os = self.shell.os
-        rchar = rotation.encode()
+        ovos = self.shell.os
 
-        if not os.file_exists("/boot/config.uEnv"):
-            os.mount_boot()
+        uenvconf_fname = ovos.path("//boot/config.uEnv")
+        if not os.path.exists(uenvconf_fname):
+            ovos.mount_boot()
 
-        uenvconf = os.read_file("/boot/config.uEnv")
-        uenvconf = re.sub(rb"rotation=[0-3]", b"rotation=" + rchar, uenvconf)
-        os.write_file("/boot/config.uEnv", uenvconf)
+        with open(uenvconf_fname, "r") as f:
+            uenvconf = f.read()
+
+        uenvconf = re.sub(r"rotation=[0-3]", "rotation=" + rotation, uenvconf)
+
+        with open(uenvconf_fname, "w") as f:
+            f.write(uenvconf)
 
         # For some weird reason 90 degree rotation is inverted for fbcon
         fbcon_rotmap = {
-            "0": b"0",  # normal
-            "1": b"3",  # portrait (90)
-            "2": b"2",  # landscape (180)
-            "3": b"1",  # portrait (270)
+            "0": "0",  # normal
+            "1": "3",  # portrait (90)
+            "2": "2",  # landscape (180)
+            "3": "1",  # portrait (270)
         }
-        os.write_file("/sys/class/graphics/fbcon/rotate_all", fbcon_rotmap[rotation])
+        with open(ovos.path("//sys/class/graphics/fbcon/rotate_all"), "w") as f:
+            f.write(fbcon_rotmap[rotation])
 
 
 class LanguageSetting(StaticChoiceSetting):
@@ -106,24 +112,33 @@ class ConsoleFontSetting(StaticChoiceSetting):
 class ScreenBrightnessSetting(StaticChoiceSetting):
     title = "Screen brightness"
     priority = 75
-    brightness_fname = "/sys/class/backlight/lcd/brightness"
+    brightness_fname = "//sys/class/backlight/lcd/brightness"
 
     def __init__(self, shell: protocol.OpenVarioShell):
         self.shell = shell
         super().__init__()
 
     def read(self) -> Optional[str]:
-        if not self.shell.os.file_exists(self.brightness_fname):
+        br_fname = self.shell.os.path(self.brightness_fname)
+        if not os.path.exists(br_fname):
             return None
-        br = self.shell.os.read_file(self.brightness_fname)
-        return br.decode().strip()
+
+        with open(br_fname, "r") as f:
+            br = f.read()
+
+        return br.strip()
 
     def store(self, value: Optional[str]) -> None:
         if value is None:
             return
-        if not self.shell.os.file_exists(self.brightness_fname):
+
+        br_fname = self.shell.os.path(self.brightness_fname)
+
+        if not os.path.exists(br_fname):
             return
-        self.shell.os.write_file(self.brightness_fname, value.encode())
+
+        with open(br_fname, "w") as f:
+            f.write(value)
 
     def get_choices(self) -> Sequence[Tuple[str, str]]:
         return [
@@ -140,5 +155,5 @@ class ScreenBrightnessSetting(StaticChoiceSetting):
 
 
 def apply_font(os: protocol.OpenVarioOS, font_name: str) -> None:
-    setfont = os.host_path("/usr/bin/setfont")
+    setfont = os.path("//usr/bin/setfont")
     subprocess.run([setfont, font_name], check=True)
