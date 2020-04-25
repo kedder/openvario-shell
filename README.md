@@ -4,6 +4,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/kedder/openvario-shell/badge.svg)](https://coveralls.io/github/kedder/openvario-shell)
 [![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Maintainability](https://api.codeclimate.com/v1/badges/9e92cde06a8859dd1220/maintainability)](https://codeclimate.com/github/kedder/openvario-shell/maintainability)
 
 This is a replacement for stock main menu shipped with official
 [Openvario](https://openvario.org/) images. It is implemented in Python and
