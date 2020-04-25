@@ -48,3 +48,24 @@ def test_xcsoarprofile_empty_profile(tmp_path) -> None:
 
     assert 'DisplayOrientation="3"' in newconf
     assert len(newconf.split("\n")) == 2
+
+
+def test_xcsoarprofile_no_write_without_change(tmp_path) -> None:
+    # We don't want to write to profile if no change is made
+
+    # GIVEN
+    prf_fname = os.path.join(tmp_path, "default.prf")
+    with open(os.path.join(prf_fname), "w") as f:
+        f.write(SAMPLE_PROFILE)
+
+    prf = XCSoarProfile(prf_fname)
+    # Set the access time to some past value. It will not change if we don't
+    # touch the file.
+    os.utime(prf_fname, (0, 0))
+
+    # WHEN
+    prf.set_orientation("0")
+    prf.save()
+
+    # THEN
+    assert os.path.getmtime(prf_fname) == 0

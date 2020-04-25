@@ -116,11 +116,14 @@ class XCSoarProfile:
     def __init__(self, filename: str) -> None:
         self.os = os
         self.filename = filename
+        self._dirty = False
 
         with open(filename, "r") as f:
             self.lines = f.readlines()
 
     def save(self) -> None:
+        if not self._dirty:
+            return
         content = "".join(self.lines)
         with open(self.filename, "w") as f:
             f.write(content)
@@ -134,8 +137,12 @@ class XCSoarProfile:
             if "=" not in line:
                 continue
             k, v = line.split("=", maxsplit=1)
+            v = v.strip('\n"')
             if k == key:
                 self.lines[n] = modified_line
+                self._dirty = v != value
                 break
+
         else:
             self.lines.append(modified_line)
+            self._dirty = True
