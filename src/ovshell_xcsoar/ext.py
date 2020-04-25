@@ -121,7 +121,7 @@ class XCSoarProfile:
             self.lines = f.readlines()
 
     def save(self) -> None:
-        content = "\n".join(self.lines)
+        content = "".join(self.lines)
         with open(self.filename, "w") as f:
             f.write(content)
 
@@ -129,11 +129,12 @@ class XCSoarProfile:
         self._set_option("DisplayOrientation", orientation)
 
     def _set_option(self, key: str, value: str) -> None:
-        modified_line = f'{key}="{value}"'
-        bkey = key.encode()
+        modified_line = f'{key}="{value}"\n'
         for n, line in enumerate(self.lines):
+            if "=" not in line:
+                continue
             k, v = line.split("=", maxsplit=1)
-            if k == bkey:
+            if k == key:
                 self.lines[n] = modified_line
                 break
         else:
