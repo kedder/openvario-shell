@@ -8,7 +8,10 @@ test:
 	pytest tests
 
 coverage:
-	pytest --cov=ovshell --cov-report=html --cov-report=term tests
+	pytest \
+		--cov=ovshell --cov=ovshell_xcsoar --cov=ovshell_core \
+		--cov-report=html --cov-report=term \
+		tests
 
 .PHONY: black-check
 black-check:
