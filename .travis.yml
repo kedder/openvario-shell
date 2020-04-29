@@ -8,6 +8,6 @@ install:
 script:
   - pytest --cov=ovshell --cov=ovshell_xcsoar --cov=ovshell_core --cov-report=term tests
   - black --check setup.py src tests
-  - mypy src tests/*
+  - mypy src tests
 after_success:
   coveralls
