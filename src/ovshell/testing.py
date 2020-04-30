@@ -20,21 +20,30 @@ class ExtensionManagerStub(protocol.ExtensionManager):
 
 
 class ScreenManagerStub(protocol.ScreenManager):
+    _log: List[str]
+    _activities: List[protocol.Activity]
+
     def __init__(self, log: List[str]) -> None:
         self._log = log
+        self._activities = []
 
     def push_activity(
         self, activity: protocol.Activity, palette: Optional[List[Tuple]] = None
     ) -> None:
-        pass
+        self._activities.append(activity)
 
     def pop_activity(self) -> None:
-        pass
+        self._activities.pop()
 
     def push_modal(
         self, activity: protocol.Activity, options: protocol.ModalOptions
     ) -> None:
-        pass
+        self._activities.append(activity)
+
+    def stub_top_activity(self) -> Optional[protocol.Activity]:
+        if not self._activities:
+            return None
+        return self._activities[-1]
 
 
 class StoredSettingsStub(protocol.StoredSettings):
