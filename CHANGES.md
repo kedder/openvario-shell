@@ -1,7 +1,7 @@
 Changelog for openvario-shell
 =============================
 
-0.3 (unreleased)
+0.3 (2020-04-30)
 ----------------
 
 - Initial API to support 3rd party apps
