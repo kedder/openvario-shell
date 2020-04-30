@@ -75,9 +75,15 @@ class LanguageSetting(StaticChoiceSetting):
     def get_choices(self) -> Sequence[Tuple[str, str]]:
         return [
             ("en_EN.UTF-8", "English"),
-            ("de_DE.UTF-8", "German"),
-            ("fr_FR.UTF-8", "French"),
-            ("ru_RU.UTF-8", "Russian"),
+            ("de_DE.UTF-8", "Deutsch"),
+            ("fr_FR.UTF-8", "Française"),
+            ("it_IT.UTF-8", "Italiano"),
+            ("hu_HU.UTF-8", "Magyar"),
+            ("pl_PL.UTF-8", "Polski"),
+            ("cs_CZ.UTF-8", "Český"),
+            ("sk_SK.UTF-8", "Slovenský"),
+            ("lt_LT.UTF-8", "Lietuvių"),
+            ("ru_RU.UTF-8", "Русский"),
         ]
 
 

@@ -8,6 +8,8 @@ Changelog for openvario-shell
 
 - Do not write to xcsoar profile on startup if no changes are made
 
+- Add more language choices for XCSoar
+
 
 0.2 (2020-04-20)
 ----------------
