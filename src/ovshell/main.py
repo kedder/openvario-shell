@@ -5,7 +5,8 @@ import asyncio
 
 import urwid
 
-from ovshell.app import OpenvarioShellImpl, ScreenManagerImpl
+from ovshell.app import OpenvarioShellImpl
+from ovshell.screen import ScreenManagerImpl
 from ovshell.ui.mainmenu import MainMenuActivity
 
 parser = argparse.ArgumentParser(description="Shell for Openvario")
