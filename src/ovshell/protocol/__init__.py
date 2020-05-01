@@ -9,13 +9,16 @@ from typing import (
     Tuple,
     TypeVar,
     Type,
+    Coroutine,
 )
 from typing_extensions import Protocol
 from abc import abstractmethod
 from dataclasses import dataclass
+import asyncio
 
 import urwid
 
+UrwidText = Union[str, Tuple[str, str], List[Tuple[str, str]]]
 BasicType = Union[int, str, float]
 JsonType = Union[BasicType, List[BasicType], Dict[str, BasicType]]
 
@@ -116,6 +119,10 @@ class ScreenManager(Protocol):
 
     @abstractmethod
     def push_modal(self, activity: Activity, options: ModalOptions) -> None:
+        pass
+
+    @abstractmethod
+    def spawn_task(self, activity: Activity, coro: Coroutine) -> asyncio.Task:
         pass
 
 

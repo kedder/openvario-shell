@@ -1,5 +1,6 @@
-from typing import List, Iterable, Tuple, Optional, TypeVar, Type, Dict
+from typing import List, Iterable, Tuple, Optional, TypeVar, Type, Dict, Coroutine
 import os
+import asyncio
 
 from ovshell import protocol
 
@@ -39,6 +40,9 @@ class ScreenManagerStub(protocol.ScreenManager):
         self, activity: protocol.Activity, options: protocol.ModalOptions
     ) -> None:
         self._activities.append(activity)
+
+    def spawn_task(self, activity: protocol.Activity, coro: Coroutine) -> asyncio.Task:
+        raise NotImplementedError()
 
     def stub_top_activity(self) -> Optional[protocol.Activity]:
         if not self._activities:
