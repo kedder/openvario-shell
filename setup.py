@@ -40,6 +40,7 @@ setup(
         "ovshell.extensions": [
             "core=ovshell_core:extension",
             "xcsoar=ovshell_xcsoar:extension",
+            "fileman=ovshell_fileman:extension",
         ],
     },
     project_urls={},
