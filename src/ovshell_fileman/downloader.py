@@ -1,8 +1,8 @@
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Dict, Any
 import os
 import asyncio
 import shutil
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 
 import urwid
 
@@ -17,6 +17,20 @@ class DownloadFilter:
     new: bool = True
     igc: bool = True
     nmea: bool = False
+
+    def asdict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def fromdict(cls, state: Dict[str, Any]) -> "DownloadFilter":
+        filt = cls()
+        if "new" in state:
+            filt.new = state["new"]
+        if "igc" in state:
+            filt.igc = state["igc"]
+        if "nmea" in state:
+            filt.nmea = state["nmea"]
+        return filt
 
 
 @dataclass
@@ -49,12 +63,16 @@ class LogDownloaderActivity(protocol.Activity):
         mntdir = shell.os.path(USB_MOUNTPOINT)
 
         self.mountwatcher = AutomountWatcher(mntdir)
-        self.downloader = Downloader(os.path.join(xcsdir, "logs"), mntdir)
+
+        filtstate = shell.settings.get("fileman.download-logs.filter", dict) or {}
+        self.filter = DownloadFilter.fromdict(filtstate)
+        self.downloader = Downloader(os.path.join(xcsdir, "logs"), mntdir, self.filter)
 
     def create(self) -> urwid.Widget:
         self._waiting_view = urwid.Filler(
             urwid.Text("Please insert USB storage", align="center"), "middle"
         )
+        self._file_pile = urwid.Pile([])
         self._app_view = self._create_app_view()
         self.frame = urwid.Frame(
             self._waiting_view, header=widget.ActivityHeader("Download Flight Logs")
@@ -67,16 +85,52 @@ class LogDownloaderActivity(protocol.Activity):
         self.shell.screen.spawn_task(self, self.mountwatcher.run())
 
     def _create_app_view(self) -> urwid.Widget:
-        files = self.downloader.list_logs(DownloadFilter())
-
-        file_items = [self._make_file_picker(de) for de in files]
-        return urwid.Filler(urwid.Pile(file_items), "top")
+        file_filter = self._make_filter()
+        return urwid.Filler(
+            urwid.Pile([file_filter, urwid.Divider(), self._file_pile]), "top"
+        )
 
     def _mounted(self) -> None:
+        self._populate_file_pile()
         self.frame.set_body(self._app_view)
 
     def _unmounted(self) -> None:
         self.frame.set_body(self._waiting_view)
+
+    def _make_filter(self) -> urwid.Widget:
+        options = urwid.GridFlow(
+            [
+                self._make_filter_checkbox("New logs", "new"),
+                self._make_filter_checkbox("*.igc", "igc"),
+                self._make_filter_checkbox("*.nmea", "nmea"),
+            ],
+            cell_width=12,
+            h_sep=2,
+            v_sep=1,
+            align="left",
+        )
+        return urwid.LineBox(options, "Options", title_align="left")
+
+    def _populate_file_pile(self):
+        files = self.downloader.list_logs(self.filter)
+        if files:
+            file_items = [self._make_file_picker(de) for de in files]
+        else:
+            file_items = [urwid.Text(("remark", "No flight logs selected."))]
+        self._file_pile.contents = [(w, ("pack", None)) for w in file_items]
+        self._file_pile.focus_position = 0
+
+    def _make_filter_checkbox(self, title: str, attr: str) -> urwid.Widget:
+        checked = getattr(self.filter, attr)
+        cb = urwid.CheckBox(title, checked)
+        urwid.connect_signal(cb, "change", self._set_filter_option, user_args=[attr])
+        return cb
+
+    def _set_filter_option(self, attr: str, w: urwid.Widget, state: bool) -> None:
+        setattr(self.filter, attr, state)
+        self.shell.settings.set("fileman.download-logs.filter", self.filter.asdict())
+        self.shell.settings.save()
+        self._populate_file_pile()
 
     def _make_file_picker(self, fileinfo: FileInfo) -> urwid.Widget:
         statusw = urwid.Text("")
@@ -139,31 +193,39 @@ class AutomountWatcher:
 class Downloader:
     """Object that handles file copying and listing"""
 
-    def __init__(self, source_dir: str, mount_dir: str) -> None:
+    def __init__(self, source_dir: str, mount_dir: str, filter: DownloadFilter) -> None:
         self.source_dir = source_dir
         self.mount_dir = mount_dir
+        self.filter = filter
 
     def list_logs(self, filter: DownloadFilter) -> List[FileInfo]:
         if not os.path.exists(self.source_dir):
             return []
         res = []
         for entry in os.scandir(self.source_dir):
-            _, fext = os.path.splitext(entry.name)
-            res.append(
-                FileInfo(
-                    name=entry.name,
-                    ftype=fext,
-                    size=entry.stat().st_size,
-                    mtime=entry.stat().st_mtime,
-                    downloaded=False,
-                )
+            _, fext = os.path.splitext(entry.name.lower())
+            fileinfo = FileInfo(
+                name=entry.name,
+                ftype=fext,
+                size=entry.stat().st_size,
+                mtime=entry.stat().st_mtime,
+                downloaded=False,
             )
+            if self._matches(fileinfo, self.filter):
+                res.append(fileinfo)
         return sorted(res, key=lambda fi: fi.mtime, reverse=True)
 
     def download(self, file: FileInfo) -> None:
         destdir = self._ensure_dest_dir()
         srcfile = os.path.join(self.source_dir, file.name)
         shutil.copy(srcfile, destdir)
+
+    def _matches(self, fileinfo: FileInfo, filter: DownloadFilter) -> bool:
+        ftypes = [".nmea" if filter.nmea else None, ".igc" if filter.igc else None]
+        matches = fileinfo.ftype in ftypes
+        if filter.new:
+            matches = matches and not fileinfo.downloaded
+        return matches
 
     def _ensure_dest_dir(self) -> str:
         assert os.path.exists(self.mount_dir)
