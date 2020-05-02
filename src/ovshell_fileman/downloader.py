@@ -133,7 +133,7 @@ class LogDownloaderActivity(protocol.Activity):
         self._populate_file_pile()
 
     def _make_file_picker(self, fileinfo: FileInfo) -> urwid.Widget:
-        statusw = urwid.Text("")
+        statusw = urwid.Text(" New " if not fileinfo.downloaded else "")
         cols = urwid.Columns(
             [
                 ("weight", 4, urwid.Text(fileinfo.name)),
@@ -201,6 +201,7 @@ class Downloader:
     def list_logs(self, filter: DownloadFilter) -> List[FileInfo]:
         if not os.path.exists(self.source_dir):
             return []
+        downloaded = self._find_downloaded()
         res = []
         for entry in os.scandir(self.source_dir):
             _, fext = os.path.splitext(entry.name.lower())
@@ -209,7 +210,7 @@ class Downloader:
                 ftype=fext,
                 size=entry.stat().st_size,
                 mtime=entry.stat().st_mtime,
-                downloaded=False,
+                downloaded=entry.name.lower() in downloaded,
             )
             if self._matches(fileinfo, self.filter):
                 res.append(fileinfo)
@@ -226,6 +227,13 @@ class Downloader:
         if filter.new:
             matches = matches and not fileinfo.downloaded
         return matches
+
+    def _find_downloaded(self) -> List[str]:
+        destdir = self._get_dest_dir()
+        if not os.path.exists(destdir):
+            return []
+
+        return [fn.lower() for fn in os.listdir(destdir)]
 
     def _ensure_dest_dir(self) -> str:
         assert os.path.exists(self.mount_dir)
