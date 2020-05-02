@@ -6,7 +6,7 @@ install:
   - pip install pipenv coveralls
   - pipenv install --dev
 script:
-  - pytest --cov=ovshell --cov=ovshell_xcsoar --cov=ovshell_core --cov-report=term tests
+  - pytest --cov=ovshell --cov=ovshell_core --cov=ovshell_xcsoar --cov=ovshell_fileman --cov-report=term tests
   - black --check setup.py src tests
   - mypy src tests
 after_success:

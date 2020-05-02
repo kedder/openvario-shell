@@ -9,7 +9,7 @@ test:
 
 coverage:
 	pytest \
-		--cov=ovshell --cov=ovshell_xcsoar --cov=ovshell_core \
+		--cov=ovshell --cov=ovshell_xcsoar --cov=ovshell_core --cov=ovshell_fileman \
 		--cov-report=html --cov-report=term \
 		tests
 
