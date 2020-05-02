@@ -186,6 +186,9 @@ class AppManager(Protocol):
     def list(self) -> Iterable[AppInfo]:
         pass
 
+    def get(self, appid: str) -> Optional[AppInfo]:
+        pass
+
     def pin(self, app: AppInfo, persist: bool = False) -> None:
         pass
 

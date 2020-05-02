@@ -1,3 +1,4 @@
+from typing import Tuple, Optional
 import os
 import sys
 import argparse
@@ -5,6 +6,7 @@ import asyncio
 
 import urwid
 
+from ovshell import protocol
 from ovshell.app import OpenvarioShellImpl
 from ovshell.screen import ScreenManagerImpl
 from ovshell.ui.mainmenu import MainMenuActivity
@@ -22,6 +24,12 @@ parser.add_argument(
     default=os.environ.get("OVSHELL_ROOTFS"),
     required=False,
     help="Run in simulated mode (on provided root filesystem).",
+)
+parser.add_argument(
+    "--run",
+    metavar="APP",
+    required=False,
+    help="Run given app automatically on startup. Useful during app development",
 )
 
 
@@ -50,8 +58,27 @@ def debounce_esc(keys, raw):
     return filtered
 
 
-def startui(app: OpenvarioShellImpl) -> None:
-    app.screen.push_activity(MainMenuActivity(app))
+def get_autostart_app(
+    shell: protocol.OpenVarioShell, args: argparse.Namespace
+) -> Optional[protocol.AppInfo]:
+    if args.run:
+        appinfo = shell.apps.get(args.run)
+        if appinfo is not None:
+            return appinfo
+        else:
+            availapps = ", ".join([a.id for a in shell.apps.list()])
+            print(
+                f"Error: app '{args.run}' does not exist. Available apps: {availapps}"
+            )
+            sys.exit(1)
+    return None
+
+
+def startui(ctx: Tuple[OpenvarioShellImpl, protocol.AppInfo]) -> None:
+    shell, autostart = ctx
+    shell.screen.push_activity(MainMenuActivity(shell))
+    if autostart is not None:
+        autostart.app.launch()
 
 
 def run(argv) -> None:
@@ -96,7 +123,9 @@ def run(argv) -> None:
     shell = OpenvarioShellImpl(screen, config=args.config, rootfs=args.sim)
     shell.extensions.load_all(shell)
     shell.apps.install_new_apps()
-    asyncioloop.call_soon(startui, shell)
+
+    autostart = get_autostart_app(shell, args)
+    asyncioloop.call_soon(startui, (shell, autostart))
 
     try:
         urwidloop.run()

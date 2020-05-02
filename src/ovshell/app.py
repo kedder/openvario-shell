@@ -45,6 +45,12 @@ class AppManagerImpl(protocol.AppManager):
         appinfos = sorted(appinfos, key=lambda v: (-v.app.priority, v.extension.id))
         return appinfos
 
+    def get(self, id: str) -> Optional[protocol.AppInfo]:
+        for appinfo in self.list():
+            if appinfo.id == id:
+                return appinfo
+        return None
+
     def pin(self, app: protocol.AppInfo, persist: bool = False) -> None:
         pinned = self._get_pinned()
         if app.id in pinned:
