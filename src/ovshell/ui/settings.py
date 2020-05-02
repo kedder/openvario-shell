@@ -150,7 +150,7 @@ class SettingsPopUpLauncher(urwid.PopUpLauncher):
         }
 
 
-class SettingsActivity:
+class SettingsActivity(protocol.Activity):
     def __init__(self, shell: protocol.OpenVarioShell) -> None:
         self.shell = shell
 
@@ -174,9 +174,3 @@ class SettingsActivity:
             settings.extend(ext.list_settings())
 
         return sorted(settings, key=lambda s: -s.priority)
-
-    def activate(self) -> None:
-        pass
-
-    def destroy(self) -> None:
-        pass

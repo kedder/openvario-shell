@@ -56,6 +56,8 @@ class ScreenManagerImpl(ScreenManager):
         )
 
     def push_activity(self, activity: Activity, palette: List[Tuple] = None) -> None:
+        self._hide_shown_activity()
+
         w = activity.create()
         signals = widget.KeySignals(urwid.AttrMap(w, widget.NORMAL_ATTR_MAP))
         urwid.connect_signal(
@@ -69,8 +71,11 @@ class ScreenManagerImpl(ScreenManager):
             ActivityContext(activity, signals, palette=self._get_palette(), tasks=[])
         )
         activity.activate()
+        activity.show()
 
     def push_modal(self, activity: Activity, options: protocol.ModalOptions) -> None:
+        self._hide_shown_activity()
+
         bg = self._main_view.original_widget
         modal_w = activity.create()
         modal_w = urwid.AttrMap(modal_w, widget.LIGHT_ATTR_MAP)
@@ -93,21 +98,23 @@ class ScreenManagerImpl(ScreenManager):
             bottom=options.bottom,
         )
         self._main_view.original_widget = modal
-        activity.activate()
         self._act_stack.append(
             ActivityContext(activity, modal, palette=self._get_palette(), tasks=[])
         )
+        activity.activate()
+        activity.show()
 
     def pop_activity(self) -> None:
         curactctx = self._act_stack.pop()
         for task in curactctx.tasks:
             task.cancel()
+        curactctx.activity.hide()
         curactctx.activity.destroy()
 
         prevactctx = self._act_stack[-1]
         self._main_view.original_widget = prevactctx.widget
-        prevactctx.activity.activate()
         self._reset_palette(prevactctx.palette)
+        prevactctx.activity.show()
 
     def set_status(self, text: protocol.UrwidText):
         self._footer.original_widget = urwid.Text(text)
@@ -129,6 +136,13 @@ class ScreenManagerImpl(ScreenManager):
 
     def _cancel_activity(self, activity: Activity, w: urwid.Widget) -> None:
         self.pop_activity()
+
+    def _hide_shown_activity(self) -> None:
+        if not self._act_stack:
+            return
+
+        topact_ctx = self._act_stack[-1]
+        topact_ctx.activity.hide()
 
     def _get_palette(self) -> Dict[str, Tuple]:
         return self._mainloop.screen._palette.copy()

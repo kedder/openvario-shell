@@ -85,10 +85,16 @@ class Activity(Protocol):
     def create(self) -> urwid.Widget:
         pass
 
+    def activate(self) -> None:
+        pass
+
     def destroy(self) -> None:
         pass
 
-    def activate(self) -> None:
+    def hide(self) -> None:
+        pass
+
+    def show(self) -> None:
         pass
 
 
