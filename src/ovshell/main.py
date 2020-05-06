@@ -99,7 +99,7 @@ def run(argv) -> None:
         ("success message", "light green", "black", ""),
         ("success banner", "white", "dark green", ""),
         ("error message", "light red", "black", ""),
-        ("error banner", "white", "dark red", ""),
+        ("error banner", "yellow", "dark red", ""),
         ("progress", "light magenta", "black", ""),
         ("remark", "dark gray", "black", ""),
         ("topbar", "black", "white", ""),

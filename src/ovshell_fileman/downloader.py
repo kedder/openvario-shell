@@ -1,7 +1,9 @@
 from typing import Callable, List, Optional, Dict, Any
+from typing_extensions import Protocol
 import os
 import asyncio
-import shutil
+import functools
+from abc import abstractmethod
 from dataclasses import dataclass, asdict
 
 import urwid
@@ -10,6 +12,7 @@ from ovshell import protocol
 from ovshell import widget
 
 USB_MOUNTPOINT = "//usb/usbstick"
+USB_MOUNTDEVICE = "//dev/sda1"
 
 
 @dataclass
@@ -42,6 +45,29 @@ class FileInfo:
     downloaded: bool
 
 
+class ProgressState(Protocol):
+    @abstractmethod
+    def set_total(self, total: int) -> None:
+        pass
+
+    @abstractmethod
+    def progress(self, amount: int = 1) -> None:
+        pass
+
+
+class ProgressBarState(ProgressState):
+    def __init__(self, pb: urwid.ProgressBar) -> None:
+        self._pb = pb
+        self._completion = 0
+
+    def set_total(self, total: int) -> None:
+        self._pb.done = total
+
+    def progress(self, amount: int = 1) -> None:
+        self._completion += amount
+        self._pb.set_completion(self._completion)
+
+
 class LogDownloaderApp(protocol.App):
     name = "download-logs"
     title = "Download Logs"
@@ -57,16 +83,20 @@ class LogDownloaderApp(protocol.App):
 
 
 class LogDownloaderActivity(protocol.Activity):
+    _dl_in_progress: Dict[str, urwid.WidgetPlaceholder]
+
     def __init__(self, shell: protocol.OpenVarioShell):
         self.shell = shell
         xcsdir = shell.os.path(shell.settings.getstrict("xcsoar.home", str))
         mntdir = shell.os.path(USB_MOUNTPOINT)
+        mntdev = shell.os.path(USB_MOUNTDEVICE)
 
-        self.mountwatcher = AutomountWatcher(mntdir)
+        self.mountwatcher = AutomountWatcher(mntdev, mntdir)
 
         filtstate = shell.settings.get("fileman.download-logs.filter", dict) or {}
         self.filter = DownloadFilter.fromdict(filtstate)
         self.downloader = Downloader(os.path.join(xcsdir, "logs"), mntdir, self.filter)
+        self._dl_in_progress = {}
 
     def create(self) -> urwid.Widget:
         self._waiting_view = urwid.Filler(
@@ -93,6 +123,7 @@ class LogDownloaderActivity(protocol.Activity):
     def _mounted(self) -> None:
         self._populate_file_pile()
         self.frame.set_body(self._app_view)
+        self._dl_in_progress = {}
 
     def _unmounted(self) -> None:
         self.frame.set_body(self._waiting_view)
@@ -133,46 +164,81 @@ class LogDownloaderActivity(protocol.Activity):
         self._populate_file_pile()
 
     def _make_file_picker(self, fileinfo: FileInfo) -> urwid.Widget:
-        statusw = urwid.Text(" New " if not fileinfo.downloaded else "")
+        statusw = self._dl_in_progress.get(fileinfo.name)
+        if statusw is None:
+            st = urwid.Text(" New " if not fileinfo.downloaded else "")
+            statusw = urwid.WidgetPlaceholder(st)
+
+        fmtsize = format_size(fileinfo.size)
         cols = urwid.Columns(
             [
-                ("weight", 4, urwid.Text(fileinfo.name)),
-                ("weight", 1, urwid.Text(format_size(fileinfo.size))),
+                ("weight", 2, urwid.Text(fileinfo.name)),
+                ("weight", 1, urwid.Text(fmtsize + " ", align="right")),
                 ("weight", 1, statusw),
             ]
         )
         w = SelectableItem(cols)
+
         urwid.connect_signal(
             w, "click", self._file_clicked, user_args=[fileinfo, statusw]
         )
         return w
 
-    def _file_clicked(self, fileinfo: FileInfo, statusw: urwid.Text, w: urwid.Widget):
-        self.downloader.download(fileinfo)
-        statusw.set_text(("success banner", " Done "))
-        os.sync()
+    def _file_clicked(
+        self, fileinfo: FileInfo, statusw: urwid.WidgetPlaceholder, w: urwid.Widget
+    ) -> None:
+        if fileinfo.name in self._dl_in_progress:
+            # Already in progress, ignore
+            return
+        self._dl_in_progress[fileinfo.name] = statusw
+
+        pb = urwid.ProgressBar("pg normal", "pg complete")
+        statusw.original_widget = pb
+        progress = ProgressBarState(pb)
+
+        coro = self.downloader.download(fileinfo, progress)
+        task = self.shell.screen.spawn_task(self, coro)
+        task.add_done_callback(
+            functools.partial(self._download_done, fileinfo, statusw)
+        )
+
+    def _download_done(
+        self, fileinfo: FileInfo, statusw: urwid.WidgetPlaceholder, task: asyncio.Task
+    ) -> None:
+        del self._dl_in_progress[fileinfo.name]
+
+        if task.cancelled():
+            statusw.original_widget = urwid.Text(("error message", " Cancelled "))
+            return
+        exc = task.exception()
+        if exc is not None:
+            statusw.original_widget = urwid.Text(("error banner", " Failed "))
+            return
+
+        statusw.original_widget = urwid.Text(("success banner", " Done "))
 
 
 class AutomountWatcher:
     _mount_handlers: List[Callable[[], None]]
     _unmount_handlers: List[Callable[[], None]]
 
-    def __init__(self, mountpoint: str) -> None:
+    def __init__(self, device: str, mountpoint: str) -> None:
+        self._mountdev = device
         self._mountpoint = mountpoint
         self._mount_handlers = []
         self._unmount_handlers = []
+        self._mounted = False
 
     async def run(self) -> None:
-        mounted = False
         while True:
+            # Make sure device appearsh before trying to poll the mount point.
+            # Otherwise autofs will not mount the device.
+            await self._wait_for_device()
+
             if os.path.exists(self._mountpoint):
-                if not mounted:
-                    self._handle_mount()
-                mounted = True
+                self._online()
             else:
-                if mounted:
-                    self._handle_unmount()
-                mounted = False
+                self._offline()
             await asyncio.sleep(1)
 
     def on_mount(self, handler: Callable[[], None]) -> None:
@@ -181,11 +247,24 @@ class AutomountWatcher:
     def on_unmount(self, handler: Callable[[], None]) -> None:
         self._unmount_handlers.append(handler)
 
-    def _handle_mount(self) -> None:
+    async def _wait_for_device(self):
+        while True:
+            if os.path.exists(self._mountdev):
+                break
+            self._offline()
+            await asyncio.sleep(1)
+
+    def _online(self) -> None:
+        if self._mounted:
+            return
+        self._mounted = True
         for handler in self._mount_handlers:
             handler()
 
-    def _handle_unmount(self) -> None:
+    def _offline(self) -> None:
+        if not self._mounted:
+            return
+        self._mounted = False
         for handler in self._unmount_handlers:
             handler()
 
@@ -216,10 +295,30 @@ class Downloader:
                 res.append(fileinfo)
         return sorted(res, key=lambda fi: fi.mtime, reverse=True)
 
-    def download(self, file: FileInfo) -> None:
+    async def download(self, file: FileInfo, progress: ProgressState) -> None:
         destdir = self._ensure_dest_dir()
         srcfile = os.path.join(self.source_dir, file.name)
-        shutil.copy(srcfile, destdir)
+        dstfile = os.path.join(destdir, file.name)
+
+        # Copying large files can take a long time and the process can fail at
+        # any time. To avoid leaving incompletely downloaded file, we copy
+        # contents into temporary file, and rename it after copy completed.
+        tmpdstfile = dstfile + ".partial"
+        chunksize = 1024 * 4
+
+        progress.set_total(file.size)
+        with open(srcfile, "rb") as sf, open(tmpdstfile, "wb") as df:
+            while True:
+                chunk = sf.read(chunksize)
+                if len(chunk) == 0:
+                    break
+                df.write(chunk)
+                progress.progress(len(chunk))
+                await asyncio.sleep(0)
+
+        # Finally, rename the file
+        os.replace(tmpdstfile, dstfile)
+        os.sync()
 
     def _matches(self, fileinfo: FileInfo, filter: DownloadFilter) -> bool:
         ftypes = [".nmea" if filter.nmea else None, ".igc" if filter.igc else None]
@@ -263,10 +362,10 @@ class SelectableItem(urwid.WidgetWrap):
 
 
 def format_size(size: int) -> str:
-    suffix = "B"
     fsize = float(size)
-    for unit in ["", "Ki", "Mi", "Gi"]:
+    # make suffix the same size to keep numbers dot-aligned
+    for unit in ["B  ", "KiB", "MiB", "GiB"]:
         if abs(fsize) < 1024.0:
-            return "%3.1f%s%s" % (fsize, unit, suffix)
+            return "%3.1f %s" % (fsize, unit)
         fsize /= 1024.0
-    return "%.1f%s%s" % (size, "Ti", suffix)
+    return "%.1f %s" % (size, "TiB")
