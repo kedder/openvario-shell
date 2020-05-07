@@ -102,7 +102,7 @@ class LogDownloaderActivity(protocol.Activity):
         self._waiting_view = urwid.Filler(
             urwid.Text("Please insert USB storage", align="center"), "middle"
         )
-        self._file_pile = urwid.Pile([])
+        self._file_walker = urwid.SimpleFocusListWalker([])
         self._app_view = self._create_app_view()
         self.frame = urwid.Frame(
             self._waiting_view, header=widget.ActivityHeader("Download Flight Logs")
@@ -116,12 +116,17 @@ class LogDownloaderActivity(protocol.Activity):
 
     def _create_app_view(self) -> urwid.Widget:
         file_filter = self._make_filter()
-        return urwid.Filler(
-            urwid.Pile([file_filter, urwid.Divider(), self._file_pile]), "top"
+
+        return urwid.Pile(
+            [
+                ("pack", file_filter),
+                ("pack", urwid.Divider()),
+                urwid.ListBox(self._file_walker),
+            ]
         )
 
     def _mounted(self) -> None:
-        self._populate_file_pile()
+        self._populate_file_list()
         self.frame.set_body(self._app_view)
         self._dl_in_progress = {}
 
@@ -142,14 +147,16 @@ class LogDownloaderActivity(protocol.Activity):
         )
         return urwid.LineBox(options, "Options", title_align="left")
 
-    def _populate_file_pile(self):
+    def _populate_file_list(self):
         files = self.downloader.list_logs(self.filter)
         if files:
             file_items = [self._make_file_picker(de) for de in files]
         else:
             file_items = [urwid.Text(("remark", "No flight logs selected."))]
-        self._file_pile.contents = [(w, ("pack", None)) for w in file_items]
-        self._file_pile.focus_position = 0
+
+        del self._file_walker[:]
+        self._file_walker.extend(file_items)
+        self._file_walker.set_focus(0)
 
     def _make_filter_checkbox(self, title: str, attr: str) -> urwid.Widget:
         checked = getattr(self.filter, attr)
@@ -161,7 +168,7 @@ class LogDownloaderActivity(protocol.Activity):
         setattr(self.filter, attr, state)
         self.shell.settings.set("fileman.download-logs.filter", self.filter.asdict())
         self.shell.settings.save()
-        self._populate_file_pile()
+        self._populate_file_list()
 
     def _make_file_picker(self, fileinfo: FileInfo) -> urwid.Widget:
         statusw = self._dl_in_progress.get(fileinfo.name)
