@@ -23,10 +23,12 @@ class ExtensionManagerStub(protocol.ExtensionManager):
 class ScreenManagerStub(protocol.ScreenManager):
     _log: List[str]
     _activities: List[protocol.Activity]
+    _tasks: List[Tuple[protocol.Activity, asyncio.Task]]
 
     def __init__(self, log: List[str]) -> None:
         self._log = log
         self._activities = []
+        self._tasks = []
 
     def push_activity(
         self, activity: protocol.Activity, palette: Optional[List[Tuple]] = None
@@ -42,12 +44,26 @@ class ScreenManagerStub(protocol.ScreenManager):
         self._activities.append(activity)
 
     def spawn_task(self, activity: protocol.Activity, coro: Coroutine) -> asyncio.Task:
-        raise NotImplementedError()
+        task = asyncio.create_task(coro)
+        self._tasks.append((activity, task))
+        task.add_done_callback(self._task_done)
+        return task
+
+    def _task_done(self, task: asyncio.Task) -> None:
+        if task.cancelled():
+            return
+        exc = task.exception()
+        if exc is not None:
+            raise exc
 
     def stub_top_activity(self) -> Optional[protocol.Activity]:
         if not self._activities:
             return None
         return self._activities[-1]
+
+    def stub_cancel_tasks(self) -> None:
+        for act, task in self._tasks:
+            task.cancel()
 
 
 class StoredSettingsStub(protocol.StoredSettings):
@@ -119,3 +135,6 @@ class OpenVarioShellStub(protocol.OpenVarioShell):
 
     def get_stub_log(self) -> List[str]:
         return self._log
+
+    def stub_teardown(self) -> None:
+        self.screen.stub_cancel_tasks()
