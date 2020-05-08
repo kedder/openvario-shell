@@ -48,11 +48,35 @@ class FileInfo:
 class ProgressState(Protocol):
     @abstractmethod
     def set_total(self, total: int) -> None:
-        pass
+        pass  # pragma: nocover
 
     @abstractmethod
     def progress(self, amount: int = 1) -> None:
-        pass
+        pass  # pragma: nocover
+
+
+class Downloader(Protocol):
+    @abstractmethod
+    def list_logs(self, filter: DownloadFilter) -> List[FileInfo]:
+        pass  # pragma: nocover
+
+    @abstractmethod
+    async def download(self, file: FileInfo, progress: ProgressState) -> None:
+        pass  # pragma: nocover
+
+
+class AutomountWatcher(Protocol):
+    @abstractmethod
+    def on_unmount(self, handler: Callable[[], None]) -> None:
+        pass  # pragma: nocover
+
+    @abstractmethod
+    def on_mount(self, handler: Callable[[], None]) -> None:
+        pass  # pragma: nocover
+
+    @abstractmethod
+    async def run(self) -> None:
+        pass  # pragma: nocover
 
 
 class ProgressBarState(ProgressState):
@@ -78,27 +102,41 @@ class LogDownloaderApp(protocol.App):
         self.shell = shell
 
     def launch(self) -> None:
-        act = LogDownloaderActivity(self.shell)
+        act = LogDownloaderActivity(
+            self.shell, self._make_mountwatcher(), self._make_downloader()
+        )
         self.shell.screen.push_activity(act)
+
+    def _make_mountwatcher(self) -> AutomountWatcher:
+        mntdir = self.shell.os.path(USB_MOUNTPOINT)
+        mntdev = self.shell.os.path(USB_MOUNTDEVICE)
+        return AutomountWatcherImpl(mntdev, mntdir)
+
+    def _make_downloader(self) -> Downloader:
+        mntdir = self.shell.os.path(USB_MOUNTPOINT)
+        xcsdir = self.shell.os.path(self.shell.settings.getstrict("xcsoar.home", str))
+        return DownloaderImpl(os.path.join(xcsdir, "logs"), mntdir)
 
 
 class LogDownloaderActivity(protocol.Activity):
     _dl_in_progress: Dict[str, urwid.WidgetPlaceholder]
+    filter: DownloadFilter
 
-    def __init__(self, shell: protocol.OpenVarioShell):
+    def __init__(
+        self,
+        shell: protocol.OpenVarioShell,
+        mountwatcher: "AutomountWatcher",
+        downloader: "Downloader",
+    ) -> None:
         self.shell = shell
-        xcsdir = shell.os.path(shell.settings.getstrict("xcsoar.home", str))
-        mntdir = shell.os.path(USB_MOUNTPOINT)
-        mntdev = shell.os.path(USB_MOUNTDEVICE)
-
-        self.mountwatcher = AutomountWatcher(mntdev, mntdir)
-
-        filtstate = shell.settings.get("fileman.download-logs.filter", dict) or {}
-        self.filter = DownloadFilter.fromdict(filtstate)
-        self.downloader = Downloader(os.path.join(xcsdir, "logs"), mntdir, self.filter)
+        self.mountwatcher = mountwatcher
+        self.downloader = downloader
         self._dl_in_progress = {}
 
     def create(self) -> urwid.Widget:
+        filtstate = self.shell.settings.get("fileman.download-logs.filter", dict) or {}
+        self.filter = DownloadFilter.fromdict(filtstate)
+
         self._waiting_view = urwid.Filler(
             urwid.Text("Please insert USB storage", align="center"), "middle"
         )
@@ -147,7 +185,7 @@ class LogDownloaderActivity(protocol.Activity):
         )
         return urwid.LineBox(options, "Options", title_align="left")
 
-    def _populate_file_list(self):
+    def _populate_file_list(self) -> None:
         files = self.downloader.list_logs(self.filter)
         if files:
             file_items = [self._make_file_picker(de) for de in files]
@@ -225,7 +263,7 @@ class LogDownloaderActivity(protocol.Activity):
         statusw.original_widget = urwid.Text(("success banner", " Done "))
 
 
-class AutomountWatcher:
+class AutomountWatcherImpl(AutomountWatcher):
     _mount_handlers: List[Callable[[], None]]
     _unmount_handlers: List[Callable[[], None]]
 
@@ -276,13 +314,12 @@ class AutomountWatcher:
             handler()
 
 
-class Downloader:
+class DownloaderImpl(Downloader):
     """Object that handles file copying and listing"""
 
-    def __init__(self, source_dir: str, mount_dir: str, filter: DownloadFilter) -> None:
+    def __init__(self, source_dir: str, mount_dir: str) -> None:
         self.source_dir = source_dir
         self.mount_dir = mount_dir
-        self.filter = filter
 
     def list_logs(self, filter: DownloadFilter) -> List[FileInfo]:
         if not os.path.exists(self.source_dir):
@@ -298,7 +335,7 @@ class Downloader:
                 mtime=entry.stat().st_mtime,
                 downloaded=entry.name.lower() in downloaded,
             )
-            if self._matches(fileinfo, self.filter):
+            if self._matches(fileinfo, filter):
                 res.append(fileinfo)
         return sorted(res, key=lambda fi: fi.mtime, reverse=True)
 
