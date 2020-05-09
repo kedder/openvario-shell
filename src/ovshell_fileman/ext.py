@@ -2,7 +2,7 @@ from typing import Sequence
 
 from ovshell import protocol
 
-from ovshell_fileman.downloader import LogDownloaderApp
+from ovshell_fileman.downloadapp import LogDownloaderApp
 
 
 class FileManagerExtension(protocol.Extension):

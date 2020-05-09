@@ -6,14 +6,14 @@ import urwid
 import pytest
 
 from ovshell import testing
-from ovshell_fileman.downloader import LogDownloaderActivity, LogDownloaderApp
-from ovshell_fileman.downloader import (
+from ovshell_fileman.api import (
     Downloader,
     AutomountWatcher,
     DownloadFilter,
     FileInfo,
     ProgressState,
 )
+from ovshell_fileman.downloadapp import LogDownloaderActivity, LogDownloaderApp
 
 
 class DownloaderStub(Downloader):
