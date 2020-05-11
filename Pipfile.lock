@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "9cd8ae287a1b12226b452f869e24253d3afa67cd0e6161045805aeda2cba102f"
+            "sha256": "0421984609e566b01905bcbf856c2967a3bf3b87bae2e12ec63fe7f915b2fb3a"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -14,6 +14,14 @@
         ]
     },
     "default": {
+        "importlib-metadata": {
+            "hashes": [
+                "sha256:2a688cbaa90e0cc587f1df48bdc97a6eadccdcd9c35fb3f976a09e3b5016d90f",
+                "sha256:34513a8a0c4962bc66d35b359558fd8a5e10cd472d37aec5f66858addef32c1e"
+            ],
+            "index": "pypi",
+            "version": "==1.6.0"
+        },
         "openvario-shell": {
             "editable": true,
             "path": "."
@@ -33,6 +41,13 @@
             ],
             "index": "pypi",
             "version": "==2.1.0"
+        },
+        "zipp": {
+            "hashes": [
+                "sha256:aa36550ff0c0b7ef7fa639055d797116ee891440eac1a56f378e2d3179e0320b",
+                "sha256:c599e4d75c98f6798c509911d08a22e6c021d074469042177c8c86fb92eefd96"
+            ],
+            "version": "==3.1.0"
         }
     },
     "develop": {
