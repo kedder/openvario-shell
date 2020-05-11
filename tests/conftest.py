@@ -8,7 +8,9 @@ from ovshell import testing
 
 
 @pytest.fixture()
-def ovshell(tmp_path: Path, event_loop) -> Generator[testing.OpenVarioShellStub, None, None]:
+def ovshell(
+    tmp_path: Path, event_loop
+) -> Generator[testing.OpenVarioShellStub, None, None]:
     ovshell = testing.OpenVarioShellStub(str(tmp_path))
     yield ovshell
     ovshell.stub_teardown()
