@@ -4,7 +4,7 @@ python:
   - "3.7"
   - "3.8"
 install:
-  - pip install pipenv coveralls
+  - pip install pipenv coveralls[yaml]
   - pipenv install --dev
 script:
   - pytest --cov=ovshell --cov=ovshell_core --cov=ovshell_xcsoar --cov=ovshell_fileman --cov-report=term tests
