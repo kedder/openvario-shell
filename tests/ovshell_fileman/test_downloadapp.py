@@ -19,13 +19,20 @@ from ovshell_fileman.downloadapp import LogDownloaderActivity, LogDownloaderApp
 class DownloaderStub(Downloader):
     stub_last_filter: Optional[DownloadFilter] = None
     stub_files: Optional[List[FileInfo]] = None
+    failing = False
 
     def list_logs(self, filter: DownloadFilter) -> List[FileInfo]:
         self.stub_last_filter = filter
         return self.stub_files or []
 
     async def download(self, file: FileInfo, progress: ProgressState) -> None:
-        pass
+        progress.set_total(file.size)
+        await asyncio.sleep(0)
+        progress.progress(file.size // 2)
+        if self.failing:
+            raise IOError("Download failed")
+        await asyncio.sleep(0)
+        progress.progress(file.size // 2)
 
 
 class AutomountWatcherStub(AutomountWatcher):
@@ -122,6 +129,29 @@ async def test_activity_list_files(
 
 
 @pytest.mark.asyncio
+async def test_activity_unmount(
+    activity_testbed: LogDownloaderActivityTestbed,
+) -> None:
+    # GIVEN
+    activity_testbed.downloader.stub_files = [
+        FileInfo("two.igc", ".igc", size=20000, mtime=0, downloaded=False)
+    ]
+    w = activity_testbed.activity.create()
+    activity_testbed.activity.activate()
+
+    # Let mount watcher detect start
+    await asyncio.sleep(0)
+    assert activity_testbed.mountwatcher.stub_running
+    activity_testbed.mountwatcher.stub_mount()
+
+    assert "two.igc" in _render(w)
+
+    # WHEN
+    activity_testbed.mountwatcher.stub_unmount()
+    assert "Please insert USB storage" in _render(w)
+
+
+@pytest.mark.asyncio
 async def test_activity_change_settings(
     activity_testbed: LogDownloaderActivityTestbed,
 ) -> None:
@@ -161,13 +191,38 @@ async def test_activity_download(
 
     # THEN
     await asyncio.sleep(0)
-    rendered = _render(w)
-    assert "0 %" in rendered
+    assert "0 %" in _render(w)
+    await asyncio.sleep(0)
+    assert "50 %" in _render(w)
+    await asyncio.sleep(0)
+    assert "100 %" in _render(w)
+    await asyncio.sleep(0)
+    assert "Done" in _render(w)
+
+
+@pytest.mark.asyncio
+async def test_activity_download_error(
+    activity_testbed: LogDownloaderActivityTestbed,
+) -> None:
+    # GIVEN
+    activity_testbed.downloader.stub_files = [
+        FileInfo("two.igc", ".igc", size=20000, mtime=0, downloaded=False)
+    ]
+    w = activity_testbed.activity.create()
+    activity_testbed.activity.activate()
+    activity_testbed.mountwatcher.stub_mount()
+    activity_testbed.downloader.failing = True
 
     # WHEN
+    _keypress(w, ["down", "enter"])
+
+    # THEN
     await asyncio.sleep(0)
-    rendered = _render(w)
-    assert "Done" in rendered
+    assert "0 %" in _render(w)
+    await asyncio.sleep(0)
+    assert "50 %" in _render(w)
+    await asyncio.sleep(0)
+    assert "Failed" in _render(w)
 
 
 def _render(w: urwid.Widget) -> str:
