@@ -4,7 +4,7 @@ Changelog for openvario-shell
 0.4 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Log downloader app. Supports downloading `*.igc` as well as `*.nmea` files
 
 
 0.3 (2020-04-30)
