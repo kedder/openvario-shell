@@ -58,8 +58,8 @@ def test_list_logs_filtering(tmp_path: Path) -> None:
     srcdir.joinpath("two.igc").touch()
 
     tgtdir = tmp_path / "target"
-    tgtdir.joinpath("logs").mkdir(parents=True)
-    tgtdir.joinpath("logs", "two.igc").touch()
+    tgtdir.joinpath("openvario", "igc").mkdir(parents=True)
+    tgtdir.joinpath("openvario", "igc", "two.igc").touch()
 
     dl = DownloaderImpl(str(srcdir), str(tgtdir))
 
@@ -107,7 +107,7 @@ async def test_download(tmp_path: Path) -> None:
         "progress: 1808",
     ]
 
-    downloaded = tgtdir / "logs" / "one.igc"
+    downloaded = tgtdir / "openvario" / "igc" / "one.igc"
     assert downloaded.parent.is_dir()
     assert downloaded.exists()
     assert downloaded.stat().st_size == 10000

@@ -76,4 +76,4 @@ class DownloaderImpl(Downloader):
         return destdir
 
     def _get_dest_dir(self) -> str:
-        return os.path.join(self.mount_dir, "logs")
+        return os.path.join(self.mount_dir, "openvario", "igc")
