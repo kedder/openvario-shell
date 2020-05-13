@@ -11,6 +11,18 @@ class AppManagerStub(protocol.AppManager):
     def __init__(self, log: List[str]) -> None:
         self._log = log
 
+    def list(self) -> Iterable[protocol.AppInfo]:
+        return []
+
+    def get(self, appid: str) -> Optional[protocol.AppInfo]:
+        return None
+
+    def pin(self, app: protocol.AppInfo, persist: bool = False) -> None:
+        pass
+
+    def unpin(self, app: protocol.AppInfo, persist: bool = False) -> None:
+        pass
+
 
 class ExtensionManagerStub(protocol.ExtensionManager):
     def __init__(self, log: List[str]) -> None:

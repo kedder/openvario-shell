@@ -183,15 +183,19 @@ class AppInfo:
 
 
 class AppManager(Protocol):
+    @abstractmethod
     def list(self) -> Iterable[AppInfo]:
         pass
 
+    @abstractmethod
     def get(self, appid: str) -> Optional[AppInfo]:
         pass
 
+    @abstractmethod
     def pin(self, app: AppInfo, persist: bool = False) -> None:
         pass
 
+    @abstractmethod
     def unpin(self, app: AppInfo, persist: bool = False) -> None:
         pass
 
