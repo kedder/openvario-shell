@@ -1,4 +1,4 @@
-from typing import Callable, List
+from typing import Callable, List, Optional
 
 import urwid
 
@@ -65,8 +65,11 @@ class FinalScreenActivity(protocol.Activity):
 
 
 class MainMenuActivity(protocol.Activity):
-    def __init__(self, shell: protocol.OpenVarioShell) -> None:
+    def __init__(
+        self, shell: protocol.OpenVarioShell, autostart_app: str = None
+    ) -> None:
         self.shell = shell
+        self.autostart_app = autostart_app
 
     def create(self) -> urwid.Widget:
         btxt = urwid.BigText("Openvario", urwid.font.Thin6x6Font())
@@ -104,6 +107,11 @@ class MainMenuActivity(protocol.Activity):
         view = widget.KeySignals(view)
         urwid.connect_signal(view, "cancel", self._on_quit)
         return view
+
+    def activate(self) -> None:
+        autostart = self._get_autostart_app()
+        if autostart is not None:
+            autostart.app.launch()
 
     def _get_pinned_apps(self) -> urwid.Widget:
         m_items = []
@@ -158,11 +166,21 @@ class MainMenuActivity(protocol.Activity):
         self.shell.os.restart()
         return False
 
-    def activate(self) -> None:
-        pass
-
     def destroy(self) -> None:
         pass
 
     def _get_version(self) -> str:
         return f"Version {ovshell.__version__}"
+
+    def _get_autostart_app(self) -> Optional[protocol.AppInfo]:
+        if self.autostart_app:
+            appinfo = self.shell.apps.get(self.autostart_app)
+            if appinfo is not None:
+                return appinfo
+            else:
+                availapps = ", ".join([a.id for a in self.shell.apps.list()])
+                print(
+                    f"Error: app '{self.autostart_app}' does not exist. "
+                    f"Available apps: {availapps}"
+                )
+        return None

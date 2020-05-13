@@ -6,7 +6,6 @@ import asyncio
 
 import urwid
 
-from ovshell import protocol
 from ovshell.app import OpenvarioShellImpl
 from ovshell.screen import ScreenManagerImpl
 from ovshell.ui.mainmenu import MainMenuActivity
@@ -58,27 +57,9 @@ def debounce_esc(keys, raw):
     return filtered
 
 
-def get_autostart_app(
-    shell: protocol.OpenVarioShell, args: argparse.Namespace
-) -> Optional[protocol.AppInfo]:
-    if args.run:
-        appinfo = shell.apps.get(args.run)
-        if appinfo is not None:
-            return appinfo
-        else:
-            availapps = ", ".join([a.id for a in shell.apps.list()])
-            print(
-                f"Error: app '{args.run}' does not exist. Available apps: {availapps}"
-            )
-            sys.exit(1)
-    return None
-
-
-def startui(ctx: Tuple[OpenvarioShellImpl, protocol.AppInfo]) -> None:
+def startui(ctx: Tuple[OpenvarioShellImpl, Optional[str]]) -> None:
     shell, autostart = ctx
-    shell.screen.push_activity(MainMenuActivity(shell))
-    if autostart is not None:
-        autostart.app.launch()
+    shell.screen.push_activity(MainMenuActivity(shell, autostart))
 
 
 def run(argv) -> None:
@@ -108,9 +89,6 @@ def run(argv) -> None:
         ("li normal light", "dark blue", "white", ""),
     ]
 
-    # btxt = urwid.BigText("Openvario", urwid.font.Thin6x6Font())
-    # splash = urwid.Filler(urwid.Padding(btxt, "center", "clip"), "middle")
-
     asyncioloop = asyncio.get_event_loop()
     evl = urwid.AsyncioEventLoop(loop=asyncioloop)
 
@@ -124,8 +102,7 @@ def run(argv) -> None:
     shell.extensions.load_all(shell)
     shell.apps.install_new_apps()
 
-    autostart = get_autostart_app(shell, args)
-    asyncioloop.call_soon(startui, (shell, autostart))
+    asyncioloop.call_soon(startui, (shell, args.run))
 
     try:
         urwidloop.run()
