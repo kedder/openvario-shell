@@ -159,6 +159,7 @@ class ScreenBrightnessSetting(StaticChoiceSetting):
             ("10", "100%"),
         ]
 
+
 class AutostartAppSetting(StaticChoiceSetting):
     title = "Autostart application"
     priority = 68
@@ -181,10 +182,12 @@ class AutostartAppSetting(StaticChoiceSetting):
 
         return choices
 
+
 class AutostartTimeoutSetting(StaticChoiceSetting):
     title = "Autostart timeout"
     priority = 67
     config_key = "ovshell.autostart_timeout"
+
     def __init__(self, shell: protocol.OpenVarioShell):
         self.shell = shell
         super().__init__()
@@ -204,6 +207,7 @@ class AutostartTimeoutSetting(StaticChoiceSetting):
             ("10", "10s"),
             ("30", "30s"),
         ]
+
 
 def apply_font(os: protocol.OpenVarioOS, font_name: str) -> None:
     setfont = os.path("//usr/bin/setfont")

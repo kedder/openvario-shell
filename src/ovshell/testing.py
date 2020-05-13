@@ -8,20 +8,29 @@ JT = TypeVar("JT", bound=protocol.JsonType)
 
 
 class AppManagerStub(protocol.AppManager):
+    _app_infos: List[protocol.AppInfo]
+
     def __init__(self, log: List[str]) -> None:
         self._log = log
+        self._app_infos = []
 
     def list(self) -> Iterable[protocol.AppInfo]:
-        return []
+        return self._app_infos
 
     def get(self, appid: str) -> Optional[protocol.AppInfo]:
-        return None
+        appbyid = {ai.id: ai for ai in self._app_infos}
+        return appbyid.get(appid)
 
     def pin(self, app: protocol.AppInfo, persist: bool = False) -> None:
         pass
 
     def unpin(self, app: protocol.AppInfo, persist: bool = False) -> None:
         pass
+
+    def stub_add_app(
+        self, id: str, app: protocol.App, ext: protocol.Extension, pinned: bool = False
+    ):
+        self._app_infos.append(protocol.AppInfo(id, app, ext, pinned))
 
 
 class ExtensionManagerStub(protocol.ExtensionManager):

@@ -68,7 +68,7 @@ class FinalScreenActivity(protocol.Activity):
 class MainMenuActivity(protocol.Activity):
     autostart_app: Optional[str]
     autostart_progess: urwid.ProgressBar
-    autostart_countdown_task: asyncio.Task
+    autostart_countdown_task: Optional[asyncio.Task] = None
 
     def __init__(
         self, shell: protocol.OpenVarioShell, autostart_app: str = None
@@ -216,11 +216,7 @@ class MainMenuActivity(protocol.Activity):
         )
 
         # Align with main menu
-        return urwid.Padding(
-            urwid.Padding(counter_pile, left=1, right=1),
-            width=("relative", 40),
-            align="center",
-        )
+        return urwid.Padding(counter_pile, width=("relative", 80), align="center",)
 
     async def autostart_countdown(self, countdown: int, appinfo: protocol.AppInfo):
         empty_widget = self.autostart_counter.original_widget
