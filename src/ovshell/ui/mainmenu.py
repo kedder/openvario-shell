@@ -1,4 +1,5 @@
 from typing import Callable, List, Optional
+import asyncio
 
 import urwid
 
@@ -65,6 +66,10 @@ class FinalScreenActivity(protocol.Activity):
 
 
 class MainMenuActivity(protocol.Activity):
+    autostart_app: Optional[str]
+    autostart_progess: urwid.ProgressBar
+    autostart_countdown_task: asyncio.Task
+
     def __init__(
         self, shell: protocol.OpenVarioShell, autostart_app: str = None
     ) -> None:
@@ -89,6 +94,11 @@ class MainMenuActivity(protocol.Activity):
             m_pinned_apps + [m_apps, m_settings, urwid.Divider(), m_shutdown]
         )
 
+        # Reserve space for counter
+        self.autostart_counter = urwid.WidgetPlaceholder(
+            urwid.BoxAdapter(urwid.SolidFill(" "), 2)
+        )
+
         view = urwid.Filler(
             urwid.Pile(
                 [
@@ -100,10 +110,15 @@ class MainMenuActivity(protocol.Activity):
                         width=("relative", 40),
                         align=urwid.CENTER,
                     ),
+                    urwid.Divider(),
+                    urwid.Divider(),
+                    self.autostart_counter,
                 ]
             ),
             "middle",
         )
+        view = AutostartCanceller(view)
+        urwid.connect_signal(view, "anykey", self._on_cancel_autostart)
         view = widget.KeySignals(view)
         urwid.connect_signal(view, "cancel", self._on_quit)
         return view
@@ -111,7 +126,9 @@ class MainMenuActivity(protocol.Activity):
     def activate(self) -> None:
         autostart = self._get_autostart_app()
         if autostart is not None:
-            autostart.app.launch()
+            self.autostart_countdown_task = self.shell.screen.spawn_task(
+                self, self.autostart_countdown(3, autostart)
+            )
 
     def _get_pinned_apps(self) -> urwid.Widget:
         m_items = []
@@ -184,3 +201,77 @@ class MainMenuActivity(protocol.Activity):
                     f"Available apps: {availapps}"
                 )
         return None
+
+    def _make_countdown_widget(self) -> urwid.Widget:
+        self.autostart_progress = AutostartProgressBar(
+            "pg inverted", "pg complete", current=40
+        )
+        self.autostart_progress.static_text = ""
+
+        counter_pile = urwid.Pile(
+            [
+                self.autostart_progress,
+                urwid.Text(("remark", "Press any button to cancel")),
+            ]
+        )
+
+        # Align with main menu
+        return urwid.Padding(
+            urwid.Padding(counter_pile, left=1, right=1),
+            width=("relative", 40),
+            align="center",
+        )
+
+    async def autostart_countdown(self, countdown: int, appinfo: protocol.AppInfo):
+        empty_widget = self.autostart_counter.original_widget
+        self.autostart_counter.original_widget = self._make_countdown_widget()
+        try:
+            await self._run_countdown(countdown, appinfo.app.title)
+            appinfo.app.launch()
+        finally:
+            # Clean up the progress indicator when done or cancelled
+            self.autostart_counter.original_widget = empty_widget
+
+    async def _run_countdown(self, countdown: int, appname: str):
+        current = float(countdown)
+        delta = 0.1
+        self.autostart_progress.set_completion(100)
+        while current >= 0:
+            await asyncio.sleep(delta)
+            current -= delta
+            progress = int(current / countdown * 100)
+            self.autostart_progress.set_completion(progress)
+            status = f"Starting {appname} in {int(current + 1)}s"
+            self.autostart_progress.static_text = status
+
+    def _on_cancel_autostart(self, w: urwid.Widget) -> None:
+        if self.autostart_countdown_task is None:
+            return
+        self.autostart_countdown_task.cancel()
+
+
+class AutostartProgressBar(urwid.ProgressBar):
+    static_text: Optional[str] = None
+
+    def get_text(self) -> str:
+        if self.static_text is not None:
+            return self.static_text
+        return super().get_text()
+
+
+class AutostartCanceller(urwid.WidgetWrap):
+    """Emmit "anykey" signal to cancel autostart counter"""
+
+    signals = ["anykey"]
+    triggered = False
+
+    def keypress(self, size, key: str) -> Optional[str]:
+        if not self.triggered:
+            self._emit("anykey")
+            self.triggered = True
+            # Use first escape simply to cancel the autostart counter. Do not
+            # propagate it down. Once autostart is cancelled, pass escapes
+            # normally.
+            if key == "esc":
+                return None
+        return super().keypress(size, key)

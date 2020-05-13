@@ -72,6 +72,7 @@ def run(argv) -> None:
         ("li normal", "light cyan", "black", ""),
         ("li focus", "white", "dark red", ""),
         ("pg normal", "white", "black", "standout"),
+        ("pg inverted", "black", "light gray", "standout"),
         ("pg complete", "white", "dark magenta"),
         ("pg smooth", "dark magenta", "black"),
         ("screen header", "white", "brown", "standout"),
