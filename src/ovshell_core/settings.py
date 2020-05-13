@@ -159,6 +159,51 @@ class ScreenBrightnessSetting(StaticChoiceSetting):
             ("10", "100%"),
         ]
 
+class AutostartAppSetting(StaticChoiceSetting):
+    title = "Autostart application"
+    priority = 68
+    config_key = "ovshell.autostart_app"
+
+    def __init__(self, shell: protocol.OpenVarioShell):
+        self.shell = shell
+        super().__init__()
+
+    def read(self) -> Optional[str]:
+        return self.shell.settings.get(self.config_key, str, "")
+
+    def store(self, value: Optional[str]) -> None:
+        self.shell.settings.set(self.config_key, value, save=True)
+
+    def get_choices(self) -> Sequence[Tuple[str, str]]:
+        choices = [("", "Main Menu")]
+        for appinfo in self.shell.apps.list():
+            choices.append((appinfo.id, appinfo.app.title))
+
+        return choices
+
+class AutostartTimeoutSetting(StaticChoiceSetting):
+    title = "Autostart timeout"
+    priority = 67
+    config_key = "ovshell.autostart_timeout"
+    def __init__(self, shell: protocol.OpenVarioShell):
+        self.shell = shell
+        super().__init__()
+
+    def read(self) -> Optional[str]:
+        return str(self.shell.settings.get(self.config_key, int, 0))
+
+    def store(self, value: Optional[str]) -> None:
+        self.shell.settings.set(self.config_key, int(value or 0), save=True)
+
+    def get_choices(self) -> Sequence[Tuple[str, str]]:
+        return [
+            ("0", "Immediately"),
+            ("1", "1s"),
+            ("3", "3s"),
+            ("5", "5s"),
+            ("10", "10s"),
+            ("30", "30s"),
+        ]
 
 def apply_font(os: protocol.OpenVarioOS, font_name: str) -> None:
     setfont = os.path("//usr/bin/setfont")

@@ -9,7 +9,7 @@ def test_extension(ovshell: testing.OpenVarioShellStub) -> None:
 
     # Check settings initialization
     settings = ext.list_settings()
-    assert len(settings) == 4
+    assert len(settings) == 6
 
     # Basic settings are initialized
     assert ovshell.settings.getstrict("core.screen_orientation", str) == "0"

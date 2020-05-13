@@ -19,6 +19,8 @@ class CoreExtension(protocol.Extension):
             settings.LanguageSetting(self.shell),
             settings.ScreenBrightnessSetting(self.shell),
             settings.ConsoleFontSetting(self.shell),
+            settings.AutostartAppSetting(self.shell),
+            settings.AutostartTimeoutSetting(self.shell),
         ]
 
     def _init_settings(self) -> None:
