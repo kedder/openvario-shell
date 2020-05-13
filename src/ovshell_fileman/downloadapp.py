@@ -71,7 +71,7 @@ class LogDownloaderActivity(protocol.Activity):
         self._dl_in_progress = {}
 
     def create(self) -> urwid.Widget:
-        filtstate = self.shell.settings.get("fileman.download-logs.filter", dict) or {}
+        filtstate = self.shell.settings.get("fileman.download_logs.filter", dict) or {}
         self.filter = DownloadFilter.fromdict(filtstate)
 
         self._waiting_view = urwid.Filler(
@@ -141,7 +141,7 @@ class LogDownloaderActivity(protocol.Activity):
 
     def _set_filter_option(self, attr: str, w: urwid.Widget, state: bool) -> None:
         setattr(self.filter, attr, state)
-        self.shell.settings.set("fileman.download-logs.filter", self.filter.asdict())
+        self.shell.settings.set("fileman.download_logs.filter", self.filter.asdict())
         self.shell.settings.save()
         self._populate_file_list()
 

@@ -158,7 +158,7 @@ async def test_activity_change_settings(
     # GIVEN
     # Set initial settings
     activity_testbed.ovshell.settings.set(
-        "fileman.download-logs.filter", {"new": True, "igc": True, "nmea": True}
+        "fileman.download_logs.filter", {"new": True, "igc": True, "nmea": True}
     )
     w = activity_testbed.activity.create()
     activity_testbed.activity.activate()
@@ -170,7 +170,7 @@ async def test_activity_change_settings(
     _keypress(w, ["enter", "right", "enter", "right", "enter"])
 
     # THEN
-    filt = activity_testbed.ovshell.settings.get("fileman.download-logs.filter", dict)
+    filt = activity_testbed.ovshell.settings.get("fileman.download_logs.filter", dict)
     assert filt == {"new": False, "igc": False, "nmea": False}
 
 
