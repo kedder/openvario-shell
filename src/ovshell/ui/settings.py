@@ -103,7 +103,7 @@ class SettingRowItem(urwid.WidgetWrap):
         self._value_w = urwid.Text(setting.value_label)
         self._value_popup_w = SettingsPopUpLauncher(setting, self._value_w)
         cols = urwid.Columns(
-            [("weight", 1, self._title_w), ("weight", 2, self._value_popup_w)]
+            [("weight", 1, self._title_w), ("weight", 1, self._value_popup_w)]
         )
         wdg = urwid.AttrMap(cols, "li normal", "li focus")
         super().__init__(wdg)

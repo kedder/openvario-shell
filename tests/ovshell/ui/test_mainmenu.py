@@ -57,7 +57,7 @@ def test_mainmenu_exit(ovshell: testing.OpenVarioShellStub) -> None:
     w = act.create()
 
     # WHEN
-    _keypress(w, ["esc", "esc"])
+    _keypress(w, ["esc"])
 
     # THEN
     quitact = ovshell.screen.stub_top_activity()
@@ -76,11 +76,33 @@ def test_mainmenu_exit(ovshell: testing.OpenVarioShellStub) -> None:
 
 
 @pytest.mark.asyncio
-async def test_mainmenu_autostart(ovshell: testing.OpenVarioShellStub, nosleep) -> None:
+async def test_mainmenu_autostart_immediate(
+    ovshell: testing.OpenVarioShellStub, nosleep: None
+) -> None:
     # GIVEN
     app = MockApp()
     ovshell.apps.stub_add_app("mockapp", app, MockExtension())
     act = MainMenuActivity(ovshell, "mockapp")
+    act.create()
+
+    # WHEN
+    act.activate()
+    await asyncio.sleep(0)
+
+    # THEN
+    assert app.launched
+
+
+@pytest.mark.asyncio
+async def test_mainmenu_autostart_timeout(
+    ovshell: testing.OpenVarioShellStub, nosleep: None
+) -> None:
+    # GIVEN
+    app = MockApp()
+    ovshell.apps.stub_add_app("mockapp", app, MockExtension())
+    ovshell.settings.set("ovshell.autostart_app", "mockapp")
+    ovshell.settings.set("ovshell.autostart_timeout", 3)
+    act = MainMenuActivity(ovshell)
     w = act.create()
 
     # WHEN
@@ -104,10 +126,11 @@ async def test_mainmenu_autostart(ovshell: testing.OpenVarioShellStub, nosleep) 
 
 @pytest.mark.asyncio
 async def test_mainmenu_autostart_cancel(
-    ovshell: testing.OpenVarioShellStub, nosleep
+    ovshell: testing.OpenVarioShellStub, nosleep: None
 ) -> None:
     # GIVEN
     app = MockApp()
+    ovshell.settings.set("ovshell.autostart_timeout", 3)
     ovshell.apps.stub_add_app("mockapp", app, MockExtension())
     act = MainMenuActivity(ovshell, "mockapp")
     w = act.create()

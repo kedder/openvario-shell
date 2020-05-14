@@ -66,15 +66,16 @@ class FinalScreenActivity(protocol.Activity):
 
 
 class MainMenuActivity(protocol.Activity):
-    autostart_app: Optional[str]
+    autostart_app_id: Optional[str]
     autostart_progess: urwid.ProgressBar
     autostart_countdown_task: Optional[asyncio.Task] = None
+    autostart_canceller: "AutostartCanceller"
 
     def __init__(
-        self, shell: protocol.OpenVarioShell, autostart_app: str = None
+        self, shell: protocol.OpenVarioShell, autostart_app_id: str = None
     ) -> None:
         self.shell = shell
-        self.autostart_app = autostart_app
+        self.autostart_app_id = autostart_app_id
 
     def create(self) -> urwid.Widget:
         btxt = urwid.BigText("Openvario", urwid.font.Thin6x6Font())
@@ -117,17 +118,20 @@ class MainMenuActivity(protocol.Activity):
             ),
             "middle",
         )
-        view = AutostartCanceller(view)
-        urwid.connect_signal(view, "anykey", self._on_cancel_autostart)
-        view = widget.KeySignals(view)
+        self.autostart_canceller = AutostartCanceller(view)
+        urwid.connect_signal(
+            self.autostart_canceller, "anykey", self._on_cancel_autostart
+        )
+        view = widget.KeySignals(self.autostart_canceller)
         urwid.connect_signal(view, "cancel", self._on_quit)
         return view
 
     def activate(self) -> None:
         autostart = self._get_autostart_app()
+        timeout = self.shell.settings.get("ovshell.autostart_timeout", int) or 0
         if autostart is not None:
             self.autostart_countdown_task = self.shell.screen.spawn_task(
-                self, self.autostart_countdown(3, autostart)
+                self, self.autostart_countdown(timeout, autostart)
             )
 
     def _get_pinned_apps(self) -> urwid.Widget:
@@ -190,16 +194,20 @@ class MainMenuActivity(protocol.Activity):
         return f"Version {ovshell.__version__}"
 
     def _get_autostart_app(self) -> Optional[protocol.AppInfo]:
-        if self.autostart_app:
-            appinfo = self.shell.apps.get(self.autostart_app)
-            if appinfo is not None:
-                return appinfo
-            else:
-                availapps = ", ".join([a.id for a in self.shell.apps.list()])
-                print(
-                    f"Error: app '{self.autostart_app}' does not exist. "
-                    f"Available apps: {availapps}"
-                )
+        app_id = self.autostart_app_id
+        app_id = app_id or self.shell.settings.get("ovshell.autostart_app", str)
+        if app_id is None:
+            return None
+
+        appinfo = self.shell.apps.get(app_id)
+        if appinfo is not None:
+            return appinfo
+
+        availapps = ", ".join([a.id for a in self.shell.apps.list()])
+        print(
+            f"Error: app '{self.autostart_app_id}' does not exist. "
+            f"Available apps: {availapps}"
+        )
         return None
 
     def _make_countdown_widget(self) -> urwid.Widget:
@@ -221,12 +229,15 @@ class MainMenuActivity(protocol.Activity):
     async def autostart_countdown(self, countdown: int, appinfo: protocol.AppInfo):
         empty_widget = self.autostart_counter.original_widget
         self.autostart_counter.original_widget = self._make_countdown_widget()
+        self.autostart_canceller.active = True
         try:
-            await self._run_countdown(countdown, appinfo.app.title)
+            if countdown > 0:
+                await self._run_countdown(countdown, appinfo.app.title)
             appinfo.app.launch()
         finally:
             # Clean up the progress indicator when done or cancelled
             self.autostart_counter.original_widget = empty_widget
+            self.autostart_canceller.active = False
 
     async def _run_countdown(self, countdown: int, appname: str):
         current = float(countdown)
@@ -259,15 +270,14 @@ class AutostartCanceller(urwid.WidgetWrap):
     """Emmit "anykey" signal to cancel autostart counter"""
 
     signals = ["anykey"]
-    triggered = False
+    active = False
 
     def keypress(self, size, key: str) -> Optional[str]:
-        if not self.triggered:
+        if self.active:
             self._emit("anykey")
-            self.triggered = True
-            # Use first escape simply to cancel the autostart counter. Do not
-            # propagate it down. Once autostart is cancelled, pass escapes
-            # normally.
+            # When active, use escape to simply cancel the autostart. Do not
+            # propagate it further, because that would bring "shut down"
+            # dialog.
             if key == "esc":
                 return None
         return super().keypress(size, key)
