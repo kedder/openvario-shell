@@ -22,7 +22,15 @@ device that is:
 * **Simple to develop and test** -- written in Python, can be tested without
   Openvario device at hand.
 
-![Main Menu](screenshots/mainmenu.png) ![Settings](screenshots/settings.png)
+## Features
+
+![Feature Demo](screenshots/demo.gif)
+
+* Run XCSoar, optionally automatically after configurable timeout
+* Pick preferred XCSoar language
+* Chose screen orientation, screen brightness, font size and more
+* Download flight logs to USB flash drive with responsive UI
+* Integrate with third party apps (like [Competition Manager](https://github.com/kedder/openvario-compman))
 
 ## Installation
 
