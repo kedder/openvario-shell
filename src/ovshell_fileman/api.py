@@ -56,6 +56,14 @@ class Downloader(Protocol):
 
 class AutomountWatcher(Protocol):
     @abstractmethod
+    def on_device_in(self, handler: Callable[[], None]):
+        pass  # pragma: nocover
+
+    @abstractmethod
+    def on_device_out(self, handler: Callable[[], None]):
+        pass  # pragma: nocover
+
+    @abstractmethod
     def on_unmount(self, handler: Callable[[], None]) -> None:
         pass  # pragma: nocover
 

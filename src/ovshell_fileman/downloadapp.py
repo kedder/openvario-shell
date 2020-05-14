@@ -74,9 +74,8 @@ class LogDownloaderActivity(protocol.Activity):
         filtstate = self.shell.settings.get("fileman.download_logs.filter", dict) or {}
         self.filter = DownloadFilter.fromdict(filtstate)
 
-        self._waiting_view = urwid.Filler(
-            urwid.Text("Please insert USB storage", align="center"), "middle"
-        )
+        self._waiting_text = urwid.Text("Please insert USB storage", align="center")
+        self._waiting_view = urwid.Filler(self._waiting_text, "middle")
         self._file_walker = urwid.SimpleFocusListWalker([])
         self._app_view = self._create_app_view()
         self.frame = urwid.Frame(
@@ -87,6 +86,8 @@ class LogDownloaderActivity(protocol.Activity):
     def activate(self) -> None:
         self.mountwatcher.on_mount(self._mounted)
         self.mountwatcher.on_unmount(self._unmounted)
+        self.mountwatcher.on_device_in(self._device_in)
+        self.mountwatcher.on_device_out(self._device_out)
         self.shell.screen.spawn_task(self, self.mountwatcher.run())
 
     def _create_app_view(self) -> urwid.Widget:
@@ -107,6 +108,12 @@ class LogDownloaderActivity(protocol.Activity):
 
     def _unmounted(self) -> None:
         self.frame.set_body(self._waiting_view)
+
+    def _device_in(self) -> None:
+        self._waiting_text.set_text("Mounting USB storage...")
+
+    def _device_out(self) -> None:
+        self._waiting_text.set_text("Please insert USB storage")
 
     def _make_filter(self) -> urwid.Widget:
         options = urwid.GridFlow(

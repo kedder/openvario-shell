@@ -40,10 +40,20 @@ class AutomountWatcherStub(AutomountWatcher):
 
     _mount_handlers: List[Callable[[], None]]
     _unmount_handlers: List[Callable[[], None]]
+    _device_in_handlers: List[Callable[[], None]]
+    _device_out_handlers: List[Callable[[], None]]
 
     def __init__(self):
         self._mount_handlers = []
         self._unmount_handlers = []
+        self._device_in_handlers = []
+        self._device_out_handlers = []
+
+    def on_device_in(self, handler: Callable[[], None]):
+        self._device_in_handlers.append(handler)
+
+    def on_device_out(self, handler: Callable[[], None]):
+        self._device_out_handlers.append(handler)
 
     def on_unmount(self, handler: Callable[[], None]) -> None:
         self._unmount_handlers.append(handler)
@@ -60,6 +70,14 @@ class AutomountWatcherStub(AutomountWatcher):
 
     def stub_unmount(self) -> None:
         for h in self._unmount_handlers:
+            h()
+
+    def stub_device_in(self) -> None:
+        for h in self._device_in_handlers:
+            h()
+
+    def stub_device_out(self) -> None:
+        for h in self._device_out_handlers:
             h()
 
 
@@ -97,12 +115,18 @@ def test_app_start(ovshell: testing.OpenVarioShellStub) -> None:
     assert isinstance(act, LogDownloaderActivity)
 
 
-def test_activity_fs_not_mounted(
+@pytest.mark.asyncio
+async def test_activity_fs_mounting(
     activity_testbed: LogDownloaderActivityTestbed,
 ) -> None:
     w = activity_testbed.activity.create()
-    rendered = _render(w)
-    assert "Please insert USB storage" in rendered
+    activity_testbed.activity.activate()
+    await asyncio.sleep(0)
+    assert "Please insert USB storage" in _render(w)
+    activity_testbed.mountwatcher.stub_device_in()
+    assert "Mounting USB storage..." in _render(w)
+    activity_testbed.mountwatcher.stub_device_out()
+    assert "Please insert USB storage" in _render(w)
 
 
 @pytest.mark.asyncio
