@@ -53,7 +53,6 @@ class DownloaderImpl(Downloader):
 
         # Finally, rename the file
         os.replace(tmpdstfile, dstfile)
-        os.sync()
 
     def _matches(self, fileinfo: FileInfo, filter: DownloadFilter) -> bool:
         ftypes = [".nmea" if filter.nmea else None, ".igc" if filter.igc else None]
