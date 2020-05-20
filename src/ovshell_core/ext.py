@@ -1,9 +1,9 @@
 from typing import Sequence
-import asyncio
 
 from ovshell import protocol
 
 from ovshell_core import settings
+from ovshell_core import serial
 
 
 class CoreExtension(protocol.Extension):
@@ -26,7 +26,10 @@ class CoreExtension(protocol.Extension):
         ]
 
     def start(self) -> None:
-        self.shell.processes.start(maintain_serial_devices())
+        devlookup = serial.SerialDeviceLookupImpl()
+        self.shell.processes.start(
+            serial.maintain_serial_devices(self.shell, devlookup)
+        )
 
     def _init_settings(self) -> None:
         config = self.shell.settings
@@ -38,8 +41,3 @@ class CoreExtension(protocol.Extension):
         font = config.get("core.font", str)
         if font is not None:
             settings.apply_font(self.shell.os, font)
-
-
-async def maintain_serial_devices():
-    while True:
-        await asyncio.sleep(1)

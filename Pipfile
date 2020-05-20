@@ -15,3 +15,5 @@ openvario-shell = {editable = true,path = "."}
 urwid = "*"
 typing-extensions = "*"
 importlib-metadata = "*"
+pyserial-asyncio = "*"
+pyserial = "*"
