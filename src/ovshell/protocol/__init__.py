@@ -14,6 +14,7 @@ from typing import (
 from typing_extensions import Protocol
 from abc import abstractmethod
 from dataclasses import dataclass
+from pathlib import Path
 import asyncio
 
 import urwid
@@ -63,6 +64,43 @@ class Setting(Protocol):
     priority: int
 
     def activate(self, activator: SettingActivator) -> None:
+        pass
+
+
+class Device(Protocol):
+    id: str
+    name: str
+
+
+class DeviceIO(Protocol):
+    @abstractmethod
+    async def read(self) -> str:
+        pass
+
+    @abstractmethod
+    def write(self, data: str) -> None:
+        pass
+
+
+class DeviceManager(Protocol):
+    def register(self, device: Device) -> None:
+        pass
+
+
+class NmeaDevice(Protocol):
+    @abstractmethod
+    def open_nmea(self) -> DeviceIO:
+        pass
+
+
+class SerialDevice(Protocol):
+    baud_rate: int
+    path: Path
+
+
+class ProcessManager(Protocol):
+    @abstractmethod
+    def start(self, coro: Coroutine) -> asyncio.Task:
         pass
 
 
@@ -164,6 +202,9 @@ class Extension(Protocol):
     def list_apps(self) -> Sequence[App]:
         return []
 
+    def start(self) -> None:
+        pass
+
 
 ExtensionFactory = Callable[[str, "OpenVarioShell"], Extension]
 
@@ -206,6 +247,8 @@ class OpenVarioShell(Protocol):
     extensions: ExtensionManager
     apps: AppManager
     os: OpenVarioOS
+    devices: DeviceManager
+    processes: ProcessManager
 
     @abstractmethod
     def quit(self) -> None:

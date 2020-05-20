@@ -59,6 +59,7 @@ def debounce_esc(keys, raw):
 
 def startui(ctx: Tuple[OpenvarioShellImpl, Optional[str]]) -> None:
     shell, autostart = ctx
+    shell.boot()
     shell.screen.push_activity(MainMenuActivity(shell, autostart))
 
 

@@ -1,35 +1,9 @@
-from typing import Union
-from typing_extensions import Protocol
-from abc import abstractmethod
+from typing import Union, Optional, List, Dict
+from pathlib import Path
 import asyncio
 import weakref
-from pathlib import Path
 
-
-class Device(Protocol):
-    id: str
-    name: str
-
-
-class DeviceIO(Protocol):
-    @abstractmethod
-    async def read(self) -> str:
-        pass
-
-    @abstractmethod
-    def write(self, data: str) -> None:
-        pass
-
-
-class NmeaDevice(Protocol):
-    @abstractmethod
-    def open_nmea(self) -> DeviceIO:
-        pass
-
-
-class SerialDevice(Protocol):
-    baud_rate: int
-    path: Path
+from ovshell import protocol
 
 
 class EOF:
@@ -39,9 +13,9 @@ class EOF:
 NmeaStreamItem = Union[str, EOF]
 
 
-class DeviceIOImpl(DeviceIO):
+class DeviceIOImpl(protocol.DeviceIO):
     def __init__(
-        self, device: "SerialNmeaDevice", queue: asyncio.Queue[NmeaStreamItem]
+        self, device: "SerialNmeaDevice", queue: "asyncio.Queue[NmeaStreamItem]"
     ):
         self._device = device
         self._queue = queue
@@ -59,8 +33,8 @@ class DeviceIOImpl(DeviceIO):
         self._device.close_nmea(self._queue)
 
 
-class SerialNmeaDevice(Device, SerialDevice, NmeaDevice):
-    _queues: weakref.WeakSet[asyncio.Queue[NmeaStreamItem]]
+class SerialNmeaDevice(protocol.Device, protocol.SerialDevice, protocol.NmeaDevice):
+    _queues: "weakref.WeakSet[asyncio.Queue[NmeaStreamItem]]"
 
     def __init__(self, dev_path: Path) -> None:
         self.path = dev_path
@@ -68,12 +42,12 @@ class SerialNmeaDevice(Device, SerialDevice, NmeaDevice):
         self.name = dev_path.name
         self._queues = weakref.WeakSet()
 
-    def open_nmea(self) -> DeviceIO:
+    def open_nmea(self) -> protocol.DeviceIO:
         queue: asyncio.Queue[NmeaStreamItem] = asyncio.Queue(100)
         self._queues.add(queue)
         return DeviceIOImpl(self, queue)
 
-    def close_nmea(self, queue: asyncio.Queue[NmeaStreamItem]) -> None:
+    def close_nmea(self, queue: "asyncio.Queue[NmeaStreamItem]") -> None:
         self._queues.remove(queue)
 
     def _dispatch_nmea(self, sentence: NmeaStreamItem) -> None:
@@ -85,3 +59,24 @@ class SerialNmeaDevice(Device, SerialDevice, NmeaDevice):
 
     def _close(self) -> None:
         self._dispatch_nmea(EOF())
+
+
+class DeviceManagerImpl(protocol.DeviceManager):
+    _devices: Dict[str, protocol.Device]
+
+    def __init__(self) -> None:
+        self._devices = {}
+
+    def register(self, device: protocol.Device) -> None:
+        self._devices[device.id] = device
+        pass
+
+    def remove(self, devid: str) -> None:
+        if devid in self._devices:
+            del self._devices[devid]
+
+    def list(self) -> List[protocol.Device]:
+        return list(self._devices.values())
+
+    def get(self, devid: str) -> Optional[protocol.Device]:
+        return self._devices.get(devid)

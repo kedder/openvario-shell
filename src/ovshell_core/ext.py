@@ -1,4 +1,6 @@
 from typing import Sequence
+import asyncio
+
 from ovshell import protocol
 
 from ovshell_core import settings
@@ -23,6 +25,9 @@ class CoreExtension(protocol.Extension):
             settings.AutostartTimeoutSetting(self.shell),
         ]
 
+    def start(self) -> None:
+        self.shell.processes.start(maintain_serial_devices())
+
     def _init_settings(self) -> None:
         config = self.shell.settings
         config.setdefault("core.screen_orientation", "0")
@@ -33,3 +38,8 @@ class CoreExtension(protocol.Extension):
         font = config.get("core.font", str)
         if font is not None:
             settings.apply_font(self.shell.os, font)
+
+
+async def maintain_serial_devices():
+    while True:
+        await asyncio.sleep(1)

@@ -8,6 +8,8 @@ from ovshell.protocol import Extension, ExtensionFactory
 from ovshell import protocol
 from ovshell import settings
 from ovshell import ovos
+from ovshell import device
+from ovshell import process
 
 
 class ExtensionManagerImpl(protocol.ExtensionManager):
@@ -100,10 +102,14 @@ class OpenvarioShellImpl(OpenVarioShell):
             print(f"Simulating Openvario on {rootfs}")
             self.os = ovos.OpenVarioOSSimulator(rootfs)
         self.settings = settings.StoredSettingsImpl.load(config)
-        self.devices = None
-        self.processes = None
+        self.devices = device.DeviceManagerImpl()
+        self.processes = process.ProcessManagerImpl()
         self.extensions = ExtensionManagerImpl()
         self.apps = AppManagerImpl(self)
+
+    def boot(self) -> None:
+        for ext in self.extensions.list_extensions():
+            ext.start()
 
     def quit(self) -> None:
         raise urwid.ExitMainLoop()

@@ -138,6 +138,19 @@ class OpenVarioOSStub(protocol.OpenVarioOS):
         self._log.append("OS: Restart")
 
 
+class DeviceManagerStub(protocol.DeviceManager):
+    def __init__(self, log: List[str]) -> None:
+        self._log = log
+
+
+class ProcessManagerStub(protocol.ProcessManager):
+    def __init__(self, log: List[str]) -> None:
+        self._log = log
+
+    def start(self, coro: Coroutine) -> asyncio.Task:
+        return asyncio.create_task(coro)
+
+
 class OpenVarioShellStub(protocol.OpenVarioShell):
     _log: List[str]
 
@@ -148,6 +161,8 @@ class OpenVarioShellStub(protocol.OpenVarioShell):
         self.screen = ScreenManagerStub(self._log)
         self.settings = StoredSettingsStub(self._log)
         self.os = OpenVarioOSStub(self._log, fsroot)
+        self.devices = DeviceManagerStub(self._log)
+        self.processes = ProcessManagerStub(self._log)
 
         self._fsroot = fsroot
 
