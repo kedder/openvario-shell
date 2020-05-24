@@ -196,7 +196,7 @@ class MainMenuActivity(protocol.Activity):
     def _get_autostart_app(self) -> Optional[protocol.AppInfo]:
         app_id = self.autostart_app_id
         app_id = app_id or self.shell.settings.get("ovshell.autostart_app", str)
-        if app_id is None:
+        if not app_id:
             return None
 
         appinfo = self.shell.apps.get(app_id)
@@ -204,10 +204,7 @@ class MainMenuActivity(protocol.Activity):
             return appinfo
 
         availapps = ", ".join([a.id for a in self.shell.apps.list()])
-        print(
-            f"Error: app '{self.autostart_app_id}' does not exist. "
-            f"Available apps: {availapps}"
-        )
+        print(f"Error: app '{app_id}' does not exist. " f"Available apps: {availapps}")
         return None
 
     def _make_countdown_widget(self) -> urwid.Widget:
