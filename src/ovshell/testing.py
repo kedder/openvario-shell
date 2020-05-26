@@ -139,8 +139,18 @@ class OpenVarioOSStub(protocol.OpenVarioOS):
 
 
 class DeviceManagerStub(protocol.DeviceManager):
+    _devices: List[protocol.Device]
+
     def __init__(self, log: List[str]) -> None:
         self._log = log
+        self._devices = list()
+
+    def register(self, device: protocol.Device) -> None:
+        self._devices.append(device)
+        self._log.append(f"Registered device {device.id}")
+
+    def list(self) -> List[protocol.Device]:
+        return []
 
 
 class ProcessManagerStub(protocol.ProcessManager):

@@ -11,10 +11,11 @@ from typing import (
     Type,
     Coroutine,
 )
-from typing_extensions import Protocol
+from typing_extensions import Protocol, runtime_checkable
 from abc import abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
+import enum
 import asyncio
 
 import urwid
@@ -67,35 +68,37 @@ class Setting(Protocol):
         pass
 
 
+@runtime_checkable
 class Device(Protocol):
     id: str
     name: str
 
-
-class DeviceIO(Protocol):
     @abstractmethod
-    async def read(self) -> str:
+    async def read(self) -> bytes:
         pass
 
     @abstractmethod
-    def write(self, data: str) -> None:
+    async def readline(self) -> bytes:
         pass
+
+    @abstractmethod
+    def write(self, data: bytes) -> None:
+        pass
+
+
+class SerialDevice(Device):
+    baud_rate: int
+    path: Path
 
 
 class DeviceManager(Protocol):
+    @abstractmethod
     def register(self, device: Device) -> None:
         pass
 
-
-class NmeaDevice(Protocol):
     @abstractmethod
-    def open_nmea(self) -> DeviceIO:
+    def list(self) -> List[Device]:
         pass
-
-
-class SerialDevice(Protocol):
-    baud_rate: int
-    path: Path
 
 
 class ProcessManager(Protocol):
