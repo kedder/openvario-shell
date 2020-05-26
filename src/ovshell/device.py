@@ -1,7 +1,27 @@
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Generator, Tuple, Set
 import asyncio
+from contextlib import contextmanager
+from dataclasses import dataclass
 
 from ovshell import protocol
+
+
+class InvalidNMEA(ValueError):
+    pass
+
+
+@dataclass
+class NMEA:
+    device_id: str
+    raw_message: str
+
+    @staticmethod
+    def parse(device_id: str, message: bytes) -> "NMEA":
+        strmsg = message.decode().strip()
+        if not is_nmea_valid(strmsg):
+            raise InvalidNMEA()
+
+        return NMEA(device_id=device_id, raw_message=strmsg)
 
 
 class DeviceUnavailable(Exception):
@@ -9,11 +29,53 @@ class DeviceUnavailable(Exception):
         self.device = device
 
 
+def nmea_checksum(nmea_str: str) -> str:
+    chksum = 0
+    for c in nmea_str:
+        chksum ^= ord(c)
+    return f"{chksum:2X}"
+
+
+def is_nmea_valid(nmea_msg: str) -> bool:
+    if not nmea_msg.startswith("$"):
+        return False
+    parts = nmea_msg.rsplit("*", 1)
+    if len(parts) != 2:
+        return False
+    body, chksum = parts
+    return nmea_checksum(body[1:]) == chksum
+
+
+def format_nmea(nmea_str: str) -> str:
+    chksum = nmea_checksum(nmea_str)
+    return f"${nmea_str}*{chksum}"
+
+
+class NMEAStream:
+    def __init__(self, queue: "asyncio.Queue[Tuple[str, bytes]]") -> None:
+        self._queue = queue
+
+    async def read(self) -> NMEA:
+        while True:
+            devid, msg = await self._queue.get()
+            try:
+                return NMEA.parse(devid, msg)
+            except InvalidNMEA:
+                continue
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        return await self.read()
+
+
 class DeviceManagerImpl(protocol.DeviceManager):
     _devices: Dict[str, protocol.Device]
 
     def __init__(self) -> None:
         self._devices = {}
+        self._queues: "Set[asyncio.Queue[Tuple[str, bytes]]]" = set()
 
     def register(self, device: protocol.Device) -> None:
         self._devices[device.id] = device
@@ -27,6 +89,13 @@ class DeviceManagerImpl(protocol.DeviceManager):
 
     def get(self, devid: str) -> Optional[protocol.Device]:
         return self._devices.get(devid)
+
+    @contextmanager
+    def open_nmea(self) -> Generator[NMEAStream, None, None]:
+        q: "asyncio.Queue[Tuple[str, bytes]]" = asyncio.Queue(maxsize=100)
+        self._queues.add(q)
+        yield NMEAStream(q)
+        self._queues.remove(q)
 
     async def _read(self, dev: protocol.Device):
         try:
@@ -51,11 +120,15 @@ class DeviceManagerImpl(protocol.DeviceManager):
             for task in done:
                 try:
                     dev, msg = task.result()
-
-                    print("RECV:", dev.id, msg)
+                    self._publish(dev, msg)
                     devmap[dev.id] = self._read(dev)
                 except DeviceUnavailable as e:
                     devid = e.device.id
-                    print("REMOVING", devid)
                     del devmap[devid]
                     self.remove(devid)
+
+    def _publish(self, dev: protocol.Device, msg: bytes) -> None:
+        for q in self._queues:
+            if q.full():
+                q.get_nowait()
+            q.put_nowait((dev.id, msg))
