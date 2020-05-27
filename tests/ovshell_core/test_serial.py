@@ -1,10 +1,10 @@
 from typing import List, Coroutine, AsyncIterator, Tuple, Optional
 import asyncio
-from unittest import mock
 from dataclasses import dataclass
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+import mock
 import pytest
 from serial import SerialException
 

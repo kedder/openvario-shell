@@ -1,7 +1,7 @@
 from typing import List
 from pathlib import Path
-from unittest import mock
 
+import mock
 import pytest
 
 from ovshell_fileman.downloader import DownloaderImpl

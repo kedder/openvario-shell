@@ -9,6 +9,7 @@ pytest-coverage = "*"
 pytest-asyncio = "*"
 mypy = "*"
 black = "==19.10b0"
+mock = "*"
 
 [packages]
 openvario-shell = {editable = true,path = "."}
