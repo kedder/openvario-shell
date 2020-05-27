@@ -1,6 +1,8 @@
+from typing import AsyncIterator, Coroutine, AsyncContextManager, Callable
+import asyncio
 from pathlib import Path
 from typing import Generator
-import asyncio
+from contextlib import asynccontextmanager
 
 import pytest
 
@@ -15,3 +17,20 @@ def ovshell(
     yield ovshell
     ovshell.stub_teardown()
     event_loop.run_until_complete(asyncio.sleep(0))
+
+
+@pytest.fixture()
+def task_running() -> Callable[[Coroutine], AsyncContextManager[None]]:
+    @asynccontextmanager
+    async def runner(coro: Coroutine) -> AsyncIterator[None]:
+        task = asyncio.create_task(coro)
+        try:
+            yield
+        finally:
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
+
+    return runner
