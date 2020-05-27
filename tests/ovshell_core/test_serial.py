@@ -2,7 +2,6 @@ from typing import List, Coroutine, AsyncIterator, Tuple, Optional
 import asyncio
 from dataclasses import dataclass
 from contextlib import asynccontextmanager
-from pathlib import Path
 
 import mock
 import pytest
@@ -126,14 +125,14 @@ async def test_maintain_serial_devices_opened(
     assert isinstance(dev, serial.SerialDeviceImpl)
     assert dev.id == "/dev/ttyFAKE"
     assert dev.name == "ttyFAKE"
-    assert dev.path == Path("/dev/ttyFAKE")
-    assert dev.baudrate == 115200
+    assert dev.path == "/dev/ttyFAKE"
+    assert dev.baudrate == 9600
 
 
 @pytest.mark.asyncio
 async def test_SerialDeviceImpl_read(serial_testbed: SerialTestbed) -> None:
     # GIVEN
-    dev = await serial.SerialDeviceImpl.open(Path("/dev/ttyFAKE"))
+    dev = await serial.SerialDeviceImpl.open("/dev/ttyFAKE")
     serial_testbed.serial_opener.reader.read.return_value = b"hello"
 
     # WHEN
@@ -146,7 +145,7 @@ async def test_SerialDeviceImpl_read(serial_testbed: SerialTestbed) -> None:
 @pytest.mark.asyncio
 async def test_SerialDeviceImpl_readline(serial_testbed: SerialTestbed) -> None:
     # GIVEN
-    dev = await serial.SerialDeviceImpl.open(Path("/dev/ttyFAKE"))
+    dev = await serial.SerialDeviceImpl.open("/dev/ttyFAKE")
     serial_testbed.serial_opener.reader.readline.return_value = b"hello\r\n"
 
     # WHEN
@@ -159,7 +158,7 @@ async def test_SerialDeviceImpl_readline(serial_testbed: SerialTestbed) -> None:
 @pytest.mark.asyncio
 async def test_SerialDeviceImpl_write(serial_testbed: SerialTestbed) -> None:
     # GIVEN
-    dev = await serial.SerialDeviceImpl.open(Path("/dev/ttyFAKE"))
+    dev = await serial.SerialDeviceImpl.open("/dev/ttyFAKE")
 
     # WHEN
     dev.write(b"hello")

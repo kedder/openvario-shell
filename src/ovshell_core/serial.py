@@ -1,5 +1,5 @@
 from typing import NoReturn
-from pathlib import Path
+import os
 import asyncio
 
 import serial
@@ -11,29 +11,52 @@ from ovshell import protocol
 DEVICE_OPEN_TIMEOUT = 1
 DEVICE_POLL_TIMEOUT = 1
 
+STANDARD_BAUDRATES = [9600, 14400, 19200, 38400, 57600, 115200]
+
+
+class DeviceOpenError(Exception):
+    def __init__(self, path: str) -> None:
+        self.path = path
+
+
+class BaudRateNotDetected(DeviceOpenError):
+    pass
+
 
 class SerialDeviceImpl(protocol.SerialDevice):
     def __init__(
         self,
-        dev_path: Path,
+        dev_path: str,
         reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter,
         baudrate: int,
     ) -> None:
         self.path = dev_path
-        self.id = str(dev_path)
-        self.name = dev_path.name
+        self.id = dev_path
+        self.name = os.path.basename(dev_path)
         self.baudrate = baudrate
         self._reader = reader
         self._writer = writer
 
     @staticmethod
-    async def open(dev_path: Path) -> "SerialDeviceImpl":
-        baudrate = 115200
-        reader, writer = await open_serial_connection(
-            url=str(dev_path), baudrate=baudrate
-        )
-        return SerialDeviceImpl(dev_path, reader, writer, baudrate)
+    async def open(dev_path: str) -> "SerialDeviceImpl":
+        for baudrate in STANDARD_BAUDRATES:
+            try:
+                reader, writer = await open_serial_connection(
+                    url=str(dev_path), baudrate=baudrate
+                )
+            except serial.SerialException as e:
+                raise DeviceOpenError(dev_path) from e
+
+            data = await reader.readexactly(20)
+            if _is_ascii(data):
+                return SerialDeviceImpl(dev_path, reader, writer, baudrate)
+            else:
+                writer.close()
+                await writer.wait_closed()
+                await asyncio.sleep(0.2)
+
+        raise BaudRateNotDetected(dev_path)
 
     async def read(self) -> bytes:
         return await self._reader.read()
@@ -46,27 +69,34 @@ class SerialDeviceImpl(protocol.SerialDevice):
 
 
 async def maintain_serial_devices(shell: protocol.OpenVarioShell) -> NoReturn:
+    opening = {}
     while True:
         os_devs = set(d.device for d in comports(include_links=False))
 
-        shell_devs = [
-            d for d in shell.devices.list() if isinstance(d, SerialDeviceImpl)
+        registered_devs = [
+            d.path for d in shell.devices.list() if isinstance(d, SerialDeviceImpl)
         ]
-        shell_dev_idx = {d.id: d for d in shell_devs}
-        new_devs = os_devs.difference(shell_dev_idx.keys())
 
-        if not new_devs:
+        for dp in os_devs:
+            if dp not in opening and dp not in registered_devs:
+                opening[dp] = asyncio.create_task(SerialDeviceImpl.open(dp))
+
+        if not opening:
             await asyncio.sleep(DEVICE_POLL_TIMEOUT)
             continue
 
-        devs = [SerialDeviceImpl.open(Path(dp)) for dp in new_devs]
-        for pending_dev in asyncio.as_completed(devs, timeout=DEVICE_OPEN_TIMEOUT):
+        for task in asyncio.as_completed(opening.values(), timeout=DEVICE_OPEN_TIMEOUT):
             try:
-                dev = await pending_dev
+                dev = await task
+                del opening[str(dev.path)]
+                shell.devices.register(dev)
             except asyncio.TimeoutError:
                 break
-            except serial.SerialException:
-                continue
-            shell.devices.register(dev)
+            except DeviceOpenError as e:
+                del opening[e.path]
 
         await asyncio.sleep(DEVICE_POLL_TIMEOUT)
+
+
+def _is_ascii(data: bytes) -> bool:
+    return all(10 <= b <= 127 for b in data)

@@ -88,7 +88,7 @@ class Device(Protocol):
 
 class SerialDevice(Device):
     baudrate: int
-    path: Path
+    path: str
 
 
 class DeviceManager(Protocol):
