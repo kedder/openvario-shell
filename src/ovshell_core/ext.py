@@ -26,10 +26,7 @@ class CoreExtension(protocol.Extension):
         ]
 
     def start(self) -> None:
-        devlookup = serial.SerialDeviceLookupImpl()
-        self.shell.processes.start(
-            serial.maintain_serial_devices(self.shell, devlookup)
-        )
+        self.shell.processes.start(serial.maintain_serial_devices(self.shell))
 
     def _init_settings(self) -> None:
         config = self.shell.settings

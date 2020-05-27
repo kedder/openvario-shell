@@ -29,7 +29,7 @@ class AppManagerStub(protocol.AppManager):
 
     def stub_add_app(
         self, id: str, app: protocol.App, ext: protocol.Extension, pinned: bool = False
-    ):
+    ) -> None:
         self._app_infos.append(protocol.AppInfo(id, app, ext, pinned))
 
 
@@ -150,7 +150,7 @@ class DeviceManagerStub(protocol.DeviceManager):
         self._log.append(f"Registered device {device.id}")
 
     def list(self) -> List[protocol.Device]:
-        return []
+        return self._devices
 
 
 class ProcessManagerStub(protocol.ProcessManager):
