@@ -52,16 +52,11 @@ def format_nmea(nmea_str: str) -> str:
 
 
 class NMEAStream:
-    def __init__(self, queue: "asyncio.Queue[Tuple[str, bytes]]") -> None:
+    def __init__(self, queue: "asyncio.Queue[NMEA]") -> None:
         self._queue = queue
 
     async def read(self) -> NMEA:
-        while True:
-            devid, msg = await self._queue.get()
-            try:
-                return NMEA.parse(devid, msg)
-            except InvalidNMEA:
-                continue
+        return await self._queue.get()
 
     def __aiter__(self):
         return self
@@ -75,7 +70,7 @@ class DeviceManagerImpl(protocol.DeviceManager):
 
     def __init__(self) -> None:
         self._devices = {}
-        self._queues: "Set[asyncio.Queue[Tuple[str, bytes]]]" = set()
+        self._queues: "Set[asyncio.Queue[NMEA]]" = set()
 
     def register(self, device: protocol.Device) -> None:
         self._devices[device.id] = device
@@ -92,7 +87,7 @@ class DeviceManagerImpl(protocol.DeviceManager):
 
     @contextmanager
     def open_nmea(self) -> Generator[NMEAStream, None, None]:
-        q: "asyncio.Queue[Tuple[str, bytes]]" = asyncio.Queue(maxsize=100)
+        q: "asyncio.Queue[NMEA]" = asyncio.Queue(maxsize=100)
         self._queues.add(q)
         yield NMEAStream(q)
         self._queues.remove(q)
@@ -128,7 +123,15 @@ class DeviceManagerImpl(protocol.DeviceManager):
                     self.remove(devid)
 
     def _publish(self, dev: protocol.Device, msg: bytes) -> None:
+        if not self._queues:
+            return
+
+        try:
+            nmea = NMEA.parse(dev.id, msg)
+        except InvalidNMEA:
+            return
+
         for q in self._queues:
             if q.full():
                 q.get_nowait()
-            q.put_nowait((dev.id, msg))
+            q.put_nowait(nmea)
