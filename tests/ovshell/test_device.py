@@ -5,7 +5,7 @@ import pytest
 
 from ovshell import device
 from ovshell import protocol
-from ovshell.device import nmea_checksum, format_nmea, is_nmea_valid
+from ovshell.device import nmea_checksum, format_nmea, is_nmea_valid, parse_nmea
 
 
 class DeviceStub(protocol.Device):
@@ -50,6 +50,14 @@ def test_is_nmea_valid() -> None:
     assert not is_nmea_valid("PGRMZ,+51.1,m,3*10")
     assert not is_nmea_valid("$PGRMZ,+51.1,m,3")
     assert not is_nmea_valid("$PGRMZ,+51.1,m,3*11")
+
+
+def test_parse_nmea() -> None:
+    nmea = parse_nmea("devid", b"$PGRMZ,+51.1,m,3*10\r\n")
+    assert nmea.device_id == "devid"
+    assert nmea.raw_message == "$PGRMZ,+51.1,m,3*10"
+    assert nmea.datatype == "PGRMZ"
+    assert nmea.fields == ["+51.1", "m", "3"]
 
 
 def test_DeviceManagerImpl_open_nmea_empty() -> None:

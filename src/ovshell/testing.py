@@ -1,6 +1,17 @@
-from typing import List, Iterable, Tuple, Optional, TypeVar, Type, Dict, Coroutine
+from typing import (
+    List,
+    Iterable,
+    Tuple,
+    Optional,
+    TypeVar,
+    Type,
+    Dict,
+    Coroutine,
+    Generator,
+)
 import os
 import asyncio
+from contextlib import contextmanager
 
 from ovshell import protocol
 
@@ -138,12 +149,28 @@ class OpenVarioOSStub(protocol.OpenVarioOS):
         self._log.append("OS: Restart")
 
 
+class NMEAStreamStub(protocol.NMEAStream):
+    def __init__(self, nmeas: List[protocol.NMEA]) -> None:
+        self._nmeas = list(reversed(nmeas))
+
+    async def read(self) -> protocol.NMEA:
+        return self._nmeas.pop()
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        return await self.read()
+
+
 class DeviceManagerStub(protocol.DeviceManager):
     _devices: List[protocol.Device]
+    _nmeas: List[protocol.NMEA]
 
     def __init__(self, log: List[str]) -> None:
         self._log = log
         self._devices = list()
+        self._nmeas = list()
 
     def register(self, device: protocol.Device) -> None:
         self._devices.append(device)
@@ -151,6 +178,13 @@ class DeviceManagerStub(protocol.DeviceManager):
 
     def list(self) -> List[protocol.Device]:
         return self._devices
+
+    @contextmanager
+    def open_nmea(self) -> Generator[protocol.NMEAStream, None, None]:
+        yield NMEAStreamStub(self._nmeas)
+
+    def stub_add_nmea(self, nmeas: List[protocol.NMEA]) -> None:
+        self._nmeas.extend(nmeas)
 
 
 class ProcessManagerStub(protocol.ProcessManager):

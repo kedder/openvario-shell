@@ -10,12 +10,12 @@ from typing import (
     TypeVar,
     Type,
     Coroutine,
+    Generator,
 )
 from typing_extensions import Protocol, runtime_checkable
 from abc import abstractmethod
 from dataclasses import dataclass
-from pathlib import Path
-import enum
+from contextlib import contextmanager
 import asyncio
 
 import urwid
@@ -91,6 +91,28 @@ class SerialDevice(Device):
     path: str
 
 
+@dataclass
+class NMEA:
+    device_id: str
+    raw_message: str
+    datatype: str
+    fields: Sequence[str]
+
+
+class NMEAStream:
+    @abstractmethod
+    async def read(self) -> NMEA:
+        pass
+
+    @abstractmethod
+    def __aiter__(self):
+        pass
+
+    @abstractmethod
+    async def __anext__(self):
+        pass
+
+
 class DeviceManager(Protocol):
     @abstractmethod
     def register(self, device: Device) -> None:
@@ -98,6 +120,11 @@ class DeviceManager(Protocol):
 
     @abstractmethod
     def list(self) -> List[Device]:
+        pass
+
+    @abstractmethod
+    @contextmanager
+    def open_nmea(self) -> Generator[NMEAStream, None, None]:
         pass
 
 
