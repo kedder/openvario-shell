@@ -4,6 +4,8 @@ Changelog for openvario-shell
 0.5 (unreleased)
 ----------------
 
+- Ability to read NMEA stream from connected devices, with baud rate
+  autodetection.
 - Automatically set system date and time from GPS source (if system time is
   found to be out-of-sync).
 
