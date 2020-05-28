@@ -4,7 +4,8 @@ Changelog for openvario-shell
 0.5 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Automatically set system date and time from GPS source (if system time is
+  found to be out-of-sync).
 
 
 0.4 (2020-05-15)

@@ -4,6 +4,7 @@ from ovshell import protocol
 
 from ovshell_core import settings
 from ovshell_core import serial
+from ovshell_core import gpstime
 
 
 class CoreExtension(protocol.Extension):
@@ -27,6 +28,7 @@ class CoreExtension(protocol.Extension):
 
     def start(self) -> None:
         self.shell.processes.start(serial.maintain_serial_devices(self.shell))
+        self.shell.processes.start(gpstime.gps_time_sync(self.shell))
 
     def _init_settings(self) -> None:
         config = self.shell.settings
