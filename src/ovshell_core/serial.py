@@ -10,6 +10,7 @@ from ovshell import protocol
 
 DEVICE_OPEN_TIMEOUT = 1
 DEVICE_POLL_TIMEOUT = 1
+BAUD_DETECTION_INTERVAL = 0.2
 
 STANDARD_BAUDRATES = [9600, 14400, 19200, 38400, 57600, 115200]
 
@@ -54,7 +55,7 @@ class SerialDeviceImpl(protocol.SerialDevice):
             else:
                 writer.close()
                 await writer.wait_closed()
-                await asyncio.sleep(0.2)
+                await asyncio.sleep(BAUD_DETECTION_INTERVAL)
 
         raise BaudRateNotDetected(dev_path)
 

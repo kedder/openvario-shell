@@ -52,6 +52,7 @@ def serial_testbed(monkeypatch) -> SerialTestbed:
 
     monkeypatch.setattr("ovshell_core.serial.DEVICE_POLL_TIMEOUT", 0)
     monkeypatch.setattr("ovshell_core.serial.DEVICE_OPEN_TIMEOUT", 0.01)
+    monkeypatch.setattr("ovshell_core.serial.BAUD_DETECTION_INTERVAL", 0)
     monkeypatch.setattr(
         "ovshell_core.serial.open_serial_connection",
         serial_opener.open_serial_connection,
@@ -127,6 +128,42 @@ async def test_maintain_serial_devices_opened(
     assert dev.name == "ttyFAKE"
     assert dev.path == "/dev/ttyFAKE"
     assert dev.baudrate == 9600
+
+
+@pytest.mark.asyncio
+async def test_SerialDeviceImpl_baud_autodetect(serial_testbed: SerialTestbed) -> None:
+    # GIVEN
+    serial_testbed.serial_opener.reader.readexactly.side_effect = [
+        b"\0" * 20,
+        b"\xff" * 20,
+        b"X" * 20,
+    ]
+    serial_testbed.serial_opener.reader.read.return_value = b"hello"
+
+    # WHEN
+    dev = await serial.SerialDeviceImpl.open("/dev/ttyFAKE")
+
+    # THEN
+    assert dev.baudrate == 19200
+
+
+@pytest.mark.asyncio
+async def test_SerialDeviceImpl_baud_notdetected(serial_testbed: SerialTestbed) -> None:
+    # GIVEN
+    serial_testbed.serial_opener.reader.readexactly.side_effect = [
+        b"\0" * 20,
+        b"\xff" * 20,
+        b"\x01" * 20,
+        b"\x02" * 20,
+        b"\x03" * 20,
+        b"\x04" * 20,
+        b"\x05" * 20,
+    ]
+    serial_testbed.serial_opener.reader.read.return_value = b"hello"
+
+    # WHEN
+    with pytest.raises(serial.BaudRateNotDetected):
+        await serial.SerialDeviceImpl.open("/dev/ttyFAKE")
 
 
 @pytest.mark.asyncio
