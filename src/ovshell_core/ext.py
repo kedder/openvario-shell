@@ -5,6 +5,7 @@ from ovshell import protocol
 from ovshell_core import settings
 from ovshell_core import serial
 from ovshell_core import gpstime
+from ovshell_core import upgradeapp
 
 
 class CoreExtension(protocol.Extension):
@@ -25,6 +26,9 @@ class CoreExtension(protocol.Extension):
             settings.AutostartAppSetting(self.shell),
             settings.AutostartTimeoutSetting(self.shell),
         ]
+
+    def list_apps(self) -> Sequence[protocol.App]:
+        return [upgradeapp.SystemUpgradeApp(self.shell)]
 
     def start(self) -> None:
         self.shell.processes.start(serial.maintain_serial_devices(self.shell))
