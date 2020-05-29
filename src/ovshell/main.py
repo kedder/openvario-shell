@@ -111,6 +111,9 @@ def run(argv) -> None:
     except KeyboardInterrupt:
         pass
 
+    # Clear the screen on exit
+    print("\033[H\033[J", end="")
+
 
 def main():
     run(sys.argv[1:])

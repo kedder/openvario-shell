@@ -8,6 +8,7 @@ Changelog for openvario-shell
   autodetection.
 - Automatically set system date and time from GPS source (if system time is
   found to be out-of-sync).
+- Clear the screen when exiting to shell
 
 
 0.4 (2020-05-15)
