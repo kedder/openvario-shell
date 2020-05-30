@@ -6,7 +6,18 @@ import urwid
 import pytest
 
 from ovshell import testing
-from ovshell_core.upgradeapp import SystemUpgradeApp, SystemUpgradeActivity
+from ovshell_core.upgradeapp import OpkgTools
+from ovshell_core.upgradeapp import SystemUpgradeApp, CheckForUpdatesActivity
+
+
+class OpkgToolsStub(OpkgTools):
+    opkg_binary = "true"
+
+    def __init__(self):
+        pass
+
+    def list_upgradables(self) -> List[str]:
+        return []
 
 
 def test_app_start(ovshell: testing.OpenVarioShellStub) -> None:
@@ -18,19 +29,19 @@ def test_app_start(ovshell: testing.OpenVarioShellStub) -> None:
 
     # THEN
     act = ovshell.screen.stub_top_activity()
-    assert isinstance(act, SystemUpgradeActivity)
+    assert isinstance(act, CheckForUpdatesActivity)
 
 
 def test_activity_initial_view(ovshell: testing.OpenVarioShellStub) -> None:
     # GIVEN
-    act = SystemUpgradeActivity(ovshell)
+    act = CheckForUpdatesActivity(ovshell, OpkgToolsStub())
 
     # WHEN
     wdg = act.create()
     view = _render(wdg)
 
     # THEN
-    assert "System updates" in view
+    assert "System update" in view
 
 
 def _render(w: urwid.Widget) -> str:

@@ -1,0 +1,38 @@
+#!/bin/sh
+
+case "$1" in
+    update)
+        echo Downloading http://ftp.openvario.org/feed-warrior/all/Packages.gz.
+        sleep 0.2
+        echo Updated source 'remote-all'.
+        echo Downloading http://ftp.openvario.org/feed-warrior/armv7vet2hf-neon/Packages.gz.
+        sleep 0.2
+        echo Updated source 'remote-armv7vet2hf-neon'.
+        echo Downloading http://ftp.openvario.org/feed-warrior/openvario_57_lvds/Packages.gz.
+        sleep 0.2
+        echo Updated source 'remote-openvario_57_lvds'.
+        echo Downloading file:///usb/usbstick/openvario/repo/all/Packages.gz.
+        echo Downloading file:///usb/usbstick/openvario/repo/armv7vet2hf-neon/Packages.gz.
+        echo Downloading file:///usb/usbstick/openvario/repo/openvario_57_lvds/Packages.gz.
+        >&2 echo Collected errors:
+        >&2 echo " * opkg_download_file: ///usb/usbstick/openvario/repo/all/Packages.gz: No such file."
+        >&2 echo " * opkg_download_file: ///usb/usbstick/openvario/repo/armv7vet2hf-neon/Packages.gz: No such file."
+        >&2 echo " * opkg_download_file: ///usb/usbstick/openvario/repo/openvario_57_lvds/Packages.gz: No such file."
+        exit 3
+        ;;
+    list-upgradable)
+        echo "openvario-shell"
+        echo "openvario-compman"
+        echo "kernel"
+        echo "kernel-module-usb-serial-simple"
+        ;;
+    upgrade)
+        echo "Upgrading...$2 $3 $4 $5"
+        sleep 0.5
+        echo "Done"
+        ;;
+    *)
+        echo "Command not recognized"
+        exit 1
+
+esac
