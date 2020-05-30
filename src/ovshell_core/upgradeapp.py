@@ -115,10 +115,13 @@ class CheckForUpdatesWidget(urwid.WidgetWrap):
             self._create_update_terminal(), title="opkg update", title_align="left",
         )
 
-        self.content = urwid.Pile(
+        content = urwid.Pile(
             [("pack", self.message_line), ("pack", urwid.Divider()), update_term,]
         )
-        return self.content
+        # Force pack to be selectable, even though no widget is selectable at
+        # the moment.
+        content._selectable = True
+        return content
 
     def _create_update_terminal(self) -> urwid.Widget:
         cmd = [self.opkg_tools.opkg_binary, "update"]
@@ -240,10 +243,13 @@ class SystemUpgradeWidget(urwid.WidgetWrap):
             self._create_upgrade_terminal(), title="opkg upgrade", title_align="left",
         )
 
-        self.content = urwid.Pile(
+        content = urwid.Pile(
             [("pack", self.message_line), ("pack", urwid.Divider()), update_term,]
         )
-        return self.content
+        # Force pack to be selectable, even though no widget is selectable at
+        # the moment.
+        content._selectable = True
+        return content
 
     def _create_upgrade_terminal(self) -> urwid.Widget:
         cmd = [self.opkg_tools.opkg_binary, "upgrade"] + self._packages
