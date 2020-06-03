@@ -81,7 +81,7 @@ class CheckForUpdatesActivity(protocol.Activity):
 
     def _on_continue(self, wdg: urwid.Widget) -> None:
         upgradables = self.check_for_updates_wdg.upgradables
-        ui = PackageSelectionWidget(upgradables)
+        ui = PackageSelectionWidget(upgradables, self.shell.screen)
         urwid.connect_signal(ui, "upgrade", self._on_upgrade)
         self.content.original_widget = ui
         self.select_pkg_wdg = ui
@@ -162,9 +162,10 @@ class PackageSelectionWidget(urwid.WidgetWrap):
     selected: Set[str]
     _upgradables: List[str]
 
-    def __init__(self, upgradables: List[str]) -> None:
+    def __init__(self, upgradables: List[str], screen: protocol.ScreenManager) -> None:
         self.selected = set()
         self._upgradables = upgradables
+        self._screen = screen
         content = self._create_package_list_screen()
         super().__init__(content)
 
@@ -208,6 +209,10 @@ class PackageSelectionWidget(urwid.WidgetWrap):
             self.selected.discard(pkgname)
 
     def _on_upgrade(self, wdg: urwid.Widget) -> None:
+        if not self.selected:
+            msg = urwid.Text("Please select one or more packages to upgrade.")
+            self._screen.push_dialog("Nothing to upgrade", msg)
+            return
         self._emit("upgrade")
 
     def _update_packages(self) -> None:
@@ -260,7 +265,7 @@ class SystemUpgradeWidget(urwid.WidgetWrap):
     def _on_opkg_upgrade_finished(self, wdg: urwid.Widget) -> None:
         exit_btn = widget.PlainButton(" Exit ")
         urwid.connect_signal(exit_btn, "click", self._on_exit)
-        message = f"No updates found"
+        message = f"Upgrade completed"
         message_wdg = urwid.Columns(
             [("pack", urwid.Text(message)), ("pack", exit_btn)], dividechars=1,
         )
