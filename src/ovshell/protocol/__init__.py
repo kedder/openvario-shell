@@ -180,6 +180,12 @@ class ModalOptions:
     bottom: int = 0
 
 
+class Dialog(Protocol):
+    @abstractmethod
+    def add_button(self, label: str, handler: Callable[[], bool]) -> None:
+        pass
+
+
 class ScreenManager(Protocol):
     @abstractmethod
     def push_activity(
@@ -193,6 +199,10 @@ class ScreenManager(Protocol):
 
     @abstractmethod
     def push_modal(self, activity: Activity, options: ModalOptions) -> None:
+        pass
+
+    @abstractmethod
+    def push_dialog(self, title: str, content: urwid.Widget) -> Dialog:
         pass
 
     @abstractmethod

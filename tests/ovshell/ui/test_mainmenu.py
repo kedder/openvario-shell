@@ -60,14 +60,13 @@ def test_mainmenu_exit(ovshell: testing.OpenVarioShellStub) -> None:
     _keypress(w, ["esc"])
 
     # THEN
-    quitact = ovshell.screen.stub_top_activity()
-    assert quitact is not None
-    qw = urwid.Filler(quitact.create())
-    rendered = _render(qw)
-    assert "Shut Down?" in rendered
+    quitdialog = ovshell.screen.stub_dialog()
+    assert quitdialog is not None
+    assert quitdialog.title == "Shut Down?"
 
     # Perform the shut down
-    _keypress(qw, ["enter"])
+    closed = quitdialog.stub_press_button("Shut Down")
+    assert not closed
     finalact = ovshell.screen.stub_top_activity()
     assert finalact is not None
     rendered = _render(finalact.create())

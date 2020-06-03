@@ -10,49 +10,6 @@ from ovshell.ui.settings import SettingsActivity
 from ovshell.ui.apps import AppsActivity
 
 
-class DialogActivity(protocol.Activity):
-    button_widgets: List[urwid.Widget]
-
-    def __init__(self, screen: protocol.ScreenManager, title: str, message: str):
-        self.screen = screen
-        self.title = title
-        self.message = message
-        self.modal_opts = protocol.ModalOptions(
-            align="center",
-            width=("relative", 60),
-            valign="middle",
-            height="pack",
-            min_width=54,
-        )
-
-        self.button_widgets = []
-
-    def create(self) -> urwid.Widget:
-        msg = urwid.Text(self.message)
-
-        buttons = urwid.GridFlow(
-            self.button_widgets, cell_width=11, h_sep=2, v_sep=1, align="center",
-        )
-
-        view = urwid.LineBox(urwid.Pile([msg, urwid.Divider(), buttons]), self.title)
-
-        return view
-
-    def add_button(self, label: str, handler: Callable[[], bool]) -> None:
-        button = widget.PlainButton(label)
-        urwid.connect_signal(
-            button, "click", self._on_button_clicked, user_args=[handler]
-        )
-        self.button_widgets.append(button)
-
-    def _on_button_clicked(
-        self, handler: Callable[[], bool], btn: urwid.Widget
-    ) -> None:
-        close_activity = handler()
-        if close_activity:
-            self.screen.pop_activity()
-
-
 class FinalScreenActivity(protocol.Activity):
     def __init__(self, message: str) -> None:
         self.message = message
@@ -160,16 +117,13 @@ class MainMenuActivity(protocol.Activity):
         appinfo.app.launch()
 
     def _on_quit(self, w: urwid.Widget) -> None:
-        confirm = DialogActivity(
-            self.shell.screen,
-            "Shut Down?",
-            "Do you really want to shut down Openvario?",
+        confirm = self.shell.screen.push_dialog(
+            "Shut Down?", urwid.Text("Do you really want to shut down Openvario?"),
         )
         confirm.add_button("Shut Down", self._on_shutdown)
         confirm.add_button("Restart", self._on_restart)
         confirm.add_button("Shell", self._on_exit)
         confirm.add_button("Cancel", lambda: True)
-        self.shell.screen.push_modal(confirm, confirm.modal_opts)
 
     def _on_shutdown(self) -> bool:
         self.shell.screen.push_activity(

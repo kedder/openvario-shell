@@ -8,10 +8,12 @@ from typing import (
     Dict,
     Coroutine,
     Generator,
+    Callable,
 )
 import os
 import asyncio
 from contextlib import contextmanager
+import urwid
 
 from ovshell import protocol
 
@@ -52,15 +54,30 @@ class ExtensionManagerStub(protocol.ExtensionManager):
         return []
 
 
+class DialogStub(protocol.Dialog):
+    def __init__(self, title: str, content: urwid.Widget):
+        self.title = title
+        self.content = content
+        self.buttons: Dict[str, Callable[[], bool]] = {}
+
+    def add_button(self, label: str, handler: Callable[[], bool]) -> None:
+        self.buttons[label] = handler
+
+    def stub_press_button(self, label: str):
+        return self.buttons[label]()
+
+
 class ScreenManagerStub(protocol.ScreenManager):
     _log: List[str]
     _activities: List[protocol.Activity]
     _tasks: List[Tuple[protocol.Activity, asyncio.Task]]
+    _dialog: Optional[DialogStub]
 
     def __init__(self, log: List[str]) -> None:
         self._log = log
         self._activities = []
         self._tasks = []
+        self._dialog = None
 
     def push_activity(
         self, activity: protocol.Activity, palette: Optional[List[Tuple]] = None
@@ -74,6 +91,10 @@ class ScreenManagerStub(protocol.ScreenManager):
         self, activity: protocol.Activity, options: protocol.ModalOptions
     ) -> None:
         self._activities.append(activity)
+
+    def push_dialog(self, title: str, content: urwid.Widget) -> protocol.Dialog:
+        self._dialog = DialogStub(title, content)
+        return self._dialog
 
     def spawn_task(self, activity: protocol.Activity, coro: Coroutine) -> asyncio.Task:
         task = asyncio.create_task(coro)
@@ -92,6 +113,9 @@ class ScreenManagerStub(protocol.ScreenManager):
         if not self._activities:
             return None
         return self._activities[-1]
+
+    def stub_dialog(self) -> Optional[DialogStub]:
+        return self._dialog
 
     def stub_cancel_tasks(self) -> None:
         for act, task in self._tasks:

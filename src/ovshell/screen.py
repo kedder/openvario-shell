@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict, Coroutine
+from typing import List, Tuple, Dict, Coroutine, Callable
 from dataclasses import dataclass
 import asyncio
 import functools
@@ -104,6 +104,11 @@ class ScreenManagerImpl(ScreenManager):
         activity.activate()
         activity.show()
 
+    def push_dialog(self, title: str, content: urwid.Widget) -> protocol.Dialog:
+        dialogact = DialogActivity(self, title, content)
+        self.push_modal(dialogact, dialogact.modal_opts)
+        return dialogact
+
     def pop_activity(self) -> None:
         curactctx = self._act_stack.pop()
         for task in curactctx.tasks:
@@ -173,3 +178,70 @@ class ScreenManagerImpl(ScreenManager):
             msg = f"Task failed. {exc.__class__.__name__}: {exc}"
             self.set_status(("error message", msg))
             return
+
+
+class DialogActivity(protocol.Activity, protocol.Dialog):
+    button_widgets: List[urwid.Widget]
+
+    def __init__(
+        self, screen: protocol.ScreenManager, title: str, message: urwid.Widget
+    ) -> None:
+        self.screen = screen
+        self.title = title
+        self.message = message
+        self.modal_opts = protocol.ModalOptions(
+            align="center",
+            width=("relative", 60),
+            valign="middle",
+            height="pack",
+            min_width=54,
+        )
+
+        self.custom_buttons = False
+        self.button_width = 0
+
+    def create(self) -> urwid.Widget:
+        # Add simple default button that can be oberridden by adding custom
+        # buttons.
+        default_btn_text = "Close"
+        btn = widget.PlainButton(default_btn_text)
+        self.btn_width = len(default_btn_text) + 2
+        urwid.connect_signal(
+            btn, "click", self._on_button_clicked, user_args=[lambda: True]
+        )
+        self.buttons = urwid.GridFlow(
+            [btn], cell_width=11, h_sep=2, v_sep=1, align="center",
+        )
+
+        content = urwid.Pile([self.message, urwid.Divider(), self.buttons])
+        view = urwid.LineBox(content, self.title)
+        return view
+
+    def add_button(self, label: str, handler: Callable[[], bool]) -> None:
+        if not self.custom_buttons:
+            self.buttons.contents = []
+
+        self._update_btn_width(label)
+        button = widget.PlainButton(label)
+        urwid.connect_signal(
+            button, "click", self._on_button_clicked, user_args=[handler]
+        )
+        contents = [
+            (w, ("given", self.button_width)) for w, opts in self.buttons.contents
+        ]
+        # self.button_widgets.append(button)
+        contents.append((button, ("given", self.button_width)))
+        self.buttons.contents = contents
+        self.custom_buttons = True
+
+    def _on_button_clicked(
+        self, handler: Callable[[], bool], btn: urwid.Widget
+    ) -> None:
+        close_activity = handler()
+        if close_activity:
+            self.screen.pop_activity()
+
+    def _update_btn_width(self, label: str) -> None:
+        new_width = len(label) + 2
+        if self.button_width < new_width:
+            self.button_width = new_width
