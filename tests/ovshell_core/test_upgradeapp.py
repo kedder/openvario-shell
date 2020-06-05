@@ -11,7 +11,7 @@ from ovshell_core.upgradeapp import SystemUpgradeApp, CheckForUpdatesActivity
 
 
 class OpkgToolsStub(OpkgTools):
-    opkg_binary = "true"
+    opkg_binary = "echo"
 
     def __init__(self):
         pass
@@ -44,7 +44,29 @@ def test_activity_initial_view(ovshell: testing.OpenVarioShellStub) -> None:
     assert "System update" in view
 
 
+@pytest.mark.asyncio
+async def test_activity_no_updates(ovshell: testing.OpenVarioShellStub) -> None:
+    act = CheckForUpdatesActivity(ovshell, OpkgToolsStub())
+    wdg = act.create()
+
+    # First render starts the command
+    view = _render(wdg)
+    assert "System update" in view
+    assert "Checking for updates..." in view
+
+    # Second render shows the output
+    await asyncio.sleep(0.1)
+    view = _render(wdg)
+    assert "Checking for updates..." in view
+
+    # Fourth render renders the finished command
+    # await asyncio.sleep(0.1)
+    view = _render(wdg)
+    view = _render(wdg)
+    assert "No updates found" in view
+
+
 def _render(w: urwid.Widget) -> str:
-    canvas = w.render((60, 40))
+    canvas = w.render((60, 30))
     contents = [t.decode("utf-8") for t in canvas.text]
     return "\n".join(contents)
