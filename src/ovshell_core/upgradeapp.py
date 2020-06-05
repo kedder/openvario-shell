@@ -134,14 +134,17 @@ class CheckForUpdatesWidget(urwid.WidgetWrap):
         if self.upgradables:
             continue_btn = widget.PlainButton(" Continue ")
             urwid.connect_signal(continue_btn, "click", self._on_continue)
-            message = f"{len(self.upgradables)} upgradable packages found"
+            message = [
+                ("success banner", f" {len(self.upgradables)} "),
+                ("success message", " upgradable packages found!"),
+            ]
             message_wdg = urwid.Columns(
                 [("pack", urwid.Text(message)), ("pack", continue_btn)], dividechars=1,
             )
         else:
             exit_btn = widget.PlainButton(" Exit ")
             urwid.connect_signal(exit_btn, "click", self._on_exit)
-            message = f"No updates found"
+            message = [("remark", f"No updates found")]
             message_wdg = urwid.Columns(
                 [("pack", urwid.Text(message)), ("pack", exit_btn), ("pack", exit_btn)],
                 dividechars=1,
@@ -265,7 +268,7 @@ class SystemUpgradeWidget(urwid.WidgetWrap):
     def _on_opkg_upgrade_finished(self, wdg: urwid.Widget) -> None:
         exit_btn = widget.PlainButton(" Exit ")
         urwid.connect_signal(exit_btn, "click", self._on_exit)
-        message = f"Upgrade completed"
+        message = ("success message", f"Upgrade completed!")
         message_wdg = urwid.Columns(
             [("pack", urwid.Text(message)), ("pack", exit_btn)], dividechars=1,
         )
