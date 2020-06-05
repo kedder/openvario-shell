@@ -50,7 +50,9 @@ def serial_testbed(monkeypatch) -> SerialTestbed:
     lookup = SerialDeviceLookupStub()
     serial_opener = SerialConnecitionOpenerStub()
 
-    monkeypatch.setattr("ovshell_core.serial.DEVICE_POLL_TIMEOUT", 0)
+    # We cannot have timeouts of exactly 0, because we would make too many
+    # iterations in our infinite loops in poller tasks.
+    monkeypatch.setattr("ovshell_core.serial.DEVICE_POLL_TIMEOUT", 0.01)
     monkeypatch.setattr("ovshell_core.serial.DEVICE_OPEN_TIMEOUT", 0.01)
     monkeypatch.setattr("ovshell_core.serial.BAUD_DETECTION_INTERVAL", 0)
     monkeypatch.setattr(
