@@ -15,7 +15,6 @@ class OpkgTools:
     @abstractmethod
     def list_upgradables(self) -> List[str]:
         """Return list of upgradable packages"""
-        pass
 
 
 class UnselectableTerminal(urwid.Terminal):
