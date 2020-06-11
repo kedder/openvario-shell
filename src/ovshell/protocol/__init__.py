@@ -74,10 +74,6 @@ class Device(Protocol):
     name: str
 
     @abstractmethod
-    async def read(self) -> bytes:
-        pass
-
-    @abstractmethod
     async def readline(self) -> bytes:
         pass
 

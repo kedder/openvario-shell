@@ -59,9 +59,6 @@ class SerialDeviceImpl(protocol.SerialDevice):
 
         raise BaudRateNotDetected(dev_path)
 
-    async def read(self) -> bytes:
-        return await self._reader.read()
-
     async def readline(self) -> bytes:
         return await self._reader.readline()
 

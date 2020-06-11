@@ -169,19 +169,6 @@ async def test_SerialDeviceImpl_baud_notdetected(serial_testbed: SerialTestbed) 
 
 
 @pytest.mark.asyncio
-async def test_SerialDeviceImpl_read(serial_testbed: SerialTestbed) -> None:
-    # GIVEN
-    dev = await serial.SerialDeviceImpl.open("/dev/ttyFAKE")
-    serial_testbed.serial_opener.reader.read.return_value = b"hello"
-
-    # WHEN
-    data = await dev.read()
-
-    # THEN
-    assert data == b"hello"
-
-
-@pytest.mark.asyncio
 async def test_SerialDeviceImpl_readline(serial_testbed: SerialTestbed) -> None:
     # GIVEN
     dev = await serial.SerialDeviceImpl.open("/dev/ttyFAKE")
