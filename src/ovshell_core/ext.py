@@ -1,4 +1,5 @@
 from typing import Sequence
+import os
 
 from ovshell import protocol
 
@@ -6,6 +7,7 @@ from ovshell_core import settings
 from ovshell_core import serial
 from ovshell_core import gpstime
 from ovshell_core import upgradeapp
+from ovshell_core import devsim
 
 
 class CoreExtension(protocol.Extension):
@@ -33,6 +35,10 @@ class CoreExtension(protocol.Extension):
     def start(self) -> None:
         self.shell.processes.start(serial.maintain_serial_devices(self.shell))
         self.shell.processes.start(gpstime.gps_time_sync(self.shell))
+
+        simfile = os.environ.get("OVSHELL_CORE_SIMULATE_DEVICE")
+        if simfile:
+            devsim.run_simulated_device(self.shell, simfile)
 
     def _init_settings(self) -> None:
         config = self.shell.settings
