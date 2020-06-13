@@ -12,6 +12,7 @@ from typing import (
     Coroutine,
     Generator,
 )
+import enum
 from typing_extensions import Protocol, runtime_checkable
 from abc import abstractmethod
 from dataclasses import dataclass
@@ -20,7 +21,7 @@ import asyncio
 
 import urwid
 
-UrwidText = Union[str, Tuple[str, str], List[Tuple[str, str]]]
+UrwidText = Union[str, Tuple[str, str], List[Union[str, Tuple[str, str]]]]
 BasicType = Union[int, str, float]
 JsonType = Union[BasicType, List[BasicType], Dict[str, BasicType]]
 
@@ -182,6 +183,11 @@ class Dialog(Protocol):
         pass
 
 
+class IndicatorLocation(enum.Enum):
+    LEFT = "left"
+    RIGHT = "right"
+
+
 class ScreenManager(Protocol):
     @abstractmethod
     def push_activity(
@@ -199,6 +205,16 @@ class ScreenManager(Protocol):
 
     @abstractmethod
     def push_dialog(self, title: str, content: urwid.Widget) -> Dialog:
+        pass
+
+    @abstractmethod
+    def set_indicator(
+        self, iid: str, markup: UrwidText, location: IndicatorLocation, weight: int
+    ) -> None:
+        pass
+
+    @abstractmethod
+    def remove_indicator(self, iid: str) -> None:
         pass
 
     @abstractmethod

@@ -12,6 +12,7 @@ from typing import (
 )
 import os
 import asyncio
+from dataclasses import dataclass
 from contextlib import contextmanager
 import urwid
 
@@ -67,17 +68,27 @@ class DialogStub(protocol.Dialog):
         return self.buttons[label]()
 
 
+@dataclass
+class TopIndicatorStub:
+    id: str
+    markup: protocol.UrwidText
+    location: protocol.IndicatorLocation
+    weight: int
+
+
 class ScreenManagerStub(protocol.ScreenManager):
     _log: List[str]
     _activities: List[protocol.Activity]
     _tasks: List[Tuple[protocol.Activity, asyncio.Task]]
     _dialog: Optional[DialogStub]
+    _indicators: Dict[str, TopIndicatorStub]
 
     def __init__(self, log: List[str]) -> None:
         self._log = log
         self._activities = []
         self._tasks = []
         self._dialog = None
+        self._indicators = {}
 
     def push_activity(
         self, activity: protocol.Activity, palette: Optional[List[Tuple]] = None
@@ -95,6 +106,20 @@ class ScreenManagerStub(protocol.ScreenManager):
     def push_dialog(self, title: str, content: urwid.Widget) -> protocol.Dialog:
         self._dialog = DialogStub(title, content)
         return self._dialog
+
+    def set_indicator(
+        self,
+        iid: str,
+        markup: protocol.UrwidText,
+        location: protocol.IndicatorLocation,
+        weight: int,
+    ) -> None:
+        self._indicators[iid] = TopIndicatorStub(iid, markup, location, weight)
+
+    def remove_indicator(self, iid: str) -> None:
+        if iid in self._indicators:
+            del self._indicators[iid]
+        pass
 
     def spawn_task(self, activity: protocol.Activity, coro: Coroutine) -> asyncio.Task:
         task = asyncio.create_task(coro)

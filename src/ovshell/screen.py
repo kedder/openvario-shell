@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict, Coroutine, Callable
+from typing import List, Tuple, Dict, Coroutine, Callable, Sequence
 from dataclasses import dataclass
 import asyncio
 import functools
@@ -6,7 +6,7 @@ import functools
 import urwid
 from urwid import signals
 
-from ovshell.protocol import ScreenManager, Activity
+from ovshell.protocol import ScreenManager, Activity, UrwidText, IndicatorLocation
 from ovshell import widget
 from ovshell import protocol
 
@@ -19,10 +19,70 @@ class ActivityContext:
     tasks: List[asyncio.Task]
 
 
+@dataclass
+class TopIndicator:
+    id: str
+    markup: UrwidText
+    location: IndicatorLocation
+    weight: int
+
+
 class TopBar(urwid.WidgetWrap):
+    _indicators: Dict[str, TopIndicator]
+
     def __init__(self) -> None:
-        w = urwid.Text("Openvario")
-        super().__init__(urwid.AttrMap(w, "topbar"))
+        self.left = urwid.Text("")
+        self.right = urwid.Text("", align="right")
+        self.cols = urwid.Columns([("pack", self.left), ("weight", 1, self.right)])
+        self._indicators = {}
+        super().__init__(urwid.AttrMap(self.cols, "topbar"))
+
+    def set_indicator(
+        self, iid: str, markup: UrwidText, location: IndicatorLocation, weight: int
+    ) -> None:
+        ind = TopIndicator(iid, markup, location, weight)
+        self._indicators[iid] = ind
+        self._invalidate()
+
+    def remove_indicator(self, iid: str) -> None:
+        self._dirty = True
+        if iid in self._indicators:
+            del self._indicators[iid]
+        self._invalidate()
+
+    def render(self, size, focus=False):
+        self._rebuild()
+        return super().render(size, focus)
+
+    def _rebuild(self) -> None:
+        left_indicators = self._list_indicators(IndicatorLocation.LEFT)
+        right_indicators = self._list_indicators(IndicatorLocation.RIGHT)
+        leftmarkup = self._gen_markup(left_indicators)
+        rightmarkup = self._gen_markup(right_indicators)
+        self.left.set_text(leftmarkup)
+        self.right.set_text(rightmarkup)
+
+    def _list_indicators(self, location: IndicatorLocation) -> Sequence[TopIndicator]:
+        indicators = self._indicators.values()
+        return sorted(
+            [i for i in indicators if i.location == location], key=lambda i: i.weight,
+        )
+
+    def _gen_markup(self, indicators: Sequence[TopIndicator]) -> UrwidText:
+        if not indicators:
+            return ""
+
+        out: UrwidText = []
+        assert isinstance(out, list)
+        for ind in indicators:
+            if isinstance(ind.markup, list):
+                out.extend(ind.markup)
+            else:
+                out.append(ind.markup)
+            out.append(" ")
+            # Remove the last space
+        out.pop()
+        return out
 
 
 class FooterBar(urwid.WidgetPlaceholder):
@@ -120,6 +180,14 @@ class ScreenManagerImpl(ScreenManager):
         self._main_view.original_widget = prevactctx.widget
         self._reset_palette(prevactctx.palette)
         prevactctx.activity.show()
+
+    def set_indicator(
+        self, iid: str, markup: UrwidText, location: IndicatorLocation, weight: int
+    ) -> None:
+        self._header.set_indicator(iid, markup, location, weight)
+
+    def remove_indicator(self, iid: str) -> None:
+        self._header.remove_indicator(iid)
 
     def set_status(self, text: protocol.UrwidText):
         self._footer.original_widget = urwid.Text(text)
