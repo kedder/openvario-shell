@@ -1,14 +1,20 @@
 from typing import Optional
 from datetime import datetime
 import subprocess
+import asyncio
 
 from ovshell import protocol
 
 TIME_OFF_TOLERANCE = 5  # seconds
 SETDATE_BINARY = "//usr/bin/date"
+CLOCK_POLL_INTERVAL = 1
 
 
-async def gps_time_sync(shell: protocol.OpenVarioShell) -> None:
+class GPSTimeState:
+    acquired: bool = False
+
+
+async def gps_time_sync(shell: protocol.OpenVarioShell, gpsstate: GPSTimeState) -> None:
     """Service to set system time from GPS NMEA stream
 
     Only change system time if it differs considerable (say, 5 seconds off) and
@@ -23,6 +29,19 @@ async def gps_time_sync(shell: protocol.OpenVarioShell) -> None:
             if dt is not None:
                 set_system_time(dt, binpath=shell.os.path(SETDATE_BINARY))
                 break
+
+    gpsstate.acquired = True
+
+
+async def clock_indicator(
+    screen: protocol.ScreenManager, gpsstate: GPSTimeState
+) -> None:
+    while True:
+        now = datetime.utcnow()
+        attr = "ind normal" if gpsstate.acquired else "ind error"
+        clock = now.strftime("%H:%M UTC")
+        screen.set_indicator("clock", (attr, clock), protocol.IndicatorLocation.LEFT, 0)
+        await asyncio.sleep(CLOCK_POLL_INTERVAL)
 
 
 def parse_gps_datetime(nmea: protocol.NMEA) -> Optional[datetime]:

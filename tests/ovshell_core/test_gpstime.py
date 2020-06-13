@@ -2,10 +2,41 @@ from datetime import datetime
 
 import mock
 import pytest
+import asyncio
 
 from ovshell import protocol
 from ovshell import testing
 from ovshell_core import gpstime
+
+
+@pytest.mark.asyncio
+async def test_clock_indicator(
+    ovshell: testing.OpenVarioShellStub, monkeypatch
+) -> None:
+    # GIVEN
+    datetime_mock = mock.Mock()
+    datetime_mock.utcnow.return_value = datetime(2020, 6, 2, 12, 32, 54)
+    monkeypatch.setattr("ovshell_core.gpstime.datetime", datetime_mock)
+    monkeypatch.setattr("ovshell_core.gpstime.CLOCK_POLL_INTERVAL", 0.01)
+    state = gpstime.GPSTimeState()
+
+    # WHEN
+    task = asyncio.create_task(gpstime.clock_indicator(ovshell.screen, state))
+    await asyncio.sleep(0)
+
+    clockind = ovshell.screen.stub_get_indicator("clock")
+    assert clockind is not None
+    assert clockind.markup == ("ind error", "12:32 UTC")
+    assert clockind.location == protocol.IndicatorLocation.LEFT
+
+    state.acquired = True
+    await asyncio.sleep(0.02)
+    clockind = ovshell.screen.stub_get_indicator("clock")
+    assert clockind is not None
+    assert clockind.markup == ("ind normal", "12:32 UTC")
+    assert clockind.location == protocol.IndicatorLocation.LEFT
+
+    task.cancel()
 
 
 @pytest.mark.asyncio
@@ -22,11 +53,13 @@ async def test_gps_time_sync(ovshell: testing.OpenVarioShellStub, monkeypatch) -
             protocol.NMEA("", "", "AAA", []),
         ]
     )
+    state = gpstime.GPSTimeState()
 
     # WHEN
-    await gpstime.gps_time_sync(ovshell)
+    await gpstime.gps_time_sync(ovshell, state)
 
     # THEN
+    assert state.acquired is True
     datebin = ovshell.os.path("//usr/bin/date")
     subpr_mock.run.assert_called_with(
         [datebin, "+%F %H:%M:%S", "-s", "1994-11-19 22:54:46"],

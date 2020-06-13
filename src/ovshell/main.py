@@ -89,6 +89,11 @@ def run(argv) -> None:
         # Light color scheme (for modals and popups)
         ("bg light", "black", "white", ""),
         ("li normal light", "dark blue", "white", ""),
+        # Indicator color scheme
+        ("ind normal", "black", "white", ""),
+        ("ind error", "dark red", "white", ""),
+        ("ind warning", "brown", "white", ""),
+        ("ind good", "dark green", "white", ""),
     ]
 
     asyncioloop = asyncio.get_event_loop()

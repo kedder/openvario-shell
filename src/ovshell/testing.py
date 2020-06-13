@@ -146,6 +146,9 @@ class ScreenManagerStub(protocol.ScreenManager):
         for act, task in self._tasks:
             task.cancel()
 
+    def stub_get_indicator(self, iid: str) -> Optional[TopIndicatorStub]:
+        return self._indicators.get(iid)
+
 
 class StoredSettingsStub(protocol.StoredSettings):
     _settings: Dict[str, Optional[protocol.JsonType]]

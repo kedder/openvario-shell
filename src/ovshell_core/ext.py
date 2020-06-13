@@ -34,7 +34,10 @@ class CoreExtension(protocol.Extension):
 
     def start(self) -> None:
         self.shell.processes.start(serial.maintain_serial_devices(self.shell))
-        self.shell.processes.start(gpstime.gps_time_sync(self.shell))
+
+        gpsstate = gpstime.GPSTimeState()
+        self.shell.processes.start(gpstime.gps_time_sync(self.shell, gpsstate))
+        self.shell.processes.start(gpstime.clock_indicator(self.shell.screen, gpsstate))
 
         simfile = os.environ.get("OVSHELL_CORE_SIMULATE_DEVICE")
         if simfile:
