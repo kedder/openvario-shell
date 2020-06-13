@@ -31,7 +31,7 @@ def parse_gps_datetime(nmea: protocol.NMEA) -> Optional[datetime]:
 
     rawtime = nmea.fields[0]
     rawdate = nmea.fields[8]
-    if len(rawtime) != 6 or len(rawdate) != 6:
+    if len(rawtime) not in (6, 9) or len(rawdate) != 6:
         return None
 
     year2 = int(rawdate[4:6])
@@ -54,5 +54,5 @@ def set_system_time(dt: datetime, now: datetime = None, binpath: str = "date") -
 
     # Actually set time
     cmd = [binpath, "+%F %H:%M:%S", "-s", dt.strftime("%F %H:%M:%S")]
-    subprocess.run(cmd, check=True)
+    subprocess.run(cmd, check=True, capture_output=True)
     return True

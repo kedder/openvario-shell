@@ -29,7 +29,9 @@ async def test_gps_time_sync(ovshell: testing.OpenVarioShellStub, monkeypatch) -
     # THEN
     datebin = ovshell.os.path("//usr/bin/date")
     subpr_mock.run.assert_called_with(
-        [datebin, "+%F %H:%M:%S", "-s", "1994-11-19 22:54:46"], check=True
+        [datebin, "+%F %H:%M:%S", "-s", "1994-11-19 22:54:46"],
+        check=True,
+        capture_output=True,
     )
 
 
@@ -43,6 +45,17 @@ def test_parse_gps_datetime_correct() -> None:
 
     # THEN
     assert dt == datetime(2003, 11, 19, 22, 54, 46)
+
+
+def test_parse_gps_datetime_longtime() -> None:
+    gprmc_fields = "121931.00,A,4801.86153,N,01056.69289,E,53.587,8.64,270520,,,A"
+    nmea = protocol.NMEA("", "", "GPRMC", gprmc_fields.split(","))
+
+    # WHEN
+    dt = gpstime.parse_gps_datetime(nmea)
+
+    # THEN
+    assert dt == datetime(2020, 5, 27, 12, 19, 31)
 
 
 def test_parse_gps_datetime_bad_sentence() -> None:
@@ -84,5 +97,7 @@ def test_set_system_time_now(monkeypatch) -> None:
     # WHEN, THEN
     assert gpstime.set_system_time(newtime) == True
     subpr_mock.run.assert_called_with(
-        ["date", "+%F %H:%M:%S", "-s", "2003-05-29 01:01:01"], check=True
+        ["date", "+%F %H:%M:%S", "-s", "2003-05-29 01:01:01"],
+        check=True,
+        capture_output=True,
     )
