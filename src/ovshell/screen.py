@@ -176,10 +176,11 @@ class ScreenManagerImpl(ScreenManager):
         curactctx.activity.hide()
         curactctx.activity.destroy()
 
-        prevactctx = self._act_stack[-1]
-        self._main_view.original_widget = prevactctx.widget
-        self._reset_palette(prevactctx.palette)
-        prevactctx.activity.show()
+        if self._act_stack:
+            prevactctx = self._act_stack[-1]
+            self._main_view.original_widget = prevactctx.widget
+            self._reset_palette(prevactctx.palette)
+            prevactctx.activity.show()
 
     def set_indicator(
         self, iid: str, markup: UrwidText, location: IndicatorLocation, weight: int
