@@ -8,6 +8,7 @@ from ovshell_core import serial
 from ovshell_core import gpstime
 from ovshell_core import upgradeapp
 from ovshell_core import devsim
+from ovshell_core import devindicators
 
 
 class CoreExtension(protocol.Extension):
@@ -42,6 +43,8 @@ class CoreExtension(protocol.Extension):
         simfile = os.environ.get("OVSHELL_CORE_SIMULATE_DEVICE")
         if simfile:
             devsim.run_simulated_device(self.shell, simfile)
+
+        self.shell.processes.start(devindicators.show_device_indicators(self.shell))
 
     def _init_settings(self) -> None:
         config = self.shell.settings
