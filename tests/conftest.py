@@ -21,9 +21,17 @@ def ovshell(
 
 @pytest.fixture()
 def task_running() -> Callable[[Coroutine], AsyncContextManager[None]]:
+    def _task_done(task) -> None:
+        if task.cancelled():
+            return
+        exc = task.exception()
+        if exc:
+            pytest.fail(f"Task {task} failed: {exc}", pytrace=False)
+
     @asynccontextmanager
     async def runner(coro: Coroutine) -> AsyncIterator[None]:
         task = asyncio.create_task(coro)
+        task.add_done_callback(_task_done)
         try:
             yield
         finally:

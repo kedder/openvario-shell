@@ -102,7 +102,7 @@ class DeviceManagerImpl(protocol.DeviceManager):
         while True:
             for dev in self.list():
                 if dev.id not in devmap:
-                    devmap[dev.id] = self._read(dev)
+                    devmap[dev.id] = asyncio.create_task(self._read(dev))
 
             if not devmap:
                 await asyncio.sleep(1)
@@ -113,9 +113,9 @@ class DeviceManagerImpl(protocol.DeviceManager):
             )
             for task in done:
                 try:
-                    dev, msg = task.result()
+                    dev, msg = await task
                     self._publish(dev, msg)
-                    devmap[dev.id] = self._read(dev)
+                    devmap[dev.id] = asyncio.create_task(self._read(dev))
                 except DeviceUnavailable as e:
                     devid = e.device.id
                     del devmap[devid]

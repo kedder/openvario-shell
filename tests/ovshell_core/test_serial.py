@@ -110,6 +110,29 @@ async def test_maintain_serial_devices_bad_device(
 
 
 @pytest.mark.asyncio
+async def test_maintain_serial_devices_reconnect(
+    ovshell: testing.OpenVarioShellStub, serial_testbed: SerialTestbed
+) -> None:
+    serial_testbed.lookup.stub_set_devices(["/dev/ttyFAKE"])
+    maintainer = serial.maintain_serial_devices(ovshell)
+    async with task_started(maintainer):
+        # Device is detected
+        await asyncio.sleep(0.02)
+        assert len(ovshell.devices.list()) == 1
+
+        # ttyFAKE is gone
+        ovshell.devices.stub_remove_device("/dev/ttyFAKE")
+        assert len(ovshell.devices.list()) == 0
+        serial_testbed.lookup.stub_set_devices([])
+        await asyncio.sleep(0.02)
+
+        # ttyFAKE reappears
+        serial_testbed.lookup.stub_set_devices(["/dev/ttyFAKE"])
+        await asyncio.sleep(0.02)
+        assert len(ovshell.devices.list()) == 1
+
+
+@pytest.mark.asyncio
 async def test_maintain_serial_devices_opened(
     ovshell: testing.OpenVarioShellStub, serial_testbed: SerialTestbed
 ) -> None:

@@ -12,20 +12,17 @@ class DeviceStub(protocol.Device):
     id: str
     name: str
     _stream: List[bytes]
+    _delay: float = 0
 
     def __init__(self, id: str, name: str) -> None:
         self.id = id
         self.name = name
         self._stream = []
 
-    async def read(self) -> bytes:
-        if not self._stream:
-            raise IOError()
-        return self._stream.pop()
-
     async def readline(self) -> bytes:
         if not self._stream:
             raise IOError()
+        await asyncio.sleep(self._delay)
         return self._stream.pop() + b"\r\n"
 
     def write(self, data: bytes) -> None:
@@ -33,6 +30,9 @@ class DeviceStub(protocol.Device):
 
     def stub_set_stream(self, values: List[bytes]) -> None:
         self._stream = list(reversed(values))
+
+    def stub_set_delay(self, delay: float) -> None:
+        self._delay = delay
 
 
 def test_nmea_checksum() -> None:
@@ -98,6 +98,39 @@ async def test_DeviceManagerImpl_open_nmea_stream(task_running) -> None:
 
     assert nmea.device_id == "one"
     assert nmea.raw_message == "$PGRMZ,+51.1,m,3*10"
+
+
+@pytest.mark.asyncio
+async def test_DeviceManagerImpl_multidevice(task_running) -> None:
+    # GIVEN
+    devman = device.DeviceManagerImpl()
+    dev1 = DeviceStub("one", "One")
+    dev1.stub_set_stream([b"$PGRMZ,+51.1,m,3*10"] * 3)
+    dev1.stub_set_delay(0.1)
+    devman.register(dev1)
+    dev2 = DeviceStub("two", "TWO")
+    dev2.stub_set_stream([b"$PFLAU,0,0,0,1,0,,0,,,*4F"] * 3)
+    dev2.stub_set_delay(0.25)
+    devman.register(dev2)
+
+    # WHEN
+    async with task_running(devman.read_devices()):
+        with devman.open_nmea() as nmea_stream:
+            # THEN
+            nmea1 = await nmea_stream.read()
+            print("GOT 1")
+            nmea2 = await nmea_stream.read()
+            print("GOT 2")
+            nmea3 = await nmea_stream.read()
+            print("GOT 3")
+
+    assert nmea1.device_id == "one"
+    assert nmea1.raw_message == "$PGRMZ,+51.1,m,3*10"
+    assert nmea2.device_id == "one"
+    assert nmea2.raw_message == "$PGRMZ,+51.1,m,3*10"
+
+    assert nmea3.device_id == "two"
+    assert nmea3.raw_message == "$PFLAU,0,0,0,1,0,,0,,,*4F"
 
 
 @pytest.mark.asyncio
