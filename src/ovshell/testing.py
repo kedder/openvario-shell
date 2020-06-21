@@ -149,6 +149,9 @@ class ScreenManagerStub(protocol.ScreenManager):
     def stub_get_indicator(self, iid: str) -> Optional[TopIndicatorStub]:
         return self._indicators.get(iid)
 
+    def stub_list_indicators(self) -> List[TopIndicatorStub]:
+        return list(self._indicators.values())
+
 
 class StoredSettingsStub(protocol.StoredSettings):
     _settings: Dict[str, Optional[protocol.JsonType]]
@@ -237,6 +240,9 @@ class DeviceManagerStub(protocol.DeviceManager):
 
     def stub_add_nmea(self, nmeas: List[protocol.NMEA]) -> None:
         self._nmeas.extend(nmeas)
+
+    def stub_remove_device(self, devid: str) -> None:
+        self._devices = [dev for dev in self._devices if dev.id != devid]
 
 
 class ProcessManagerStub(protocol.ProcessManager):
