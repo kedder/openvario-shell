@@ -1,4 +1,4 @@
-from typing import NoReturn
+from typing import NoReturn, Set
 import os
 import asyncio
 
@@ -12,6 +12,8 @@ DEVICE_OPEN_TIMEOUT = 1
 DEVICE_POLL_TIMEOUT = 1
 BAUD_DETECTION_INTERVAL = 0.2
 
+# Built-in devices will not be detected by comports(), list those explicitly.
+BUILTIN_DEVICES = ["//dev/ttyS1", "//dev/ttyS2", "//dev/ttyS3"]
 STANDARD_BAUDRATES = [9600, 14400, 19200, 38400, 57600, 115200]
 
 
@@ -67,9 +69,12 @@ class SerialDeviceImpl(protocol.SerialDevice):
 
 
 async def maintain_serial_devices(shell: protocol.OpenVarioShell) -> NoReturn:
+    os_devs: Set[str]
     opening = {}
+    builtins = [shell.os.path(dev) for dev in BUILTIN_DEVICES]
     while True:
         os_devs = set(d.device for d in comports(include_links=False))
+        os_devs.update(d for d in builtins if os.path.exists(d))
 
         registered_devs = [
             d.path for d in shell.devices.list() if isinstance(d, SerialDeviceImpl)
