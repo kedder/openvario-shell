@@ -145,8 +145,7 @@ class CheckForUpdatesWidget(urwid.WidgetWrap):
             urwid.connect_signal(exit_btn, "click", self._on_exit)
             message = [("remark", f"No updates found")]
             message_wdg = urwid.Columns(
-                [("pack", urwid.Text(message)), ("pack", exit_btn), ("pack", exit_btn)],
-                dividechars=1,
+                [("pack", urwid.Text(message)), ("pack", exit_btn)], dividechars=1,
             )
 
         self.message_line.original_widget = message_wdg
