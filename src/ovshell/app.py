@@ -108,9 +108,6 @@ class OpenvarioShellImpl(OpenVarioShell):
         self.apps = AppManagerImpl(self)
 
     def boot(self) -> None:
-        # Start system services
-        self.processes.start(self.devices.read_devices())
-
         # Start extensions
         for ext in self.extensions.list_extensions():
             ext.start()

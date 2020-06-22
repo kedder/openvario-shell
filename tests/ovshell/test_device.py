@@ -70,7 +70,8 @@ def test_DeviceManagerImpl_open_nmea_empty() -> None:
         assert nmea is not None
 
 
-def test_DeviceManagerImpl_get() -> None:
+@pytest.mark.asyncio
+async def test_DeviceManagerImpl_get() -> None:
     # GIVEN
     devman = device.DeviceManagerImpl()
     dev = DeviceStub("one", "One")
@@ -91,10 +92,9 @@ async def test_DeviceManagerImpl_open_nmea_stream(task_running) -> None:
     devman.register(dev)
 
     # WHEN
-    async with task_running(devman.read_devices()):
-        with devman.open_nmea() as nmea_stream:
-            # THEN
-            nmea = await nmea_stream.read()
+    with devman.open_nmea() as nmea_stream:
+        # THEN
+        nmea = await nmea_stream.read()
 
     assert nmea.device_id == "one"
     assert nmea.raw_message == "$PGRMZ,+51.1,m,3*10"
@@ -114,15 +114,14 @@ async def test_DeviceManagerImpl_multidevice(task_running) -> None:
     devman.register(dev2)
 
     # WHEN
-    async with task_running(devman.read_devices()):
-        with devman.open_nmea() as nmea_stream:
-            # THEN
-            nmea1 = await nmea_stream.read()
-            print("GOT 1")
-            nmea2 = await nmea_stream.read()
-            print("GOT 2")
-            nmea3 = await nmea_stream.read()
-            print("GOT 3")
+    with devman.open_nmea() as nmea_stream:
+        # THEN
+        nmea1 = await nmea_stream.read()
+        print("GOT 1")
+        nmea2 = await nmea_stream.read()
+        print("GOT 2")
+        nmea3 = await nmea_stream.read()
+        print("GOT 3")
 
     assert nmea1.device_id == "one"
     assert nmea1.raw_message == "$PGRMZ,+51.1,m,3*10"
@@ -142,12 +141,11 @@ async def test_DeviceManagerImpl_remove_device_on_error(task_running) -> None:
     assert len(devman.list()) == 1
 
     # WHEN
-    async with task_running(devman.read_devices()):
-        with devman.open_nmea() as nmea_stream:
-            # THEN
-            read = nmea_stream.read()
-            with pytest.raises(asyncio.TimeoutError):
-                await asyncio.wait_for(read, timeout=0.01)
+    with devman.open_nmea() as nmea_stream:
+        # THEN
+        read = nmea_stream.read()
+        with pytest.raises(asyncio.TimeoutError):
+            await asyncio.wait_for(read, timeout=0.01)
 
     assert len(devman.list()) == 0
 
@@ -161,11 +159,10 @@ async def test_DeviceManagerImpl_bad_nmea(task_running) -> None:
     devman.register(dev)
 
     # WHEN
-    async with task_running(devman.read_devices()):
-        with devman.open_nmea() as nmea_stream:
-            # THEN
-            async for nmea in nmea_stream:
-                break  # read only one message
+    with devman.open_nmea() as nmea_stream:
+        # THEN
+        async for nmea in nmea_stream:
+            break  # read only one message
 
     assert nmea.device_id == "one"
     assert nmea.raw_message == "$PGRMZ,+51.1,m,3*10"

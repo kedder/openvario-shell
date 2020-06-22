@@ -9,11 +9,6 @@ class InvalidNMEA(ValueError):
     pass
 
 
-class DeviceUnavailable(Exception):
-    def __init__(self, device):
-        self.device = device
-
-
 def parse_nmea(device_id: str, message: bytes) -> protocol.NMEA:
     strmsg = message.decode().strip()
     if not is_nmea_valid(strmsg):
@@ -66,17 +61,20 @@ class NMEAStreamImpl(protocol.NMEAStream):
 
 class DeviceManagerImpl(protocol.DeviceManager):
     _devices: Dict[str, protocol.Device]
+    _handlers: Dict[str, "asyncio.Task[None]"]
+    _queues: Set["asyncio.Queue[protocol.NMEA]"]
 
     def __init__(self) -> None:
         self._devices = {}
-        self._queues: "Set[asyncio.Queue[protocol.NMEA]]" = set()
+        self._handlers = {}
+        self._queues = set()
 
     def register(self, device: protocol.Device) -> None:
+        if device.id in self._devices:
+            # Already registered
+            return
         self._devices[device.id] = device
-
-    def remove(self, devid: str) -> None:
-        if devid in self._devices:
-            del self._devices[devid]
+        self._handlers[device.id] = asyncio.create_task(self._read_device(device))
 
     def list(self) -> List[protocol.Device]:
         return list(self._devices.values())
@@ -91,35 +89,18 @@ class DeviceManagerImpl(protocol.DeviceManager):
         yield NMEAStreamImpl(q)
         self._queues.remove(q)
 
-    async def _read(self, dev: protocol.Device):
+    async def _read_device(self, dev: protocol.Device) -> None:
         try:
-            return (dev, await dev.readline())
-        except IOError as e:
-            raise DeviceUnavailable(dev) from e
-
-    async def read_devices(self) -> None:
-        devmap = {}
-        while True:
-            for dev in self.list():
-                if dev.id not in devmap:
-                    devmap[dev.id] = asyncio.create_task(self._read(dev))
-
-            if not devmap:
-                await asyncio.sleep(1)
-                continue
-
-            done, pending = await asyncio.wait(
-                devmap.values(), timeout=1, return_when=asyncio.FIRST_COMPLETED
-            )
-            for task in done:
+            while True:
                 try:
-                    dev, msg = await task
-                    self._publish(dev, msg)
-                    devmap[dev.id] = asyncio.create_task(self._read(dev))
-                except DeviceUnavailable as e:
-                    devid = e.device.id
-                    del devmap[devid]
-                    self.remove(devid)
+                    msg = await dev.readline()
+                except IOError:
+                    break
+                self._publish(dev, msg)
+        finally:
+            # Unregister the device
+            del self._devices[dev.id]
+            del self._handlers[dev.id]
 
     def _publish(self, dev: protocol.Device, msg: bytes) -> None:
         if not self._queues:
