@@ -7,22 +7,22 @@ import urwid
 import pytest
 
 from ovshell import testing
-from ovshell_core.upgradeapp import OpkgTools, OpkgToolsImpl
+from ovshell_core.upgradeapp import OpkgTools, OpkgToolsImpl, UpgradablePackage
 from ovshell_core.upgradeapp import SystemUpgradeApp, CheckForUpdatesActivity
 from ovshell_core.upgradeapp import PackageSelectionWidget
 
 
 class OpkgToolsStub(OpkgTools):
     opkg_binary = "echo"
-    _upgradables: List[str]
+    _upgradables: List[UpgradablePackage]
 
-    def __init__(self, upgradables: List[str] = None) -> None:
+    def __init__(self, upgradables: List[UpgradablePackage] = None) -> None:
         self._upgradables = upgradables or []
 
-    def list_upgradables(self) -> List[str]:
+    def list_upgradables(self) -> List[UpgradablePackage]:
         return self._upgradables
 
-    def stub_set_upgradables(self, upgradables: List[str]) -> None:
+    def stub_set_upgradables(self, upgradables: List[UpgradablePackage]) -> None:
         self._upgradables = upgradables
 
 
@@ -34,14 +34,19 @@ def test_OpkgToolsImpl_list_upgradables(monkeypatch) -> None:
 
     proc_mock = mock.Mock(name="Process")
     proc_mock.returncode = 0
-    proc_mock.stdout = b"package_one\npackage_two\n"
+    proc_mock.stdout = (
+        b"package_one - 1.4.0-r0 - 1.6.1-r0\n" b"package_two - 0.6-r0 - 0.6-r1\n"
+    )
     subpr_mock.run.return_value = proc_mock
 
     # WHEN
     upgradables = opkgtools.list_upgradables()
 
     # THEN
-    assert upgradables == ["package_one", "package_two"]
+    assert upgradables == [
+        UpgradablePackage("package_one", "1.4.0-r0", "1.6.1-r0"),
+        UpgradablePackage("package_two", "0.6-r0", "0.6-r1"),
+    ]
 
 
 def test_app_start(ovshell: testing.OpenVarioShellStub) -> None:
@@ -97,7 +102,12 @@ async def test_activity_no_updates(ovshell: testing.OpenVarioShellStub) -> None:
 
 @pytest.mark.asyncio
 async def test_full_upgrade(ovshell: testing.OpenVarioShellStub) -> None:
-    opkgstub = OpkgToolsStub(["package-one", "package-two"])
+    opkgstub = OpkgToolsStub(
+        [
+            UpgradablePackage("package-one", "1", "1.1"),
+            UpgradablePackage("package-two", "2.4", "4.3"),
+        ]
+    )
     act = CheckForUpdatesActivity(ovshell, opkgstub)
     ovshell.screen.push_activity(act)
     wdg = act.create()
@@ -136,7 +146,12 @@ async def test_PackageSelectionWidget_nothing_selected(
     ovshell: testing.OpenVarioShellStub,
 ) -> None:
     # GIVEN
-    wdg = PackageSelectionWidget(["package-one", "package-two"], ovshell.screen)
+    packages = [
+        UpgradablePackage("package-one", "1", "1.1"),
+        UpgradablePackage("package-two", "2.4", "4.3"),
+    ]
+
+    wdg = PackageSelectionWidget(packages, ovshell.screen)
     assert "Upgrade" in _render(wdg)
 
     # WHEN
@@ -154,7 +169,11 @@ def test_PackageSelectionWidget_select_some(
     ovshell: testing.OpenVarioShellStub,
 ) -> None:
     # GIVEN
-    wdg = PackageSelectionWidget(["package-one", "package-two"], ovshell.screen)
+    packages = [
+        UpgradablePackage("package-one", "1", "1.1"),
+        UpgradablePackage("package-two", "2.4", "4.3"),
+    ]
+    wdg = PackageSelectionWidget(packages, ovshell.screen)
 
     # WHEN
     # select and deselect package-one, then select package-two

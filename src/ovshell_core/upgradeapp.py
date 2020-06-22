@@ -1,19 +1,26 @@
-from typing import Set
-
+from typing import Set, List
 import subprocess
 from abc import abstractmethod
-from typing import List
+from dataclasses import dataclass
+
 import urwid
 
 from ovshell import protocol
 from ovshell import widget
 
 
+@dataclass
+class UpgradablePackage:
+    name: str
+    old_version: str
+    new_version: str
+
+
 class OpkgTools:
     opkg_binary: str
 
     @abstractmethod
-    def list_upgradables(self) -> List[str]:
+    def list_upgradables(self) -> List[UpgradablePackage]:
         """Return list of upgradable packages"""
 
 
@@ -29,7 +36,7 @@ class OpkgToolsImpl(OpkgTools):
     def __init__(self, opkg_binary: str):
         self.opkg_binary = opkg_binary
 
-    def list_upgradables(self) -> List[str]:
+    def list_upgradables(self) -> List[UpgradablePackage]:
         proc = subprocess.run(
             [self.opkg_binary, "list-upgradable"], capture_output=True
         )
@@ -37,8 +44,16 @@ class OpkgToolsImpl(OpkgTools):
             return []
 
         blines = proc.stdout.split(b"\n")
-        lines = [l.decode().strip() for l in blines]
-        return [l for l in lines if l]
+        upgradables = []
+        for bline in blines:
+            line = bline.decode().strip()
+            items = line.split(" - ")
+            if len(items) != 3:
+                # Bad format
+                continue
+            pkgname, old_version, new_version = items
+            upgradables.append(UpgradablePackage(pkgname, old_version, new_version))
+        return upgradables
 
 
 class SystemUpgradeApp(protocol.App):
@@ -98,7 +113,7 @@ class CheckForUpdatesActivity(protocol.Activity):
 class CheckForUpdatesWidget(urwid.WidgetWrap):
     signals = ["continue", "exit"]
 
-    upgradables: List[str]
+    upgradables: List[UpgradablePackage]
 
     def __init__(self, opkg_tools: OpkgTools) -> None:
         self.opkg_tools = opkg_tools
@@ -161,9 +176,11 @@ class PackageSelectionWidget(urwid.WidgetWrap):
     signals = ["upgrade"]
 
     selected: Set[str]
-    _upgradables: List[str]
+    _upgradables: List[UpgradablePackage]
 
-    def __init__(self, upgradables: List[str], screen: protocol.ScreenManager) -> None:
+    def __init__(
+        self, upgradables: List[UpgradablePackage], screen: protocol.ScreenManager
+    ) -> None:
         self.selected = set()
         self._upgradables = upgradables
         self._screen = screen
@@ -174,10 +191,20 @@ class PackageSelectionWidget(urwid.WidgetWrap):
         self._package_walker = urwid.SimpleFocusListWalker([])
         self._update_packages()
 
+        header = urwid.Columns(
+            [
+                ("weight", 3, urwid.Text("    Package")),
+                ("weight", 1, urwid.Text("From")),
+                ("weight", 1, urwid.Text("To")),
+            ],
+            dividechars=1,
+        )
+
         selector = urwid.Pile(
             [
                 ("pack", self._create_buttons()),
                 ("pack", urwid.Divider()),
+                ("pack", header),
                 urwid.ListBox(self._package_walker),
             ]
         )
@@ -200,7 +227,7 @@ class PackageSelectionWidget(urwid.WidgetWrap):
         return buttons
 
     def _on_select_all(self, wdg: urwid.Widget) -> None:
-        self.selected = set(self._upgradables)
+        self.selected = set(pkg.name for pkg in self._upgradables)
         self._update_packages()
 
     def _select_package(self, pkgname: str, cb: urwid.CheckBox, state: bool) -> None:
@@ -218,16 +245,25 @@ class PackageSelectionWidget(urwid.WidgetWrap):
 
     def _update_packages(self) -> None:
         # Unselect non-upgradable packages
-        self.selected.intersection(self._upgradables)
+        upgradable_names = [pkg.name for pkg in self._upgradables]
+        self.selected.intersection(upgradable_names)
 
         del self._package_walker[:]
 
-        for pkgname in self._upgradables:
-            cb = urwid.CheckBox(pkgname, pkgname in self.selected)
+        for pkg in self._upgradables:
+            cb = urwid.CheckBox(pkg.name, pkg.name in self.selected)
             urwid.connect_signal(
-                cb, "change", self._select_package, user_args=[pkgname]
+                cb, "change", self._select_package, user_args=[pkg.name]
             )
-            item = urwid.AttrMap(urwid.Padding(cb, left=0), "li normal", "li focus")
+            row = urwid.Columns(
+                [
+                    ("weight", 3, cb),
+                    ("weight", 1, urwid.Text(pkg.old_version)),
+                    ("weight", 1, urwid.Text(pkg.new_version)),
+                ],
+                dividechars=1,
+            )
+            item = urwid.AttrMap(urwid.Padding(row, left=0), "li normal", "li focus")
             self._package_walker.append(item)
 
 

@@ -21,10 +21,10 @@ case "$1" in
         exit 3
         ;;
     list-upgradable)
-        echo "openvario-shell"
-        echo "openvario-compman"
-        echo "kernel"
-        echo "kernel-module-usb-serial-simple"
+        echo "openvario-shell - 0.4-r0 - 0.5-r1"
+        echo "openvario-compman - 0.3-r0 - 0.6-r0"
+        echo "kernel - 5.7.0-r11 - 5.7.1-r0"
+        echo "kernel-module-usb-serial-simple - 5.7.0-r11 - 5.7.1-r0"
         ;;
     upgrade)
         echo "Upgrading...$2 $3 $4 $5"
