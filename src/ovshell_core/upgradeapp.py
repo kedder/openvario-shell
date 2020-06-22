@@ -122,7 +122,7 @@ class CheckForUpdatesWidget(urwid.WidgetWrap):
 
     def _create_opkg_update_screen(self) -> urwid.Widget:
         self.message_line = urwid.WidgetPlaceholder(
-            urwid.Text("Checking for updates...")
+            urwid.AttrMap(urwid.Text("Checking for updates..."), "progress")
         )
 
         update_term = urwid.LineBox(
@@ -279,7 +279,9 @@ class SystemUpgradeWidget(urwid.WidgetWrap):
         super().__init__(content)
 
     def _create_upgrade_screen(self) -> urwid.Widget:
-        self.message_line = urwid.WidgetPlaceholder(urwid.Text("Upgrading packages..."))
+        self.message_line = urwid.WidgetPlaceholder(
+            urwid.AttrMap(urwid.Text("Upgrading packages..."), "progress")
+        )
 
         update_term = urwid.LineBox(
             self._create_upgrade_terminal(), title="opkg upgrade", title_align="left",
