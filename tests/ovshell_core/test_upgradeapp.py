@@ -118,8 +118,8 @@ async def test_full_upgrade(ovshell: testing.OpenVarioShellStub) -> None:
 
     _keypress(wdg, ["enter"])
     view = _render(wdg)
-    assert "[ ] package-one" in view
-    assert "[ ] package-two" in view
+    assert "[ ] package-one                    1            1.1" in view
+    assert "[ ] package-two                    2.4          4.3" in view
 
     # Press select all
     _keypress(wdg, ["enter"])
