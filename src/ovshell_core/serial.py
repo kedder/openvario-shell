@@ -48,10 +48,10 @@ class SerialDeviceImpl(protocol.SerialDevice):
                 reader, writer = await open_serial_connection(
                     url=str(dev_path), baudrate=baudrate
                 )
+                data = await reader.readexactly(20)
             except serial.SerialException as e:
                 raise DeviceOpenError(dev_path) from e
 
-            data = await reader.readexactly(20)
             if _is_ascii(data):
                 return SerialDeviceImpl(dev_path, reader, writer, baudrate)
             else:
