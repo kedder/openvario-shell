@@ -108,6 +108,8 @@ class DeviceManagerImpl(protocol.DeviceManager):
 
         try:
             nmea = parse_nmea(dev.id, msg)
+        except UnicodeDecodeError as e:
+            raise IOError from e
         except InvalidNMEA:
             return
 

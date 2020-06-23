@@ -151,7 +151,24 @@ async def test_DeviceManagerImpl_remove_device_on_error(task_running) -> None:
 
 
 @pytest.mark.asyncio
-async def test_DeviceManagerImpl_bad_nmea(task_running) -> None:
+async def test_DeviceManagerImpl_remove_on_binary() -> None:
+    # When non-ascii is received on device, drop it and try to reconnect again
+    devman = device.DeviceManagerImpl()
+    dev = DeviceStub("one", "One")
+    dev.stub_set_stream([b"GOOD ASCII", b"\xFF"])
+    dev.stub_set_delay(0.01)
+    devman.register(dev)
+
+    with devman.open_nmea() as nmea_stream:
+        # THEN
+        with pytest.raises(asyncio.TimeoutError):
+            await asyncio.wait_for(nmea_stream.read(), timeout=0.05)
+
+    assert len(devman.list()) == 0
+
+
+@pytest.mark.asyncio
+async def test_DeviceManagerImpl_bad_nmea() -> None:
     # GIVEN
     devman = device.DeviceManagerImpl()
     dev = DeviceStub("one", "One")
