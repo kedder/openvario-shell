@@ -117,11 +117,8 @@ async def test_DeviceManagerImpl_multidevice(task_running) -> None:
     with devman.open_nmea() as nmea_stream:
         # THEN
         nmea1 = await nmea_stream.read()
-        print("GOT 1")
         nmea2 = await nmea_stream.read()
-        print("GOT 2")
         nmea3 = await nmea_stream.read()
-        print("GOT 3")
 
     assert nmea1.device_id == "one"
     assert nmea1.raw_message == "$PGRMZ,+51.1,m,3*10"
