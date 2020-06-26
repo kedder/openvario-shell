@@ -1,7 +1,7 @@
 Changelog for openvario-shell
 =============================
 
-0.5 (unreleased)
+0.5 (2020-06-27)
 ----------------
 
 - Ability to read NMEA stream from connected serial devices, with baud rate
