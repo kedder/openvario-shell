@@ -4,10 +4,13 @@ Changelog for openvario-shell
 0.5 (unreleased)
 ----------------
 
-- Ability to read NMEA stream from connected devices, with baud rate
-  autodetection.
+- Ability to read NMEA stream from connected serial devices, with baud rate
+  autodetection. Display detected devices on top bar.
+- System upgrade app. Fetch packages from opkg sources (internet or locally
+  mounted USB stick), allow to pick packages to upgrade.
 - Automatically set system date and time from GPS source (if system time is
-  found to be out-of-sync).
+  found to be out-of-sync). Show system time on top bar. Red indicator turns
+  black when current time is detected in GPS NMEA stream.
 - Clear the screen when exiting to shell
 
 
