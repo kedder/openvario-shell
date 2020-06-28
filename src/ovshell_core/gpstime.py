@@ -6,7 +6,7 @@ import asyncio
 from ovshell import protocol
 
 TIME_OFF_TOLERANCE = 5  # seconds
-SETDATE_BINARY = "//usr/bin/date"
+SETDATE_BINARY = "//bin/date"
 CLOCK_POLL_INTERVAL = 1
 
 

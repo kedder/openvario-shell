@@ -4,7 +4,7 @@ Changelog for openvario-shell
 0.6 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Correct the path to /bin/date executable.
 
 
 0.5 (2020-06-27)

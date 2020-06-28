@@ -60,7 +60,7 @@ async def test_gps_time_sync(ovshell: testing.OpenVarioShellStub, monkeypatch) -
 
     # THEN
     assert state.acquired is True
-    datebin = ovshell.os.path("//usr/bin/date")
+    datebin = ovshell.os.path("//bin/date")
     subpr_mock.run.assert_called_with(
         [datebin, "+%F %H:%M:%S", "-s", "1994-11-19 22:54:46"],
         check=True,
