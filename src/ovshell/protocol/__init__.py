@@ -236,6 +236,10 @@ class OpenVarioOS(Protocol):
         pass
 
     @abstractmethod
+    def sync(self) -> None:
+        pass
+
+    @abstractmethod
     def shut_down(self) -> None:
         pass
 

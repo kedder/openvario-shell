@@ -18,6 +18,9 @@ class OpenVarioOSImpl(protocol.OpenVarioOS):
             return fname[1:]
         return fname
 
+    def sync(self) -> None:
+        os.sync()
+
     def shut_down(self) -> None:
         subprocess.run(["halt"])
 

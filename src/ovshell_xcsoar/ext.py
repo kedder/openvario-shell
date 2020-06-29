@@ -45,6 +45,7 @@ class XCSoarApp(protocol.App):
         )
         try:
             completed = subprocess.run(cmdline, capture_output=True, env=env)
+            self.shell.os.sync()
         except FileNotFoundError as e:
             self.shell.screen.push_modal(
                 AppOutputActivity(self.shell, str(e)), modal_opts

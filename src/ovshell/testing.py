@@ -197,6 +197,9 @@ class OpenVarioOSStub(protocol.OpenVarioOS):
 
         return os.path.join(self._rootfs, path[2:])
 
+    def sync(self) -> None:
+        self._log.append("OS: sync")
+
     def shut_down(self) -> None:
         self._log.append("OS: Shut down")
 
