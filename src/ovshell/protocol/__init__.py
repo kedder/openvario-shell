@@ -182,6 +182,10 @@ class Dialog(Protocol):
     def add_button(self, label: str, handler: Callable[[], bool]) -> None:
         pass
 
+    @abstractmethod
+    def no_buttons(self) -> None:
+        pass
+
 
 class IndicatorLocation(enum.Enum):
     LEFT = "left"
@@ -189,6 +193,10 @@ class IndicatorLocation(enum.Enum):
 
 
 class ScreenManager(Protocol):
+    @abstractmethod
+    def draw(self) -> None:
+        pass
+
     @abstractmethod
     def push_activity(
         self, activity: Activity, palette: Optional[List[Tuple]] = None

@@ -64,6 +64,9 @@ class DialogStub(protocol.Dialog):
     def add_button(self, label: str, handler: Callable[[], bool]) -> None:
         self.buttons[label] = handler
 
+    def no_buttons(self) -> None:
+        self.buttons = {}
+
     def stub_press_button(self, label: str):
         return self.buttons[label]()
 
@@ -89,6 +92,9 @@ class ScreenManagerStub(protocol.ScreenManager):
         self._tasks = []
         self._dialog = None
         self._indicators = {}
+
+    def draw(self) -> None:
+        self._log.append("Screen redrawn")
 
     def push_activity(
         self, activity: protocol.Activity, palette: Optional[List[Tuple]] = None

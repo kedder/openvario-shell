@@ -44,8 +44,16 @@ class XCSoarApp(protocol.App):
             align="center", width=("relative", 90), valign="middle", height="pack",
         )
         try:
-            completed = subprocess.run(cmdline, capture_output=True, env=env)
-            self.shell.os.sync()
+            message = urwid.Text("Running XCSoar...")
+            self.shell.screen.push_dialog("XCSoar", message).no_buttons()
+            self.shell.screen.draw()
+            try:
+                completed = subprocess.run(cmdline, capture_output=True, env=env)
+            finally:
+                message.set_text("Finishing XCSoar...")
+                self.shell.screen.draw()
+                self.shell.os.sync()
+                self.shell.screen.pop_activity()
         except FileNotFoundError as e:
             self.shell.screen.push_modal(
                 AppOutputActivity(self.shell, str(e)), modal_opts

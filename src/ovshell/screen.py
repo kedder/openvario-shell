@@ -115,6 +115,9 @@ class ScreenManagerImpl(ScreenManager):
             footer=urwid.AttrMap(self._footer, "bg"),
         )
 
+    def draw(self) -> None:
+        self._mainloop.draw_screen()
+
     def push_activity(self, activity: Activity, palette: List[Tuple] = None) -> None:
         self._hide_shown_activity()
 
@@ -302,6 +305,9 @@ class DialogActivity(protocol.Activity, protocol.Dialog):
         contents.append((button, ("given", self.button_width)))
         self.buttons.contents = contents
         self.custom_buttons = True
+
+    def no_buttons(self) -> None:
+        self.buttons.contents = []
 
     def _on_button_clicked(
         self, handler: Callable[[], bool], btn: urwid.Widget
