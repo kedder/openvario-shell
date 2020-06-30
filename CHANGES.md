@@ -1,8 +1,8 @@
 Changelog for openvario-shell
 =============================
 
-0.6 (unreleased)
-----------------
+0.5.1 (2020-06-30)
+------------------
 
 - Correct the path to /bin/date executable.
 - Sync filesystems after XCSoar exits to avoid data loss on sudden power-off.
