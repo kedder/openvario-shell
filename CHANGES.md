@@ -4,7 +4,7 @@ Changelog for openvario-shell
 0.6 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Flush filesystem caches before shutting down.
 
 
 0.5.1 (2020-06-30)

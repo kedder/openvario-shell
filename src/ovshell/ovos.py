@@ -22,6 +22,7 @@ class OpenVarioOSImpl(protocol.OpenVarioOS):
         os.sync()
 
     def shut_down(self) -> None:
+        self.sync()
         subprocess.run(["halt"])
 
     def restart(self) -> None:
