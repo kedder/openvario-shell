@@ -1,3 +1,5 @@
+"""Interfaces for Openvario extensions"""
+
 from typing import (
     Dict,
     List,
@@ -29,25 +31,50 @@ JT = TypeVar("JT", bound=JsonType)
 
 
 class StoredSettings(Protocol):
+    """System setting storage
+
+    Settings are simple key-value pairs. Key is a string, and value can be
+    of any JSON-encodable type, including complex types, such as dictionaries
+    and lists. Settings are (typically) stored in a JSON-encoded file in user
+    config directory.
+
+    After changing the setting, settings has to be persisted using `save()`
+    method.
+    """
+
     @abstractmethod
     def setdefault(self, key: str, value: JsonType) -> None:
-        pass
+        """Set the value if it wasn't set before"""
 
     @abstractmethod
     def set(self, key: str, value: Optional[JsonType], save: bool = False):
-        pass
+        """Set the settings value.
+
+        if save is True, also store the settings on disk.
+        """
 
     @abstractmethod
     def get(self, key: str, type: Type[JT], default: JT = None) -> Optional[JT]:
-        pass
+        """Return the settings value for the key.
+
+        If value wasn't set yet, or value in settings is of different type
+        than requested by `type` argument, return `default` value.
+        """
 
     @abstractmethod
     def getstrict(self, key: str, type: Type[JT]) -> JT:
-        pass
+        """Return value for the key.
+
+        The value must be set and must be not None. Otherwise exception
+        will be raised.
+        """
 
     @abstractmethod
     def save(self) -> None:
-        pass
+        """Store the settings on permanent storage.
+
+        Must be called after changing any setting.
+        """
 
 
 class SettingActivator(Protocol):
