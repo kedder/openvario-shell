@@ -52,10 +52,10 @@ class NMEAStreamImpl(protocol.NMEAStream):
     async def read(self) -> protocol.NMEA:
         return await self._queue.get()
 
-    def __aiter__(self):
+    def __aiter__(self) -> protocol.NMEAStream:
         return self
 
-    async def __anext__(self):
+    async def __anext__(self) -> protocol.NMEA:
         return await self.read()
 
 

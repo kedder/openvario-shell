@@ -15,7 +15,7 @@ from typing import (
     Generator,
 )
 import enum
-from typing_extensions import Protocol, runtime_checkable
+from typing_extensions import Protocol, AsyncIterator, runtime_checkable
 from abc import abstractmethod
 from dataclasses import dataclass
 from contextlib import contextmanager
@@ -98,25 +98,53 @@ class Setting(Protocol):
 
 @runtime_checkable
 class Device(Protocol):
+    """External device
+
+    Represents a driver for externally connected device. Device can send and
+    receive data from Openvario.
+
+    Openvario extensions are responsible for creating instances of Devices and
+    registering them with `DeviceManager`.
+    """
+
     id: str
     name: str
 
     @abstractmethod
     async def readline(self) -> bytes:
-        pass
+        """Read one line from the device
+
+        Can raise `IOError`. In this case, device connection is considered
+        broken and device is removed from the `DeviceManager`.
+        """
 
     @abstractmethod
     def write(self, data: bytes) -> None:
-        pass
+        """Write data to the device
+
+        Can raise `IOError`. In this case, device connection is considered
+        broken and device is removed from the `DeviceManager`.
+        """
 
 
 class SerialDevice(Device):
+    """Serial device.
+
+    Device extension for serial devices, that are communicating on some
+    particular baud rate.
+    """
+
     baudrate: int
     path: str
 
 
 @dataclass
 class NMEA:
+    """Parsed NMEA message
+
+    Each NMEA message are associated with the device that produced it.
+    """
+
     device_id: str
     raw_message: str
     datatype: str
@@ -124,32 +152,53 @@ class NMEA:
 
 
 class NMEAStream:
+    """The stream of NMEA messages
+
+    Asynchronously provides an infinite iterator for NMEA messages, produced
+    across all connected devices. This object can be obtained with
+    `DeviceManager.open_nmea()`.
+    """
+
     @abstractmethod
     async def read(self) -> NMEA:
-        pass
+        """Read next NMEA message"""
 
     @abstractmethod
-    def __aiter__(self):
-        pass
+    def __aiter__(self) -> AsyncIterator[NMEA]:
+        """Return (infinite) iterator for NMEA messages"""
 
     @abstractmethod
-    async def __anext__(self):
-        pass
+    async def __anext__(self) -> NMEA:
+        """Return next NMEA message (when available)"""
 
 
 class DeviceManager(Protocol):
+    """Device manager
+
+    Maintains a registry of active devices and dispatches NMEA streams
+    to clients.
+    """
+
     @abstractmethod
     def register(self, device: Device) -> None:
-        pass
+        """Register new device.
+
+        NMEA stream from this device will be available immediately in
+        all open NMEA streams"""
 
     @abstractmethod
     def list(self) -> List[Device]:
-        pass
+        """Enumerate all registred devices"""
 
     @abstractmethod
     @contextmanager
     def open_nmea(self) -> Generator[NMEAStream, None, None]:
-        pass
+        """Open new NMEA stream
+
+        Supposed to be used as a context manager with new NMEAStream object.
+        NMEA messages from all the registered devices will be sent to this
+        stream until context manager exits.
+        """
 
 
 class ProcessManager(Protocol):
