@@ -202,9 +202,15 @@ class DeviceManager(Protocol):
 
 
 class ProcessManager(Protocol):
+    """Process Manager
+
+    Wrapper for running asyncio tasks. Keeps a list of active tasks and
+    handles task failures.
+    """
+
     @abstractmethod
     def start(self, coro: Coroutine) -> asyncio.Task:
-        pass
+        """Start coroutine as asyncio task and register it with the manager."""
 
 
 class App(Protocol):
