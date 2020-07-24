@@ -431,29 +431,41 @@ class ScreenManager(Protocol):
 
 
 class OpenVarioOS(Protocol):
+    """Operating system abstractions
+
+    The purpose of these abstractions is to allow openvario shell to run under
+    different environment than actual openvario hardware. The protocol can be
+    implemented for simulated or testing environment.
+    """
+
     @abstractmethod
     def mount_boot(self) -> None:
-        pass
+        """Mount /boot filesystem"""
 
     @abstractmethod
     def unmount_boot(self) -> None:
-        pass
+        """Unmount /boot filesystem"""
 
     @abstractmethod
     def path(self, path: str) -> str:
-        pass
+        """Return absolute path
+
+        In general, the path is returned intact, unless it starts with double
+        forward slash (//). In that case the first slash is replaced with
+        the path, specified by OVSHELL_ROOTFS environment variable.
+        """
 
     @abstractmethod
     def sync(self) -> None:
-        pass
+        """Flush filesystem caches"""
 
     @abstractmethod
     def shut_down(self) -> None:
-        pass
+        """Shut down the system"""
 
     @abstractmethod
     def restart(self) -> None:
-        pass
+        """Perform a system reboot"""
 
 
 class Extension(Protocol):
