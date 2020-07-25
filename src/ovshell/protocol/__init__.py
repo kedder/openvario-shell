@@ -469,17 +469,32 @@ class OpenVarioOS(Protocol):
 
 
 class Extension(Protocol):
+    """Openvario extension.
+
+    Extensions provide apps and settings to openvario shell. Extensions are
+    registered as python package entry point, under "ovshell.extensions" name.
+    An entry point function must return Extension object.
+    """
+
     id: str
     title: str
 
     def list_settings(self) -> Sequence[Setting]:
+        """Return settings provided by extensions.
+
+        Returned `Setting`s are added to "Settings" menu.
+        """
         return []
 
     def list_apps(self) -> Sequence[App]:
+        """Return apps, provided by extension
+
+        Apps are available to user in "Applications" menu.
+        """
         return []
 
     def start(self) -> None:
-        pass
+        """Hook called on startup when extension is loaded"""
 
 
 ExtensionFactory = Callable[[str, "OpenVarioShell"], Extension]
