@@ -501,9 +501,14 @@ ExtensionFactory = Callable[[str, "OpenVarioShell"], Extension]
 
 
 class ExtensionManager(Protocol):
+    """Extension manager.
+
+    Enumerates and manages installed extensions.
+    """
+
     @abstractmethod
     def list_extensions(self) -> Iterable[Extension]:
-        pass
+        """List all currently installed extensions."""
 
 
 @dataclass
