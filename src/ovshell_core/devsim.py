@@ -1,12 +1,12 @@
 import os
 import asyncio
 
-from ovshell import protocol
+from ovshell import api
 
 SIM_READ_DELAY = 0.1
 
 
-class SimulatedDeviceImpl(protocol.Device):
+class SimulatedDeviceImpl(api.Device):
     def __init__(self, filename: str) -> None:
         self.id = "sim"
         self.name = os.path.basename(filename)
@@ -26,6 +26,6 @@ class SimulatedDeviceImpl(protocol.Device):
         raise NotImplementedError()  # pragma: nocover
 
 
-def run_simulated_device(shell: protocol.OpenVarioShell, filename: str) -> None:
+def run_simulated_device(shell: api.OpenVarioShell, filename: str) -> None:
     dev = SimulatedDeviceImpl(filename)
     shell.devices.register(dev)

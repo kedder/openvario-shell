@@ -6,14 +6,14 @@ import functools
 import urwid
 from urwid import signals
 
-from ovshell.protocol import ScreenManager, Activity, UrwidText, IndicatorLocation
+from ovshell.api import ScreenManager, Activity, UrwidText, IndicatorLocation
 from ovshell import widget
-from ovshell import protocol
+from ovshell import api
 
 
 @dataclass
 class ActivityContext:
-    activity: protocol.Activity
+    activity: api.Activity
     widget: urwid.Widget
     palette: Dict[str, Tuple]
     tasks: List[asyncio.Task]
@@ -136,7 +136,7 @@ class ScreenManagerImpl(ScreenManager):
         activity.activate()
         activity.show()
 
-    def push_modal(self, activity: Activity, options: protocol.ModalOptions) -> None:
+    def push_modal(self, activity: Activity, options: api.ModalOptions) -> None:
         self._hide_shown_activity()
 
         bg = self._main_view.original_widget
@@ -167,7 +167,7 @@ class ScreenManagerImpl(ScreenManager):
         activity.activate()
         activity.show()
 
-    def push_dialog(self, title: str, content: urwid.Widget) -> protocol.Dialog:
+    def push_dialog(self, title: str, content: urwid.Widget) -> api.Dialog:
         dialogact = DialogActivity(self, title, content)
         self.push_modal(dialogact, dialogact.modal_opts)
         return dialogact
@@ -193,7 +193,7 @@ class ScreenManagerImpl(ScreenManager):
     def remove_indicator(self, iid: str) -> None:
         self._header.remove_indicator(iid)
 
-    def set_status(self, text: protocol.UrwidText):
+    def set_status(self, text: api.UrwidText):
         self._footer.original_widget = urwid.Text(text)
 
     def spawn_task(self, activity: Activity, coro: Coroutine) -> asyncio.Task:
@@ -252,16 +252,16 @@ class ScreenManagerImpl(ScreenManager):
             return
 
 
-class DialogActivity(protocol.Activity, protocol.Dialog):
+class DialogActivity(api.Activity, api.Dialog):
     button_widgets: List[urwid.Widget]
 
     def __init__(
-        self, screen: protocol.ScreenManager, title: str, message: urwid.Widget
+        self, screen: api.ScreenManager, title: str, message: urwid.Widget
     ) -> None:
         self.screen = screen
         self.title = title
         self.message = message
-        self.modal_opts = protocol.ModalOptions(
+        self.modal_opts = api.ModalOptions(
             align="center",
             width=("relative", 60),
             valign="middle",

@@ -2,14 +2,14 @@ from typing import Optional, List, Dict, Generator, Set
 import asyncio
 from contextlib import contextmanager
 
-from ovshell import protocol
+from ovshell import api
 
 
 class InvalidNMEA(ValueError):
     pass
 
 
-def parse_nmea(device_id: str, message: bytes) -> protocol.NMEA:
+def parse_nmea(device_id: str, message: bytes) -> api.NMEA:
     strmsg = message.decode().strip()
     if not is_nmea_valid(strmsg):
         raise InvalidNMEA()
@@ -18,7 +18,7 @@ def parse_nmea(device_id: str, message: bytes) -> protocol.NMEA:
     parts = msg.split(",")
     datatype = parts[0][1:]
 
-    return protocol.NMEA(
+    return api.NMEA(
         device_id=device_id, raw_message=strmsg, datatype=datatype, fields=parts[1:]
     )
 
@@ -45,51 +45,51 @@ def format_nmea(nmea_str: str) -> str:
     return f"${nmea_str}*{chksum}"
 
 
-class NMEAStreamImpl(protocol.NMEAStream):
-    def __init__(self, queue: "asyncio.Queue[protocol.NMEA]") -> None:
+class NMEAStreamImpl(api.NMEAStream):
+    def __init__(self, queue: "asyncio.Queue[api.NMEA]") -> None:
         self._queue = queue
 
-    async def read(self) -> protocol.NMEA:
+    async def read(self) -> api.NMEA:
         return await self._queue.get()
 
-    def __aiter__(self) -> protocol.NMEAStream:
+    def __aiter__(self) -> api.NMEAStream:
         return self
 
-    async def __anext__(self) -> protocol.NMEA:
+    async def __anext__(self) -> api.NMEA:
         return await self.read()
 
 
-class DeviceManagerImpl(protocol.DeviceManager):
-    _devices: Dict[str, protocol.Device]
+class DeviceManagerImpl(api.DeviceManager):
+    _devices: Dict[str, api.Device]
     _handlers: Dict[str, "asyncio.Task[None]"]
-    _queues: Set["asyncio.Queue[protocol.NMEA]"]
+    _queues: Set["asyncio.Queue[api.NMEA]"]
 
     def __init__(self) -> None:
         self._devices = {}
         self._handlers = {}
         self._queues = set()
 
-    def register(self, device: protocol.Device) -> None:
+    def register(self, device: api.Device) -> None:
         if device.id in self._devices:
             # Already registered
             return
         self._devices[device.id] = device
         self._handlers[device.id] = asyncio.create_task(self._read_device(device))
 
-    def list(self) -> List[protocol.Device]:
+    def list(self) -> List[api.Device]:
         return list(self._devices.values())
 
-    def get(self, devid: str) -> Optional[protocol.Device]:
+    def get(self, devid: str) -> Optional[api.Device]:
         return self._devices.get(devid)
 
     @contextmanager
-    def open_nmea(self) -> Generator[protocol.NMEAStream, None, None]:
-        q: "asyncio.Queue[protocol.NMEA]" = asyncio.Queue(maxsize=100)
+    def open_nmea(self) -> Generator[api.NMEAStream, None, None]:
+        q: "asyncio.Queue[api.NMEA]" = asyncio.Queue(maxsize=100)
         self._queues.add(q)
         yield NMEAStreamImpl(q)
         self._queues.remove(q)
 
-    async def _read_device(self, dev: protocol.Device) -> None:
+    async def _read_device(self, dev: api.Device) -> None:
         try:
             while True:
                 try:
@@ -102,7 +102,7 @@ class DeviceManagerImpl(protocol.DeviceManager):
             del self._devices[dev.id]
             del self._handlers[dev.id]
 
-    def _publish(self, dev: protocol.Device, msg: bytes) -> None:
+    def _publish(self, dev: api.Device, msg: bytes) -> None:
         if not self._queues:
             return
 

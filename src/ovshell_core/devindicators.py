@@ -1,12 +1,12 @@
 from typing import Set
 import asyncio
 
-from ovshell import protocol
+from ovshell import api
 
 DEVICE_POLL_INTERVAL = 1
 
 
-async def show_device_indicators(shell: protocol.OpenVarioShell) -> None:
+async def show_device_indicators(shell: api.OpenVarioShell) -> None:
     indicators: Set[str] = set()
     screen = shell.screen
 
@@ -15,7 +15,7 @@ async def show_device_indicators(shell: protocol.OpenVarioShell) -> None:
         # Update existing indicators
         cur_indicators = set()
         for dev in devs:
-            screen.set_indicator(dev.id, dev.name, protocol.IndicatorLocation.RIGHT, 0)
+            screen.set_indicator(dev.id, dev.name, api.IndicatorLocation.RIGHT, 0)
             cur_indicators.add(dev.id)
 
         # Clear indicators for removed devices

@@ -6,7 +6,7 @@ import serial
 from serial_asyncio import open_serial_connection
 from serial.tools.list_ports import comports
 
-from ovshell import protocol
+from ovshell import api
 
 DEVICE_OPEN_TIMEOUT = 1
 DEVICE_POLL_TIMEOUT = 1
@@ -26,7 +26,7 @@ class BaudRateNotDetected(DeviceOpenError):
     pass
 
 
-class SerialDeviceImpl(protocol.SerialDevice):
+class SerialDeviceImpl(api.SerialDevice):
     def __init__(
         self,
         dev_path: str,
@@ -68,7 +68,7 @@ class SerialDeviceImpl(protocol.SerialDevice):
         self._writer.write(data)
 
 
-async def maintain_serial_devices(shell: protocol.OpenVarioShell) -> NoReturn:
+async def maintain_serial_devices(shell: api.OpenVarioShell) -> NoReturn:
     os_devs: Set[str]
     opening = {}
     builtins = [shell.os.path(dev) for dev in BUILTIN_DEVICES]

@@ -5,11 +5,11 @@ import mock
 import pytest
 import asyncio
 
-from ovshell import protocol
+from ovshell import api
 from ovshell.screen import ScreenManagerImpl
 
 
-class ActivityStub(protocol.Activity):
+class ActivityStub(api.Activity):
     def __init__(self, text: str) -> None:
         self.text = text
         self.activated = 0
@@ -83,7 +83,7 @@ def test_push_modal() -> None:
     # WHEN
     screen.push_modal(
         ActivityStub("Modal Activity"),
-        protocol.ModalOptions(align="center", width=20, valign="top", height=3),
+        api.ModalOptions(align="center", width=20, valign="top", height=3),
     )
 
     # THEN
@@ -169,7 +169,7 @@ def test_set_indicator_simple() -> None:
     mainloop = mock.Mock(urwid.MainLoop)
     screen = ScreenManagerImpl(mainloop)
 
-    screen.set_indicator("test", "Hello World", protocol.IndicatorLocation.LEFT, 0)
+    screen.set_indicator("test", "Hello World", api.IndicatorLocation.LEFT, 0)
 
     view = _render(mainloop.widget)
     assert "Hello World" in view
@@ -183,9 +183,9 @@ def test_set_indicator_ordering() -> None:
     # GIVEN
     mainloop = mock.Mock(urwid.MainLoop)
     screen = ScreenManagerImpl(mainloop)
-    screen.set_indicator("3", "Three", protocol.IndicatorLocation.RIGHT, 3)
-    screen.set_indicator("1", "One", protocol.IndicatorLocation.RIGHT, 1)
-    screen.set_indicator("2", ["T", "w", "o"], protocol.IndicatorLocation.RIGHT, 2)
+    screen.set_indicator("3", "Three", api.IndicatorLocation.RIGHT, 3)
+    screen.set_indicator("1", "One", api.IndicatorLocation.RIGHT, 1)
+    screen.set_indicator("2", ["T", "w", "o"], api.IndicatorLocation.RIGHT, 2)
 
     # WHEN
     view = _render(mainloop.widget)

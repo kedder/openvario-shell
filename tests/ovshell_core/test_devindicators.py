@@ -2,12 +2,12 @@ import asyncio
 
 import pytest
 
-from ovshell import protocol
+from ovshell import api
 from ovshell import testing
 from ovshell_core import devindicators
 
 
-class SampleDevice(protocol.Device):
+class SampleDevice(api.Device):
     def __init__(self, id: str, name: str) -> None:
         self.id = id
         self.name = name
@@ -50,7 +50,7 @@ async def test_dev_indicators(ovshell: testing.OpenVarioShellStub, monkeypatch) 
     # THEN
     ind = ovshell.screen.stub_get_indicator("sample")
     assert ind is not None
-    assert ind.location == protocol.IndicatorLocation.RIGHT
+    assert ind.location == api.IndicatorLocation.RIGHT
 
     task.cancel()
     await asyncio.sleep(0)

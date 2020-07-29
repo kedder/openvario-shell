@@ -1,7 +1,7 @@
 from typing import Sequence
 import os
 
-from ovshell import protocol
+from ovshell import api
 
 from ovshell_core import settings
 from ovshell_core import serial
@@ -11,16 +11,16 @@ from ovshell_core import devsim
 from ovshell_core import devindicators
 
 
-class CoreExtension(protocol.Extension):
+class CoreExtension(api.Extension):
     title = "Core"
 
-    def __init__(self, id: str, shell: protocol.OpenVarioShell):
+    def __init__(self, id: str, shell: api.OpenVarioShell):
         self.id = id
         self.shell = shell
         self._init_settings()
         self._apply_font()
 
-    def list_settings(self) -> Sequence[protocol.Setting]:
+    def list_settings(self) -> Sequence[api.Setting]:
         return [
             settings.RotationSetting(self.shell),
             settings.LanguageSetting(self.shell),
@@ -30,7 +30,7 @@ class CoreExtension(protocol.Extension):
             settings.AutostartTimeoutSetting(self.shell),
         ]
 
-    def list_apps(self) -> Sequence[protocol.App]:
+    def list_apps(self) -> Sequence[api.App]:
         return [upgradeapp.SystemUpgradeApp(self.shell)]
 
     def start(self) -> None:

@@ -2,19 +2,17 @@ from typing import Dict, Optional, Type, TypeVar
 import os
 import json
 
-from ovshell import protocol
+from ovshell import api
 
-JT = TypeVar("JT", bound=protocol.JsonType)
+JT = TypeVar("JT", bound=api.JsonType)
 
 
-class StoredSettingsImpl(protocol.StoredSettings):
-    _settings: Dict[str, Optional[protocol.JsonType]]
+class StoredSettingsImpl(api.StoredSettings):
+    _settings: Dict[str, Optional[api.JsonType]]
     _filename: Optional[str]
 
     def __init__(
-        self,
-        settings: Dict[str, Optional[protocol.JsonType]] = None,
-        filename: str = None,
+        self, settings: Dict[str, Optional[api.JsonType]] = None, filename: str = None,
     ) -> None:
         self._settings = settings or {}
         self._filename = filename
@@ -33,10 +31,10 @@ class StoredSettingsImpl(protocol.StoredSettings):
         with open(self._filename, "w") as f:
             json.dump(self._settings, f, indent=4, sort_keys=True)
 
-    def setdefault(self, key: str, value: protocol.JsonType) -> None:
+    def setdefault(self, key: str, value: api.JsonType) -> None:
         self._settings.setdefault(key, value)
 
-    def set(self, key: str, value: Optional[protocol.JsonType], save: bool = False):
+    def set(self, key: str, value: Optional[api.JsonType], save: bool = False):
         self._settings[key] = value
         if save:
             self.save()

@@ -4,13 +4,13 @@ import asyncio
 import urwid
 
 import ovshell
-from ovshell import protocol
+from ovshell import api
 from ovshell import widget
 from ovshell.ui.settings import SettingsActivity
 from ovshell.ui.apps import AppsActivity
 
 
-class FinalScreenActivity(protocol.Activity):
+class FinalScreenActivity(api.Activity):
     def __init__(self, message: str) -> None:
         self.message = message
 
@@ -22,15 +22,13 @@ class FinalScreenActivity(protocol.Activity):
         return widget.KeySignals(valigned)
 
 
-class MainMenuActivity(protocol.Activity):
+class MainMenuActivity(api.Activity):
     autostart_app_id: Optional[str]
     autostart_progess: urwid.ProgressBar
     autostart_countdown_task: Optional[asyncio.Task] = None
     autostart_canceller: "AutostartCanceller"
 
-    def __init__(
-        self, shell: protocol.OpenVarioShell, autostart_app_id: str = None
-    ) -> None:
+    def __init__(self, shell: api.OpenVarioShell, autostart_app_id: str = None) -> None:
         self.shell = shell
         self.autostart_app_id = autostart_app_id
 
@@ -113,7 +111,7 @@ class MainMenuActivity(protocol.Activity):
         apps_act = AppsActivity(self.shell)
         self.shell.screen.push_activity(apps_act)
 
-    def _on_pinned_app(self, appinfo: protocol.AppInfo, w: urwid.Widget) -> None:
+    def _on_pinned_app(self, appinfo: api.AppInfo, w: urwid.Widget) -> None:
         appinfo.app.launch()
 
     def _on_quit(self, w: urwid.Widget) -> None:
@@ -147,7 +145,7 @@ class MainMenuActivity(protocol.Activity):
     def _get_version(self) -> str:
         return f"Version {ovshell.__version__}"
 
-    def _get_autostart_app(self) -> Optional[protocol.AppInfo]:
+    def _get_autostart_app(self) -> Optional[api.AppInfo]:
         app_id = self.autostart_app_id
         app_id = app_id or self.shell.settings.get("ovshell.autostart_app", str)
         if not app_id:
@@ -177,7 +175,7 @@ class MainMenuActivity(protocol.Activity):
         # Align with main menu
         return urwid.Padding(counter_pile, width=("relative", 80), align="center",)
 
-    async def autostart_countdown(self, countdown: int, appinfo: protocol.AppInfo):
+    async def autostart_countdown(self, countdown: int, appinfo: api.AppInfo):
         empty_widget = self.autostart_counter.original_widget
         self.autostart_counter.original_widget = self._make_countdown_widget()
         self.autostart_canceller.active = True

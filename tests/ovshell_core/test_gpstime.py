@@ -4,7 +4,7 @@ import mock
 import pytest
 import asyncio
 
-from ovshell import protocol
+from ovshell import api
 from ovshell import testing
 from ovshell_core import gpstime
 
@@ -27,14 +27,14 @@ async def test_clock_indicator(
     clockind = ovshell.screen.stub_get_indicator("clock")
     assert clockind is not None
     assert clockind.markup == ("ind error", "12:32 UTC")
-    assert clockind.location == protocol.IndicatorLocation.LEFT
+    assert clockind.location == api.IndicatorLocation.LEFT
 
     state.acquired = True
     await asyncio.sleep(0.02)
     clockind = ovshell.screen.stub_get_indicator("clock")
     assert clockind is not None
     assert clockind.markup == ("ind normal", "12:32 UTC")
-    assert clockind.location == protocol.IndicatorLocation.LEFT
+    assert clockind.location == api.IndicatorLocation.LEFT
 
     task.cancel()
 
@@ -48,9 +48,9 @@ async def test_gps_time_sync(ovshell: testing.OpenVarioShellStub, monkeypatch) -
     gprmc_fields = "225446,A,4916.45,N,12311.12,W,000.5,054.7,191194,020.3"
     ovshell.devices.stub_add_nmea(
         [
-            protocol.NMEA("", "", "ZZZ", []),
-            protocol.NMEA("", "", "GPRMC", gprmc_fields.split(",")),
-            protocol.NMEA("", "", "AAA", []),
+            api.NMEA("", "", "ZZZ", []),
+            api.NMEA("", "", "GPRMC", gprmc_fields.split(",")),
+            api.NMEA("", "", "AAA", []),
         ]
     )
     state = gpstime.GPSTimeState()
@@ -71,7 +71,7 @@ async def test_gps_time_sync(ovshell: testing.OpenVarioShellStub, monkeypatch) -
 def test_parse_gps_datetime_correct() -> None:
     # GIVEN
     gprmc_fields = "225446,A,4916.45,N,12311.12,W,000.5,054.7,191103,020.3"
-    nmea = protocol.NMEA("", "", "GPRMC", gprmc_fields.split(","))
+    nmea = api.NMEA("", "", "GPRMC", gprmc_fields.split(","))
 
     # WHEN
     dt = gpstime.parse_gps_datetime(nmea)
@@ -82,7 +82,7 @@ def test_parse_gps_datetime_correct() -> None:
 
 def test_parse_gps_datetime_longtime() -> None:
     gprmc_fields = "121931.00,A,4801.86153,N,01056.69289,E,53.587,8.64,270520,,,A"
-    nmea = protocol.NMEA("", "", "GPRMC", gprmc_fields.split(","))
+    nmea = api.NMEA("", "", "GPRMC", gprmc_fields.split(","))
 
     # WHEN
     dt = gpstime.parse_gps_datetime(nmea)
@@ -94,7 +94,7 @@ def test_parse_gps_datetime_longtime() -> None:
 def test_parse_gps_datetime_bad_sentence() -> None:
     # GIVEN
     gprmc_fields = "225446,A,4916.45,N,12311.12,W,000.5,054.7,191194,020.3"
-    nmea = protocol.NMEA("", "", "XXXXX", gprmc_fields.split(","))
+    nmea = api.NMEA("", "", "XXXXX", gprmc_fields.split(","))
 
     # WHEN
     dt = gpstime.parse_gps_datetime(nmea)
@@ -106,7 +106,7 @@ def test_parse_gps_datetime_bad_sentence() -> None:
 def test_parse_gps_datetime_notime() -> None:
     # GIVEN
     gprmc_fields = ",,,,,,,,,"
-    nmea = protocol.NMEA("", "", "GPRMC", gprmc_fields.split(","))
+    nmea = api.NMEA("", "", "GPRMC", gprmc_fields.split(","))
 
     # WHEN
     dt = gpstime.parse_gps_datetime(nmea)

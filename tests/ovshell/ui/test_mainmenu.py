@@ -4,7 +4,7 @@ import asyncio
 import pytest
 import urwid
 
-from ovshell import protocol
+from ovshell import api
 from ovshell import testing
 from ovshell.ui.mainmenu import MainMenuActivity
 
@@ -20,12 +20,12 @@ def nosleep(monkeypatch) -> None:
     monkeypatch.setattr("asyncio.sleep", nosleep)
 
 
-class MockExtension(protocol.Extension):
+class MockExtension(api.Extension):
     id = "mock"
     title = "Mock Extension"
 
 
-class MockApp(protocol.App):
+class MockApp(api.App):
     name = "mock"
     title = "Mock App"
     description = "Mock app for testing"

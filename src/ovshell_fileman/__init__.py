@@ -1,8 +1,8 @@
 """File manager extension"""
 
-from ovshell import protocol
+import ovshell.api
 from ovshell_fileman import ext
 
 
-def extension(id: str, shell: protocol.OpenVarioShell) -> protocol.Extension:
+def extension(id: str, shell: ovshell.api.OpenVarioShell) -> ovshell.api.Extension:
     return ext.FileManagerExtension(id, shell)

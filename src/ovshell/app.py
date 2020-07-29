@@ -3,16 +3,16 @@ import pkg_resources
 
 import urwid
 
-from ovshell.protocol import ScreenManager, OpenVarioShell
-from ovshell.protocol import Extension, ExtensionFactory
-from ovshell import protocol
+from ovshell.api import ScreenManager, OpenVarioShell
+from ovshell.api import Extension, ExtensionFactory
+from ovshell import api
 from ovshell import settings
 from ovshell import ovos
 from ovshell import device
 from ovshell import process
 
 
-class ExtensionManagerImpl(protocol.ExtensionManager):
+class ExtensionManagerImpl(api.ExtensionManager):
     _extensions: List[Extension]
 
     def __init__(self):
@@ -29,17 +29,17 @@ class ExtensionManagerImpl(protocol.ExtensionManager):
         return self._extensions
 
 
-class AppManagerImpl(protocol.AppManager):
+class AppManagerImpl(api.AppManager):
     def __init__(self, shell: OpenVarioShell) -> None:
         self.shell = shell
 
-    def list(self) -> Iterable[protocol.AppInfo]:
+    def list(self) -> Iterable[api.AppInfo]:
         appinfos = []
         allpinned = self._get_pinned()
         for ext in self.shell.extensions.list_extensions():
             for app in ext.list_apps():
                 appid = f"{ext.id}.{app.name}"
-                appinfo = protocol.AppInfo(
+                appinfo = api.AppInfo(
                     id=appid, app=app, extension=ext, pinned=appid in allpinned,
                 )
                 appinfos.append(appinfo)
@@ -47,27 +47,27 @@ class AppManagerImpl(protocol.AppManager):
         appinfos = sorted(appinfos, key=lambda v: (-v.app.priority, v.extension.id))
         return appinfos
 
-    def get(self, id: str) -> Optional[protocol.AppInfo]:
+    def get(self, id: str) -> Optional[api.AppInfo]:
         for appinfo in self.list():
             if appinfo.id == id:
                 return appinfo
         return None
 
-    def pin(self, app: protocol.AppInfo, persist: bool = False) -> None:
+    def pin(self, app: api.AppInfo, persist: bool = False) -> None:
         pinned = self._get_pinned()
         if app.id in pinned:
             return
         pinned.add(app.id)
         self._set_pinned(pinned, persist)
 
-    def unpin(self, app: protocol.AppInfo, persist: bool = False) -> None:
+    def unpin(self, app: api.AppInfo, persist: bool = False) -> None:
         pinned = self._get_pinned()
         if app.id not in pinned:
             return
         pinned.remove(app.id)
         self._set_pinned(pinned, persist)
 
-    def install_new_apps(self) -> List[protocol.AppInfo]:
+    def install_new_apps(self) -> List[api.AppInfo]:
         installed = self.shell.settings.get("ovshell.installed_apps", list) or []
         newapps = []
         for appinfo in self.list():

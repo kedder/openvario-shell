@@ -3,7 +3,7 @@ import os
 import re
 import subprocess
 
-from ovshell import protocol
+from ovshell import api
 from ovshell.ui.settings import StaticChoiceSetting
 
 
@@ -12,7 +12,7 @@ class RotationSetting(StaticChoiceSetting):
     config_key = "core.screen_orientation"
     priority = 80
 
-    def __init__(self, shell: protocol.OpenVarioShell):
+    def __init__(self, shell: api.OpenVarioShell):
         self.shell = shell
         super().__init__()
 
@@ -62,7 +62,7 @@ class LanguageSetting(StaticChoiceSetting):
     config_key = "core.language"
     priority = 70
 
-    def __init__(self, shell: protocol.OpenVarioShell):
+    def __init__(self, shell: api.OpenVarioShell):
         self.shell = shell
         super().__init__()
 
@@ -92,7 +92,7 @@ class ConsoleFontSetting(StaticChoiceSetting):
     priority = 50
     config_key = "core.font"
 
-    def __init__(self, shell: protocol.OpenVarioShell):
+    def __init__(self, shell: api.OpenVarioShell):
         self.shell = shell
         super().__init__()
 
@@ -120,7 +120,7 @@ class ScreenBrightnessSetting(StaticChoiceSetting):
     priority = 75
     brightness_fname = "//sys/class/backlight/lcd/brightness"
 
-    def __init__(self, shell: protocol.OpenVarioShell):
+    def __init__(self, shell: api.OpenVarioShell):
         self.shell = shell
         super().__init__()
 
@@ -165,7 +165,7 @@ class AutostartAppSetting(StaticChoiceSetting):
     priority = 68
     config_key = "ovshell.autostart_app"
 
-    def __init__(self, shell: protocol.OpenVarioShell):
+    def __init__(self, shell: api.OpenVarioShell):
         self.shell = shell
         super().__init__()
 
@@ -188,7 +188,7 @@ class AutostartTimeoutSetting(StaticChoiceSetting):
     priority = 67
     config_key = "ovshell.autostart_timeout"
 
-    def __init__(self, shell: protocol.OpenVarioShell):
+    def __init__(self, shell: api.OpenVarioShell):
         self.shell = shell
         super().__init__()
 
@@ -209,6 +209,6 @@ class AutostartTimeoutSetting(StaticChoiceSetting):
         ]
 
 
-def apply_font(os: protocol.OpenVarioOS, font_name: str) -> None:
+def apply_font(os: api.OpenVarioOS, font_name: str) -> None:
     setfont = os.path("//usr/bin/setfont")
     subprocess.run([setfont, font_name], check=True)

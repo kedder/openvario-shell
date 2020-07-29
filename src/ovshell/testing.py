@@ -16,46 +16,46 @@ from dataclasses import dataclass
 from contextlib import contextmanager
 import urwid
 
-from ovshell import protocol
+from ovshell import api
 
-JT = TypeVar("JT", bound=protocol.JsonType)
+JT = TypeVar("JT", bound=api.JsonType)
 
 
-class AppManagerStub(protocol.AppManager):
-    _app_infos: List[protocol.AppInfo]
+class AppManagerStub(api.AppManager):
+    _app_infos: List[api.AppInfo]
 
     def __init__(self, log: List[str]) -> None:
         self._log = log
         self._app_infos = []
 
-    def list(self) -> Iterable[protocol.AppInfo]:
+    def list(self) -> Iterable[api.AppInfo]:
         return self._app_infos
 
-    def get(self, appid: str) -> Optional[protocol.AppInfo]:
+    def get(self, appid: str) -> Optional[api.AppInfo]:
         appbyid = {ai.id: ai for ai in self._app_infos}
         return appbyid.get(appid)
 
-    def pin(self, app: protocol.AppInfo, persist: bool = False) -> None:
+    def pin(self, app: api.AppInfo, persist: bool = False) -> None:
         pass
 
-    def unpin(self, app: protocol.AppInfo, persist: bool = False) -> None:
+    def unpin(self, app: api.AppInfo, persist: bool = False) -> None:
         pass
 
     def stub_add_app(
-        self, id: str, app: protocol.App, ext: protocol.Extension, pinned: bool = False
+        self, id: str, app: api.App, ext: api.Extension, pinned: bool = False
     ) -> None:
-        self._app_infos.append(protocol.AppInfo(id, app, ext, pinned))
+        self._app_infos.append(api.AppInfo(id, app, ext, pinned))
 
 
-class ExtensionManagerStub(protocol.ExtensionManager):
+class ExtensionManagerStub(api.ExtensionManager):
     def __init__(self, log: List[str]) -> None:
         self._log = log
 
-    def list_extensions(self) -> Iterable[protocol.Extension]:
+    def list_extensions(self) -> Iterable[api.Extension]:
         return []
 
 
-class DialogStub(protocol.Dialog):
+class DialogStub(api.Dialog):
     def __init__(self, title: str, content: urwid.Widget):
         self.title = title
         self.content = content
@@ -74,15 +74,15 @@ class DialogStub(protocol.Dialog):
 @dataclass
 class TopIndicatorStub:
     id: str
-    markup: protocol.UrwidText
-    location: protocol.IndicatorLocation
+    markup: api.UrwidText
+    location: api.IndicatorLocation
     weight: int
 
 
-class ScreenManagerStub(protocol.ScreenManager):
+class ScreenManagerStub(api.ScreenManager):
     _log: List[str]
-    _activities: List[protocol.Activity]
-    _tasks: List[Tuple[protocol.Activity, asyncio.Task]]
+    _activities: List[api.Activity]
+    _tasks: List[Tuple[api.Activity, asyncio.Task]]
     _dialog: Optional[DialogStub]
     _indicators: Dict[str, TopIndicatorStub]
 
@@ -97,27 +97,25 @@ class ScreenManagerStub(protocol.ScreenManager):
         self._log.append("Screen redrawn")
 
     def push_activity(
-        self, activity: protocol.Activity, palette: Optional[List[Tuple]] = None
+        self, activity: api.Activity, palette: Optional[List[Tuple]] = None
     ) -> None:
         self._activities.append(activity)
 
     def pop_activity(self) -> None:
         self._activities.pop()
 
-    def push_modal(
-        self, activity: protocol.Activity, options: protocol.ModalOptions
-    ) -> None:
+    def push_modal(self, activity: api.Activity, options: api.ModalOptions) -> None:
         self._activities.append(activity)
 
-    def push_dialog(self, title: str, content: urwid.Widget) -> protocol.Dialog:
+    def push_dialog(self, title: str, content: urwid.Widget) -> api.Dialog:
         self._dialog = DialogStub(title, content)
         return self._dialog
 
     def set_indicator(
         self,
         iid: str,
-        markup: protocol.UrwidText,
-        location: protocol.IndicatorLocation,
+        markup: api.UrwidText,
+        location: api.IndicatorLocation,
         weight: int,
     ) -> None:
         self._indicators[iid] = TopIndicatorStub(iid, markup, location, weight)
@@ -127,7 +125,7 @@ class ScreenManagerStub(protocol.ScreenManager):
             del self._indicators[iid]
         pass
 
-    def spawn_task(self, activity: protocol.Activity, coro: Coroutine) -> asyncio.Task:
+    def spawn_task(self, activity: api.Activity, coro: Coroutine) -> asyncio.Task:
         task = asyncio.create_task(coro)
         self._tasks.append((activity, task))
         task.add_done_callback(self._task_done)
@@ -140,7 +138,7 @@ class ScreenManagerStub(protocol.ScreenManager):
         if exc is not None:
             raise exc
 
-    def stub_top_activity(self) -> Optional[protocol.Activity]:
+    def stub_top_activity(self) -> Optional[api.Activity]:
         if not self._activities:
             return None
         return self._activities[-1]
@@ -159,17 +157,17 @@ class ScreenManagerStub(protocol.ScreenManager):
         return list(self._indicators.values())
 
 
-class StoredSettingsStub(protocol.StoredSettings):
-    _settings: Dict[str, Optional[protocol.JsonType]]
+class StoredSettingsStub(api.StoredSettings):
+    _settings: Dict[str, Optional[api.JsonType]]
 
     def __init__(self, log: List[str]) -> None:
         self._log = log
         self._settings = {}
 
-    def setdefault(self, key: str, value: protocol.JsonType) -> None:
+    def setdefault(self, key: str, value: api.JsonType) -> None:
         self._settings.setdefault(key, value)
 
-    def set(self, key: str, value: Optional[protocol.JsonType], save: bool = False):
+    def set(self, key: str, value: Optional[api.JsonType], save: bool = False):
         self._settings[key] = value
 
     def get(self, key: str, type: Type[JT], default: JT = None) -> Optional[JT]:
@@ -185,7 +183,7 @@ class StoredSettingsStub(protocol.StoredSettings):
         pass
 
 
-class OpenVarioOSStub(protocol.OpenVarioOS):
+class OpenVarioOSStub(api.OpenVarioOS):
     def __init__(self, log: List[str], rootfs: str) -> None:
         self._log = log
         self._rootfs = rootfs
@@ -213,11 +211,11 @@ class OpenVarioOSStub(protocol.OpenVarioOS):
         self._log.append("OS: Restart")
 
 
-class NMEAStreamStub(protocol.NMEAStream):
-    def __init__(self, nmeas: List[protocol.NMEA]) -> None:
+class NMEAStreamStub(api.NMEAStream):
+    def __init__(self, nmeas: List[api.NMEA]) -> None:
         self._nmeas = list(reversed(nmeas))
 
-    async def read(self) -> protocol.NMEA:
+    async def read(self) -> api.NMEA:
         return self._nmeas.pop()
 
     def __aiter__(self):
@@ -227,34 +225,34 @@ class NMEAStreamStub(protocol.NMEAStream):
         return await self.read()
 
 
-class DeviceManagerStub(protocol.DeviceManager):
-    _devices: List[protocol.Device]
-    _nmeas: List[protocol.NMEA]
+class DeviceManagerStub(api.DeviceManager):
+    _devices: List[api.Device]
+    _nmeas: List[api.NMEA]
 
     def __init__(self, log: List[str]) -> None:
         self._log = log
         self._devices = list()
         self._nmeas = list()
 
-    def register(self, device: protocol.Device) -> None:
+    def register(self, device: api.Device) -> None:
         self._devices.append(device)
         self._log.append(f"Registered device {device.id}")
 
-    def list(self) -> List[protocol.Device]:
+    def list(self) -> List[api.Device]:
         return self._devices
 
     @contextmanager
-    def open_nmea(self) -> Generator[protocol.NMEAStream, None, None]:
+    def open_nmea(self) -> Generator[api.NMEAStream, None, None]:
         yield NMEAStreamStub(self._nmeas)
 
-    def stub_add_nmea(self, nmeas: List[protocol.NMEA]) -> None:
+    def stub_add_nmea(self, nmeas: List[api.NMEA]) -> None:
         self._nmeas.extend(nmeas)
 
     def stub_remove_device(self, devid: str) -> None:
         self._devices = [dev for dev in self._devices if dev.id != devid]
 
 
-class ProcessManagerStub(protocol.ProcessManager):
+class ProcessManagerStub(api.ProcessManager):
     def __init__(self, log: List[str]) -> None:
         self._log = log
 
@@ -262,7 +260,7 @@ class ProcessManagerStub(protocol.ProcessManager):
         return asyncio.create_task(coro)
 
 
-class OpenVarioShellStub(protocol.OpenVarioShell):
+class OpenVarioShellStub(api.OpenVarioShell):
     _log: List[str]
 
     def __init__(self, fsroot: str) -> None:

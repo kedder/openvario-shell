@@ -5,7 +5,7 @@ import functools
 
 import urwid
 
-from ovshell import protocol
+from ovshell import api
 from ovshell import widget
 
 from .api import ProgressState, AutomountWatcher, Downloader, DownloadFilter, FileInfo
@@ -29,13 +29,13 @@ class ProgressBarState(ProgressState):
         self._pb.set_completion(self._completion)
 
 
-class LogDownloaderApp(protocol.App):
+class LogDownloaderApp(api.App):
     name = "download-logs"
     title = "Download Logs"
     description = "Download flight logs to USB storage"
     priority = 50
 
-    def __init__(self, shell: protocol.OpenVarioShell):
+    def __init__(self, shell: api.OpenVarioShell):
         self.shell = shell
 
     def launch(self) -> None:
@@ -55,13 +55,13 @@ class LogDownloaderApp(protocol.App):
         return DownloaderImpl(os.path.join(xcsdir, "logs"), mntdir)
 
 
-class LogDownloaderActivity(protocol.Activity):
+class LogDownloaderActivity(api.Activity):
     _dl_in_progress: Dict[str, urwid.WidgetPlaceholder]
     filter: DownloadFilter
 
     def __init__(
         self,
-        shell: protocol.OpenVarioShell,
+        shell: api.OpenVarioShell,
         mountwatcher: "AutomountWatcher",
         downloader: "Downloader",
     ) -> None:

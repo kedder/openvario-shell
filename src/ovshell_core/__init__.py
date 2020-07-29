@@ -1,6 +1,6 @@
-from ovshell import protocol
+from ovshell import api
 from ovshell_core import ext
 
 
-def extension(id: str, app: protocol.OpenVarioShell) -> protocol.Extension:
+def extension(id: str, app: api.OpenVarioShell) -> api.Extension:
     return ext.CoreExtension(id, app)

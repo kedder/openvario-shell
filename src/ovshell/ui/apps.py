@@ -2,12 +2,12 @@ from typing import Optional
 
 import urwid
 
-from ovshell import protocol
+from ovshell import api
 from ovshell import widget
 
 
 class AppRowItem(urwid.WidgetWrap):
-    def __init__(self, appinfo: protocol.AppInfo) -> None:
+    def __init__(self, appinfo: api.AppInfo) -> None:
         self._app = appinfo.app
         self._title_w = urwid.Text(appinfo.app.title)
         self._descr_w = urwid.Text(appinfo.app.description)
@@ -27,8 +27,8 @@ class AppRowItem(urwid.WidgetWrap):
         return key
 
 
-class AppsActivity(protocol.Activity):
-    def __init__(self, shell: protocol.OpenVarioShell) -> None:
+class AppsActivity(api.Activity):
+    def __init__(self, shell: api.OpenVarioShell) -> None:
         self.shell = shell
 
     def create(self) -> urwid.Widget:

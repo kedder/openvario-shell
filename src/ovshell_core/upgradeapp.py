@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 import urwid
 
-from ovshell import protocol
+from ovshell import api
 from ovshell import widget
 
 
@@ -56,13 +56,13 @@ class OpkgToolsImpl(OpkgTools):
         return upgradables
 
 
-class SystemUpgradeApp(protocol.App):
+class SystemUpgradeApp(api.App):
     name = "system-upgrade"
     title = "Update"
     description = "Check for system updates"
     priority = 20
 
-    def __init__(self, shell: protocol.OpenVarioShell):
+    def __init__(self, shell: api.OpenVarioShell):
         self.shell = shell
 
     def launch(self) -> None:
@@ -72,11 +72,11 @@ class SystemUpgradeApp(protocol.App):
         self.shell.screen.push_activity(act)
 
 
-class CheckForUpdatesActivity(protocol.Activity):
+class CheckForUpdatesActivity(api.Activity):
     check_for_updates_wdg: "CheckForUpdatesWidget"
     select_pkg_wdg: "PackageSelectionWidget"
 
-    def __init__(self, shell: protocol.OpenVarioShell, opkg_tools: OpkgTools) -> None:
+    def __init__(self, shell: api.OpenVarioShell, opkg_tools: OpkgTools) -> None:
         self.shell = shell
         self.opkg_tools = opkg_tools
 
@@ -179,7 +179,7 @@ class PackageSelectionWidget(urwid.WidgetWrap):
     _upgradables: List[UpgradablePackage]
 
     def __init__(
-        self, upgradables: List[UpgradablePackage], screen: protocol.ScreenManager
+        self, upgradables: List[UpgradablePackage], screen: api.ScreenManager
     ) -> None:
         self.selected = set()
         self._upgradables = upgradables

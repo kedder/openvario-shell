@@ -4,11 +4,11 @@ import asyncio
 import pytest
 
 from ovshell import device
-from ovshell import protocol
+from ovshell import api
 from ovshell.device import nmea_checksum, format_nmea, is_nmea_valid, parse_nmea
 
 
-class DeviceStub(protocol.Device):
+class DeviceStub(api.Device):
     id: str
     name: str
     _stream: List[bytes]

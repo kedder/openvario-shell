@@ -2,10 +2,10 @@ import sys
 import os
 import subprocess
 
-from ovshell import protocol
+from ovshell import api
 
 
-class OpenVarioOSImpl(protocol.OpenVarioOS):
+class OpenVarioOSImpl(api.OpenVarioOS):
     def mount_boot(self) -> None:
         subprocess.run(["mount", "/dev/mmcblk0p1", "/boot"], check=True)
 

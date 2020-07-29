@@ -2,20 +2,20 @@ from typing import Sequence, Dict, List
 import subprocess
 import os
 
-from ovshell import protocol
+from ovshell import api
 
 import urwid
 
 
-class XCSoarExtension(protocol.Extension):
+class XCSoarExtension(api.Extension):
     title = "XCSoar"
 
-    def __init__(self, id: str, shell: protocol.OpenVarioShell):
+    def __init__(self, id: str, shell: api.OpenVarioShell):
         self.id = id
         self.shell = shell
         self._init_settings()
 
-    def list_apps(self) -> Sequence[protocol.App]:
+    def list_apps(self) -> Sequence[api.App]:
         return [XCSoarApp(self.shell)]
 
     def _init_settings(self) -> None:
@@ -24,23 +24,23 @@ class XCSoarExtension(protocol.Extension):
         config.setdefault("xcsoar.home", "//home/root/.xcsoar")
 
 
-class XCSoarApp(protocol.App):
+class XCSoarApp(api.App):
     name = "xcsoar"
     title = "XCSoar"
     description = "Tactical glide computer"
     priority = 90
 
-    def __init__(self, shell: protocol.OpenVarioShell) -> None:
+    def __init__(self, shell: api.OpenVarioShell) -> None:
         self.shell = shell
 
-    def install(self, appinfo: protocol.AppInfo) -> None:
+    def install(self, appinfo: api.AppInfo) -> None:
         self.shell.apps.pin(appinfo)
 
     def launch(self) -> None:
         self._set_orientation_in_profile()
         env = self._prep_environment()
         cmdline = self._make_commandline()
-        modal_opts = protocol.ModalOptions(
+        modal_opts = api.ModalOptions(
             align="center", width=("relative", 90), valign="middle", height="pack",
         )
         try:
@@ -109,8 +109,8 @@ class XCSoarApp(protocol.App):
         return profiles
 
 
-class AppOutputActivity(protocol.Activity):
-    def __init__(self, shell: protocol.OpenVarioShell, message: str) -> None:
+class AppOutputActivity(api.Activity):
+    def __init__(self, shell: api.OpenVarioShell, message: str) -> None:
         self.shell = shell
         self.message = message
 
