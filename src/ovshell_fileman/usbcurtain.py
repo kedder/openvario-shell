@@ -1,6 +1,19 @@
 import urwid
 
+from ovshell import api
+
 from .api import AutomountWatcher
+from .mountwatch import AutomountWatcherImpl
+
+
+USB_MOUNTPOINT = "//usb/usbstick"
+USB_MOUNTDEVICE = "//dev/sda1"
+
+
+def make_usbstick_watcher(os: api.OpenVarioOS) -> AutomountWatcher:
+    mntdir = os.path(USB_MOUNTPOINT)
+    mntdev = os.path(USB_MOUNTDEVICE)
+    return AutomountWatcherImpl(mntdev, mntdir)
 
 
 class USBStorageCurtain(urwid.WidgetWrap):

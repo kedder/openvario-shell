@@ -9,12 +9,8 @@ from ovshell import api
 from ovshell import widget
 
 from .api import ProgressState, AutomountWatcher, Downloader, DownloadFilter, FileInfo
-from .usbcurtain import USBStorageCurtain
-from .mountwatch import AutomountWatcherImpl
+from .usbcurtain import USBStorageCurtain, make_usbstick_watcher, USB_MOUNTPOINT
 from .downloader import DownloaderImpl
-
-USB_MOUNTPOINT = "//usb/usbstick"
-USB_MOUNTDEVICE = "//dev/sda1"
 
 
 class ProgressBarState(ProgressState):
@@ -41,14 +37,9 @@ class LogDownloaderApp(api.App):
 
     def launch(self) -> None:
         act = LogDownloaderActivity(
-            self.shell, self._make_mountwatcher(), self._make_downloader()
+            self.shell, make_usbstick_watcher(self.shell.os), self._make_downloader()
         )
         self.shell.screen.push_activity(act)
-
-    def _make_mountwatcher(self) -> AutomountWatcher:
-        mntdir = self.shell.os.path(USB_MOUNTPOINT)
-        mntdev = self.shell.os.path(USB_MOUNTDEVICE)
-        return AutomountWatcherImpl(mntdev, mntdir)
 
     def _make_downloader(self) -> Downloader:
         mntdir = self.shell.os.path(USB_MOUNTPOINT)
