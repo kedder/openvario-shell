@@ -3,6 +3,7 @@ from typing import Sequence
 from ovshell import api
 
 from ovshell_fileman.downloadapp import LogDownloaderApp
+from ovshell_fileman.backupapp import BackupRestoreApp
 
 
 class FileManagerExtension(api.Extension):
@@ -13,4 +14,4 @@ class FileManagerExtension(api.Extension):
         self.shell = shell
 
     def list_apps(self) -> Sequence[api.App]:
-        return [LogDownloaderApp(self.shell)]
+        return [LogDownloaderApp(self.shell), BackupRestoreApp(self.shell)]

@@ -8,4 +8,4 @@ def test_extension(ovshell: testing.OpenVarioShellStub) -> None:
     assert ext is not None
 
     apps = ext.list_apps()
-    assert len(apps) == 1
+    assert len(apps) == 2
