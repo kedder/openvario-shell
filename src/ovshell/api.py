@@ -513,6 +513,11 @@ class ExtensionManager(Protocol):
 
 @dataclass
 class AppInfo:
+    """Application info
+
+    Holds metadata for application.
+    """
+
     id: str
     app: App
     extension: Extension
@@ -520,21 +525,29 @@ class AppInfo:
 
 
 class AppManager(Protocol):
+    """Application manager
+
+    Holds registry of all applications.
+    """
+
     @abstractmethod
     def list(self) -> Iterable[AppInfo]:
-        pass
+        """Return list of all available applications"""
 
     @abstractmethod
     def get(self, appid: str) -> Optional[AppInfo]:
-        pass
+        """Retrun application by id, or None if application is not found"""
 
     @abstractmethod
     def pin(self, app: AppInfo, persist: bool = False) -> None:
-        pass
+        """Pin application.
+
+        Make application appear on the main menu.
+        """
 
     @abstractmethod
     def unpin(self, app: AppInfo, persist: bool = False) -> None:
-        pass
+        """Remove application from list of pinned ones"""
 
 
 class OpenVarioShell(Protocol):
