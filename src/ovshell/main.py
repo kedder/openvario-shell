@@ -85,6 +85,7 @@ def run(argv) -> None:
         ("error banner", "yellow", "dark red", ""),
         ("progress", "light magenta", "black", ""),
         ("remark", "dark gray", "black", ""),
+        ("highlight", "yellow", "black", ""),
         ("topbar", "black", "white", ""),
         # Light color scheme (for modals and popups)
         ("bg light", "black", "white", ""),
