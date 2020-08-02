@@ -551,6 +551,8 @@ class AppManager(Protocol):
 
 
 class OpenVarioShell(Protocol):
+    """Services for Openvario shell"""
+
     screen: ScreenManager
     settings: StoredSettings
     extensions: ExtensionManager
@@ -561,4 +563,4 @@ class OpenVarioShell(Protocol):
 
     @abstractmethod
     def quit(self) -> None:
-        pass
+        """Quit shell"""
