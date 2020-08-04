@@ -140,16 +140,15 @@ class BackupActivity(api.Activity):
         self.rsync_task = self.shell.screen.spawn_task(self, self._progress.start())
 
     def _on_cancel(self, w: urwid.Widget) -> None:
-        self.shell.screen.pop_activity()
-
         if self.rsync_task is None:
             return
 
         if not self.rsync_task.done():
             self.rsync_task.cancel()
-            self.shell.screen.push_dialog(
-                "Backup cancelled", urwid.Text("Backup was not completed.")
+            self.status_msg.set_text(
+                ["\n", ("error message", f"Backup was cancelled."), "\n"]
             )
+            self._show_close_button()
 
     def _on_close(self, w: urwid.Widget) -> None:
         self.shell.screen.pop_activity()
@@ -158,12 +157,15 @@ class BackupActivity(api.Activity):
         self.status_msg.set_text(
             ["\n", ("success message", "Backup has completed."), "\n"]
         )
-        self._button_row.contents = [(self._b_close, ("given", 16))]
+        self._show_close_button()
 
     def _on_sync_failed(self, w: urwid.Widget, res: int) -> None:
         self.status_msg.set_text(
             ["\n", ("error message", f"Backup has failed (error code: {res})."), "\n"]
         )
+        self._show_close_button()
+
+    def _show_close_button(self) -> None:
         self._button_row.contents = [(self._b_close, ("given", 16))]
 
 
