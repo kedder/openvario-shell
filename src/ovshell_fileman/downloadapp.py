@@ -11,6 +11,7 @@ from ovshell import widget
 from .api import ProgressState, AutomountWatcher, Downloader, DownloadFilter, FileInfo
 from .usbcurtain import USBStorageCurtain, make_usbstick_watcher, USB_MOUNTPOINT
 from .downloader import DownloaderImpl
+from .utils import format_size
 
 
 class ProgressBarState(ProgressState):
@@ -202,13 +203,3 @@ class SelectableItem(urwid.WidgetWrap):
             self._emit("click")
             return None
         return key
-
-
-def format_size(size: int) -> str:
-    fsize = float(size)
-    # make suffix the same size to keep numbers dot-aligned
-    for unit in ["B  ", "KiB", "MiB", "GiB"]:
-        if abs(fsize) < 1024.0:
-            return "%3.1f %s" % (fsize, unit)
-        fsize /= 1024.0
-    return "%.1f %s" % (size, "TiB")
