@@ -66,6 +66,7 @@ class BackupRestoreMainActivity(api.Activity):
         urwid.connect_signal(b_backup, "click", self._on_backup)
 
         b_restore = widget.PlainButton("Restore")
+        urwid.connect_signal(b_restore, "click", self._on_restore)
 
         b_exit = widget.PlainButton("Exit")
         urwid.connect_signal(b_exit, "click", self._on_exit)
@@ -100,17 +101,29 @@ class BackupRestoreMainActivity(api.Activity):
 
     def _on_backup(self, w: urwid.Widget) -> None:
         act = BackupActivity(self.shell)
-        opts = api.ModalOptions(
+        self.shell.screen.push_modal(act, self._get_rsync_modal_opts())
+
+    def _on_restore(self, w: urwid.Widget) -> None:
+        act = RestoreActivity(self.shell)
+        self.shell.screen.push_modal(act, self._get_rsync_modal_opts())
+
+    def _get_rsync_modal_opts(self) -> api.ModalOptions:
+        return api.ModalOptions(
             align="center", width=("relative", 80), valign="middle", height="pack",
         )
-        self.shell.screen.push_modal(act, opts)
 
     def _on_exit(self, w: urwid.Widget) -> None:
         self.shell.screen.pop_activity()
 
 
-class BackupActivity(api.Activity):
+class RsyncProgressActivity(api.Activity):
     rsync_task: Optional["asyncio.Task[int]"] = None
+
+    msg_title: str
+    msg_description: str
+    msg_sync_completed: str
+    msg_sync_cancelled: str
+    msg_sync_failed: str
 
     def __init__(self, shell: api.OpenVarioShell) -> None:
         self.shell = shell
@@ -131,9 +144,16 @@ class BackupActivity(api.Activity):
         self._button_row = urwid.GridFlow([b_cancel], 16, 1, 1, align="center")
 
         content = urwid.Pile(
-            [urwid.Divider(), self._progress, self.status_msg, self._button_row,]
+            [
+                urwid.Divider(),
+                urwid.Text(self.msg_description),
+                urwid.Divider(),
+                self._progress,
+                self.status_msg,
+                self._button_row,
+            ]
         )
-        w = urwid.LineBox(content, title="Backup")
+        w = urwid.LineBox(content, title=self.msg_title)
         return w
 
     def activate(self) -> None:
@@ -146,7 +166,7 @@ class BackupActivity(api.Activity):
         if not self.rsync_task.done():
             self.rsync_task.cancel()
             self.status_msg.set_text(
-                ["\n", ("error message", f"Backup was cancelled."), "\n"]
+                ["\n", ("error message", self.msg_sync_cancelled), "\n"]
             )
             self._show_close_button()
 
@@ -155,18 +175,34 @@ class BackupActivity(api.Activity):
 
     def _on_sync_done(self, w: urwid.Widget) -> None:
         self.status_msg.set_text(
-            ["\n", ("success message", "Backup has completed."), "\n"]
+            ["\n", ("success message", self.msg_sync_completed), "\n"]
         )
         self._show_close_button()
 
     def _on_sync_failed(self, w: urwid.Widget, res: int) -> None:
         self.status_msg.set_text(
-            ["\n", ("error message", f"Backup has failed (error code: {res})."), "\n"]
+            ["\n", ("error message", self.msg_sync_failed.format(res=res)), "\n"]
         )
         self._show_close_button()
 
     def _show_close_button(self) -> None:
         self._button_row.contents = [(self._b_close, ("given", 16))]
+
+
+class BackupActivity(RsyncProgressActivity):
+    msg_title = "Backup"
+    msg_description = "Copying files from Openvario to USB stick..."
+    msg_sync_completed = "Backup has completed."
+    msg_sync_cancelled = "Backup was cancelled."
+    msg_sync_failed = "Backup has failed (error code: {res})."
+
+
+class RestoreActivity(RsyncProgressActivity):
+    msg_title = "Restore"
+    msg_description = "Copying files from USB stick to Openvario..."
+    msg_sync_completed = "Restore has completed."
+    msg_sync_cancelled = "Restore was cancelled."
+    msg_sync_failed = "Restore has failed (error code: {res})."
 
 
 @dataclass
