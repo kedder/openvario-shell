@@ -1,4 +1,6 @@
 from typing import List, Optional, Coroutine
+from abc import abstractmethod
+import os
 import asyncio
 from dataclasses import dataclass
 
@@ -9,14 +11,14 @@ from ovshell import api
 from ovshell import widget
 
 from .api import AutomountWatcher
-from .usbcurtain import USBStorageCurtain, make_usbstick_watcher
+from .usbcurtain import USBStorageCurtain, make_usbstick_watcher, USB_MOUNTPOINT
 from .utils import format_size
 
 
 BACKUP_DIRS = [
     "//home/root",
     "//var/lib/connman",
-    "//etc/opkg/",
+    "//etc/opkg",
     "//etc/dropbear",
     "//opt/conf",
 ]
@@ -59,7 +61,7 @@ class BackupRestoreMainActivity(api.Activity):
             ]
         )
 
-        absdirs = [self.shell.os.path(d) for d in BACKUP_DIRS]
+        absdirs = _get_backup_dirs(self.shell.os)
         backupdirs = urwid.Pile([urwid.Text(f"  * {d}") for d in absdirs])
 
         b_backup = widget.PlainButton("Backup")
@@ -128,8 +130,12 @@ class RsyncProgressActivity(api.Activity):
     def __init__(self, shell: api.OpenVarioShell) -> None:
         self.shell = shell
 
+    @abstractmethod
+    def get_rsync_params(self) -> List[str]:
+        pass
+
     def create(self) -> None:
-        self._progress = RsyncProgressBar(self.shell.os, [])
+        self._progress = RsyncProgressBar(self.shell.os, self.get_rsync_params())
         urwid.connect_signal(self._progress, "done", self._on_sync_done)
         urwid.connect_signal(self._progress, "failed", self._on_sync_failed)
 
@@ -179,9 +185,14 @@ class RsyncProgressActivity(api.Activity):
         )
         self._show_close_button()
 
-    def _on_sync_failed(self, w: urwid.Widget, res: int) -> None:
+    def _on_sync_failed(self, w: urwid.Widget, res: int, errors: str) -> None:
         self.status_msg.set_text(
-            ["\n", ("error message", self.msg_sync_failed.format(res=res)), "\n"]
+            [
+                "\n",
+                ("error message", self.msg_sync_failed.format(res=res)),
+                "\n\n",
+                ("error message", errors),
+            ]
         )
         self._show_close_button()
 
@@ -196,6 +207,15 @@ class BackupActivity(RsyncProgressActivity):
     msg_sync_cancelled = "Backup was cancelled."
     msg_sync_failed = "Backup has failed (error code: {res})."
 
+    def get_rsync_params(self) -> List[str]:
+        mntpoint = self.shell.os.path(USB_MOUNTPOINT)
+        assert os.path.exists(mntpoint)
+        dest_dir = os.path.join(mntpoint, "openvario", "backup")
+        os.makedirs(dest_dir, exist_ok=True)
+
+        backupdirs = _get_backup_dirs(self.shell.os)
+        return ["--recursive", "--times"] + backupdirs + [dest_dir]
+
 
 class RestoreActivity(RsyncProgressActivity):
     msg_title = "Restore"
@@ -203,6 +223,9 @@ class RestoreActivity(RsyncProgressActivity):
     msg_sync_completed = "Restore has completed."
     msg_sync_cancelled = "Restore was cancelled."
     msg_sync_failed = "Restore has failed (error code: {res})."
+
+    def get_rsync_params(self) -> List[str]:
+        return ["-a"]
 
 
 @dataclass
@@ -240,13 +263,15 @@ class RsyncProgressBar(urwid.ProgressBar):
     async def start(self) -> None:
         proc = await asyncio.create_subprocess_exec(
             self.os.path(RSYNC_BIN),
+            "--info=progress2",
             *self.rsync_params,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
-            limit=100,
+            limit=200,
         )
 
         assert proc.stdout is not None
+        assert proc.stderr is not None
 
         while not proc.stdout.at_eof():
             try:
@@ -259,9 +284,11 @@ class RsyncProgressBar(urwid.ProgressBar):
 
         result = await proc.wait()
         if result == 0:
+            self.set_completion(100)
             self._emit("done")
         else:
-            self._emit("failed", result)
+            errors = await proc.stderr.read()
+            self._emit("failed", result, errors.decode())
 
     def get_text(self) -> str:
         return self._current_progress
@@ -272,3 +299,7 @@ class RsyncProgressBar(urwid.ProgressBar):
         self._current_progress = (
             f"{prg.progress}% | {transferred} | {prg.rate} | {prg.elapsed}"
         )
+
+
+def _get_backup_dirs(os: api.OpenVarioOS) -> List[str]:
+    return [os.path(d) for d in BACKUP_DIRS]
