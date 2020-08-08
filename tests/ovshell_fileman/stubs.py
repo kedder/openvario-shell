@@ -1,6 +1,6 @@
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, AsyncGenerator
 
-from ovshell_fileman.api import AutomountWatcher
+from ovshell_fileman.api import AutomountWatcher, RsyncRunner, RsyncStatusLine
 
 
 class AutomountWatcherStub(AutomountWatcher):
@@ -47,3 +47,12 @@ class AutomountWatcherStub(AutomountWatcher):
     def stub_device_out(self) -> None:
         for h in self._device_out_handlers:
             h()
+
+
+class RsyncRunnerStub(RsyncRunner):
+    def __init__(self, progress: List[RsyncStatusLine] = None) -> None:
+        self.progress = progress or []
+
+    async def run(self, params: List[str]) -> AsyncGenerator[RsyncStatusLine, None]:
+        for line in self.progress:
+            yield line

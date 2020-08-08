@@ -1,4 +1,4 @@
-from typing import Callable, List, Dict, Any
+from typing import Callable, List, Dict, Any, Optional, AsyncGenerator
 from typing_extensions import Protocol
 from abc import abstractmethod
 from dataclasses import dataclass, asdict
@@ -74,3 +74,24 @@ class AutomountWatcher(Protocol):
     @abstractmethod
     async def run(self) -> None:
         pass  # pragma: nocover
+
+
+@dataclass
+class RsyncStatusLine:
+    transferred: int  # bytes
+    progress: int  # %
+    rate: str
+    elapsed: str
+    xfr: Optional[str]
+
+
+class RsyncFailedException(Exception):
+    def __init__(self, returncode: int, errors: str) -> None:
+        self.returncode = returncode
+        self.errors = errors
+
+
+class RsyncRunner(Protocol):
+    @abstractmethod
+    def run(self, params: List[str]) -> AsyncGenerator[RsyncStatusLine, None]:
+        pass

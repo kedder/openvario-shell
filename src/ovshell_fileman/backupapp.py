@@ -4,14 +4,14 @@ import re
 import asyncio
 from abc import abstractmethod
 from pathlib import Path
-from dataclasses import dataclass
 
 import urwid
 
 from ovshell import api
 from ovshell import widget
 
-from .api import AutomountWatcher
+from .api import AutomountWatcher, RsyncRunner, RsyncStatusLine, RsyncFailedException
+from .rsync import RsyncRunnerImpl
 from .usbcurtain import USBStorageCurtain, make_usbstick_watcher, USB_MOUNTPOINT
 from .utils import format_size
 
@@ -32,7 +32,6 @@ EXCLUDES = [
 BACKUP_DEST = "openvario/backup"
 
 RSYNC_BIN = "//usr/bin/rsync"
-RSYNC_PROGRESS2_RE = r"([\d,]+)\s+(\d+)%\s+([\d\.]+.B\/s)\s+([\d:]+)(\s+\((.*)\))?"
 
 
 class BackupRestoreApp(api.App):
@@ -45,18 +44,23 @@ class BackupRestoreApp(api.App):
         self.shell = shell
 
     def launch(self) -> None:
+        rsync = RsyncRunnerImpl(self.shell.os.path(RSYNC_BIN))
         act = BackupRestoreMainActivity(
-            self.shell, make_usbstick_watcher(self.shell.os)
+            self.shell, make_usbstick_watcher(self.shell.os), rsync
         )
         self.shell.screen.push_activity(act)
 
 
 class BackupRestoreMainActivity(api.Activity):
     def __init__(
-        self, shell: api.OpenVarioShell, mountwatcher: AutomountWatcher,
+        self,
+        shell: api.OpenVarioShell,
+        mountwatcher: AutomountWatcher,
+        rsync: RsyncRunner,
     ) -> None:
         self.shell = shell
         self.mountwatcher = mountwatcher
+        self.rsync = rsync
 
     def create(self) -> urwid.Widget:
         intro = urwid.Text(
@@ -126,11 +130,11 @@ class BackupRestoreMainActivity(api.Activity):
         return urwid.GridFlow(buttons, cell_width=15, h_sep=1, v_sep=1, align="left",)
 
     def _on_backup(self, w: urwid.Widget) -> None:
-        act = BackupActivity(self.shell)
+        act = BackupActivity(self.shell, self.rsync)
         self.shell.screen.push_modal(act, self._get_rsync_modal_opts())
 
     def _on_restore(self, w: urwid.Widget) -> None:
-        act = RestoreActivity(self.shell)
+        act = RestoreActivity(self.shell, self.rsync)
         self.shell.screen.push_modal(act, self._get_rsync_modal_opts())
 
     def _on_mounted(self, w: urwid.Widget) -> None:
@@ -175,15 +179,18 @@ class RsyncProgressActivity(api.Activity):
     msg_sync_cancelled: str
     msg_sync_failed: str
 
-    def __init__(self, shell: api.OpenVarioShell) -> None:
+    def __init__(self, shell: api.OpenVarioShell, rsync: RsyncRunner) -> None:
         self.shell = shell
+        self.rsync = rsync
 
     @abstractmethod
     def get_rsync_params(self) -> List[str]:
         pass
 
     def create(self) -> None:
-        self._progress = RsyncProgressBar(self.shell.os, self.get_rsync_params())
+        self._progress = RsyncProgressBar(
+            self.shell.os, self.get_rsync_params(), self.rsync
+        )
         urwid.connect_signal(self._progress, "done", self._on_sync_done)
         urwid.connect_signal(self._progress, "failed", self._on_sync_failed)
 
@@ -311,67 +318,27 @@ class RestoreActivity(RsyncProgressActivity):
         self.shell.os.sync()
 
 
-@dataclass
-class RsyncStatusLine:
-    transferred: int  # bytes
-    progress: int  # %
-    rate: str
-    elapsed: str
-    xfr: Optional[str]
-
-    @staticmethod
-    def parse(line: bytes) -> Optional["RsyncStatusLine"]:
-        match = re.match(RSYNC_PROGRESS2_RE, line.strip().decode())
-        if match is None:
-            return None
-
-        return RsyncStatusLine(
-            transferred=int(match.group(1).replace(",", "")),
-            progress=int(match.group(2)),
-            rate=match.group(3),
-            elapsed=match.group(4),
-            xfr=match.group(6),
-        )
-
-
 class RsyncProgressBar(urwid.ProgressBar):
     signals = ["done", "failed"]
 
-    def __init__(self, os: api.OpenVarioOS, rsync_params: List[str]) -> None:
+    def __init__(
+        self, os: api.OpenVarioOS, rsync_params: List[str], rsync: RsyncRunner
+    ) -> None:
         self.os = os
+        self.rsync = rsync
         self.rsync_params = rsync_params
         self._current_progress = ""
         super().__init__("pg normal", "pg complete")
 
     async def start(self) -> None:
-        proc = await asyncio.create_subprocess_exec(
-            self.os.path(RSYNC_BIN),
-            "--info=progress2",
-            *self.rsync_params,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-            limit=200,
-        )
-
-        assert proc.stdout is not None
-        assert proc.stderr is not None
-
-        while not proc.stdout.at_eof():
-            try:
-                line = await proc.stdout.readuntil(b"\r")
-            except asyncio.IncompleteReadError:
-                break
-            rsync_progress = RsyncStatusLine.parse(line)
-            if rsync_progress is not None:
+        try:
+            async for rsync_progress in self.rsync.run(self.rsync_params):
                 self._set_progress(rsync_progress)
 
-        result = await proc.wait()
-        if result == 0:
             self.set_completion(100)
             self._emit("done")
-        else:
-            errors = await proc.stderr.read()
-            self._emit("failed", result, errors.decode())
+        except RsyncFailedException as e:
+            self._emit("failed", e.returncode, e.errors)
 
     def get_text(self) -> str:
         return self._current_progress
