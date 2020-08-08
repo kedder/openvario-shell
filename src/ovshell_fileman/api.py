@@ -99,3 +99,17 @@ class RsyncRunner(Protocol):
     @abstractmethod
     def run(self, params: List[str]) -> AsyncGenerator[RsyncStatusLine, None]:
         pass
+
+
+class BackupDirectory(Protocol):
+    @abstractmethod
+    def get_backed_up_files(self) -> List[str]:
+        pass
+
+    @abstractmethod
+    def ensure_backup_destination(self) -> str:
+        pass
+
+    @abstractmethod
+    def get_backup_destination(self) -> str:
+        pass

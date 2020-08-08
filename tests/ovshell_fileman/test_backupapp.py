@@ -1,3 +1,4 @@
+from typing import List
 import asyncio
 
 import pytest
@@ -8,7 +9,7 @@ from ovshell import testing
 from ovshell_fileman.backupapp import RsyncStatusLine
 from ovshell_fileman.backupapp import BackupRestoreApp, BackupRestoreMainActivity
 
-from .stubs import AutomountWatcherStub, RsyncRunnerStub
+from .stubs import AutomountWatcherStub, RsyncRunnerStub, BackupDirectoryStub
 
 
 def test_app_start(ovshell: testing.OpenVarioShellStub) -> None:
@@ -25,17 +26,25 @@ def test_app_start(ovshell: testing.OpenVarioShellStub) -> None:
 
 @pytest.mark.asyncio
 async def test_activity_mounting(ovshell: testing.OpenVarioShellStub) -> None:
+    # GIVEN
     mountwatcher = AutomountWatcherStub()
     rsync = RsyncRunnerStub()
-    act = BackupRestoreMainActivity(ovshell, mountwatcher, rsync)
+    backupdir = BackupDirectoryStub()
+    act = BackupRestoreMainActivity(ovshell, mountwatcher, rsync, backupdir)
     w = act.create()
     act.activate()
     act.show()
+
     await asyncio.sleep(0)
     assert "Please insert USB storage" in _render(w)
+
+    # WHEN
     mountwatcher.stub_mount()
     await asyncio.sleep(0)
+
+    # THEN
     assert "This app allows to copy files to and from USB stick" in _render(w)
+    assert "No files to restore." in _render(w)
 
 
 def _render(w: urwid.Widget) -> str:

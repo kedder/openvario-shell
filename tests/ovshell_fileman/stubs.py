@@ -1,6 +1,11 @@
 from typing import Callable, List, Optional, AsyncGenerator
 
-from ovshell_fileman.api import AutomountWatcher, RsyncRunner, RsyncStatusLine
+from ovshell_fileman.api import (
+    AutomountWatcher,
+    RsyncRunner,
+    RsyncStatusLine,
+    BackupDirectory,
+)
 
 
 class AutomountWatcherStub(AutomountWatcher):
@@ -60,3 +65,14 @@ class RsyncRunnerStub(RsyncRunner):
     async def run(self, params: List[str]) -> AsyncGenerator[RsyncStatusLine, None]:
         for line in self.progress:
             yield line
+
+
+class BackupDirectoryStub(BackupDirectory):
+    def get_backed_up_files(self) -> List[str]:
+        return []
+
+    def ensure_backup_destination(self) -> str:
+        return ""
+
+    def get_backup_destination(self) -> str:
+        return ""

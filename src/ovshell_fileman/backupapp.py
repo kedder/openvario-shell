@@ -10,7 +10,13 @@ import urwid
 from ovshell import api
 from ovshell import widget
 
-from .api import AutomountWatcher, RsyncRunner, RsyncStatusLine, RsyncFailedException
+from .api import (
+    AutomountWatcher,
+    RsyncRunner,
+    RsyncStatusLine,
+    RsyncFailedException,
+    BackupDirectory,
+)
 from .rsync import RsyncRunnerImpl
 from .usbcurtain import USBStorageCurtain, make_usbstick_watcher
 from .utils import format_size
@@ -34,6 +40,27 @@ BACKUP_DEST = "openvario/backup"
 RSYNC_BIN = "//usr/bin/rsync"
 
 
+class BackupDirectoryImpl(BackupDirectory):
+    def __init__(self, mountpoint: str):
+        self._mountpoint = mountpoint
+        self._backup_dest = os.path.join(mountpoint, BACKUP_DEST)
+
+    def get_backed_up_files(self) -> List[str]:
+        backup_dir = self._backup_dest
+        if not os.path.exists(backup_dir):
+            return []
+
+        return os.listdir(backup_dir)
+
+    def ensure_backup_destination(self) -> str:
+        assert os.path.exists(self._mountpoint)
+        os.makedirs(self._backup_dest, exist_ok=True)
+        return self._backup_dest
+
+    def get_backup_destination(self) -> str:
+        return self._backup_dest
+
+
 class BackupRestoreApp(api.App):
     name = "backup"
     title = "Backup"
@@ -45,9 +72,9 @@ class BackupRestoreApp(api.App):
 
     def launch(self) -> None:
         rsync = RsyncRunnerImpl(self.shell.os.path(RSYNC_BIN))
-        act = BackupRestoreMainActivity(
-            self.shell, make_usbstick_watcher(self.shell.os), rsync
-        )
+        mountwatcher = make_usbstick_watcher(self.shell.os)
+        backupdir = BackupDirectoryImpl(mountwatcher.get_mountpoint())
+        act = BackupRestoreMainActivity(self.shell, mountwatcher, rsync, backupdir)
         self.shell.screen.push_activity(act)
 
 
@@ -57,10 +84,12 @@ class BackupRestoreMainActivity(api.Activity):
         shell: api.OpenVarioShell,
         mountwatcher: AutomountWatcher,
         rsync: RsyncRunner,
+        backupdir: BackupDirectory,
     ) -> None:
         self.shell = shell
         self.mountwatcher = mountwatcher
         self.rsync = rsync
+        self.backupdir = backupdir
 
     def create(self) -> urwid.Widget:
         intro = urwid.Text(
@@ -130,12 +159,14 @@ class BackupRestoreMainActivity(api.Activity):
         return urwid.GridFlow(buttons, cell_width=15, h_sep=1, v_sep=1, align="left",)
 
     def _on_backup(self, w: urwid.Widget) -> None:
-        act = BackupActivity(self.shell, self.rsync, self.mountwatcher.get_mountpoint())
+        act = BackupActivity(
+            self.shell, self.rsync, self.backupdir.ensure_backup_destination()
+        )
         self.shell.screen.push_modal(act, self._get_rsync_modal_opts())
 
     def _on_restore(self, w: urwid.Widget) -> None:
         act = RestoreActivity(
-            self.shell, self.rsync, self.mountwatcher.get_mountpoint()
+            self.shell, self.rsync, self.backupdir.get_backup_destination()
         )
         self.shell.screen.push_modal(act, self._get_rsync_modal_opts())
 
@@ -148,25 +179,14 @@ class BackupRestoreMainActivity(api.Activity):
         )
 
     def _refresh_restore_dirs(self) -> None:
-        mntpoint = self.mountwatcher.get_mountpoint()
-        if not os.path.exists(mntpoint):
-            return
-
-        backup_dir = os.path.join(mntpoint, BACKUP_DEST)
-        if not os.path.exists(backup_dir):
-            msg = f"{BACKUP_DEST} does not exist on USB stick."
-            wdg = urwid.Text([("remark",)])
-            self.restoredirs.contents = [(wdg, ("pack", None))]
-            return
-
-        dirs = os.listdir(backup_dir)
+        dirs = self.backupdir.get_backed_up_files()
         if not dirs:
             wdg = urwid.Text([("remark", f"No files to restore.")])
             self.restoredirs.contents = [(wdg, ("pack", None))]
             return
 
         restoredir_contents = []
-        for rdir in os.listdir(backup_dir):
+        for rdir in dirs:
             restoredir_contents.append((urwid.Text(f"  * {rdir}"), ("pack", None)))
 
         self.restoredirs.contents = restoredir_contents
@@ -182,20 +202,18 @@ class RsyncProgressActivity(api.Activity):
     msg_sync_failed: str
 
     def __init__(
-        self, shell: api.OpenVarioShell, rsync: RsyncRunner, target_dir: str
+        self, shell: api.OpenVarioShell, rsync: RsyncRunner, backup_dest_dir: str
     ) -> None:
         self.shell = shell
         self.rsync = rsync
-        self.target_dir = target_dir
+        self.backup_dest_dir = backup_dest_dir
 
     @abstractmethod
     def get_rsync_params(self) -> List[str]:
         pass
 
     def create(self) -> None:
-        self._progress = RsyncProgressBar(
-            self.shell.os, self.get_rsync_params(), self.rsync
-        )
+        self._progress = RsyncProgressBar(self.rsync, self.get_rsync_params())
         urwid.connect_signal(self._progress, "done", self._on_sync_done)
         urwid.connect_signal(self._progress, "failed", self._on_sync_failed)
 
@@ -268,10 +286,8 @@ class BackupActivity(RsyncProgressActivity):
     msg_sync_failed = "Backup has failed (error code: {res})."
 
     def get_rsync_params(self) -> List[str]:
-        assert os.path.exists(self.target_dir)
         src_dir = self.shell.os.path("//")
-        dest_dir = os.path.join(self.target_dir, BACKUP_DEST)
-        os.makedirs(dest_dir, exist_ok=True)
+        dest_dir = self.backup_dest_dir
 
         excludes = [f"--exclude={exc}" for exc in EXCLUDES]
 
@@ -312,7 +328,7 @@ class RestoreActivity(RsyncProgressActivity):
 
     def get_rsync_params(self) -> List[str]:
         dest_dir = self.shell.os.path("//")
-        src_dir = os.path.join(self.target_dir, BACKUP_DEST)
+        src_dir = self.backup_dest_dir
         return ["--recursive", "--times", src_dir + "/", dest_dir]
 
     def _on_sync_done(self, w: urwid.Widget) -> None:
@@ -324,10 +340,7 @@ class RestoreActivity(RsyncProgressActivity):
 class RsyncProgressBar(urwid.ProgressBar):
     signals = ["done", "failed"]
 
-    def __init__(
-        self, os: api.OpenVarioOS, rsync_params: List[str], rsync: RsyncRunner
-    ) -> None:
-        self.os = os
+    def __init__(self, rsync: RsyncRunner, rsync_params: List[str]) -> None:
         self.rsync = rsync
         self.rsync_params = rsync_params
         self._current_progress = ""
