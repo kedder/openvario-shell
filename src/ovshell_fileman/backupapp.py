@@ -12,7 +12,7 @@ from ovshell import widget
 
 from .api import AutomountWatcher, RsyncRunner, RsyncStatusLine, RsyncFailedException
 from .rsync import RsyncRunnerImpl
-from .usbcurtain import USBStorageCurtain, make_usbstick_watcher, USB_MOUNTPOINT
+from .usbcurtain import USBStorageCurtain, make_usbstick_watcher
 from .utils import format_size
 
 
@@ -130,11 +130,13 @@ class BackupRestoreMainActivity(api.Activity):
         return urwid.GridFlow(buttons, cell_width=15, h_sep=1, v_sep=1, align="left",)
 
     def _on_backup(self, w: urwid.Widget) -> None:
-        act = BackupActivity(self.shell, self.rsync)
+        act = BackupActivity(self.shell, self.rsync, self.mountwatcher.get_mountpoint())
         self.shell.screen.push_modal(act, self._get_rsync_modal_opts())
 
     def _on_restore(self, w: urwid.Widget) -> None:
-        act = RestoreActivity(self.shell, self.rsync)
+        act = RestoreActivity(
+            self.shell, self.rsync, self.mountwatcher.get_mountpoint()
+        )
         self.shell.screen.push_modal(act, self._get_rsync_modal_opts())
 
     def _on_mounted(self, w: urwid.Widget) -> None:
@@ -146,7 +148,7 @@ class BackupRestoreMainActivity(api.Activity):
         )
 
     def _refresh_restore_dirs(self) -> None:
-        mntpoint = self.shell.os.path(USB_MOUNTPOINT)
+        mntpoint = self.mountwatcher.get_mountpoint()
         if not os.path.exists(mntpoint):
             return
 
@@ -179,9 +181,12 @@ class RsyncProgressActivity(api.Activity):
     msg_sync_cancelled: str
     msg_sync_failed: str
 
-    def __init__(self, shell: api.OpenVarioShell, rsync: RsyncRunner) -> None:
+    def __init__(
+        self, shell: api.OpenVarioShell, rsync: RsyncRunner, target_dir: str
+    ) -> None:
         self.shell = shell
         self.rsync = rsync
+        self.target_dir = target_dir
 
     @abstractmethod
     def get_rsync_params(self) -> List[str]:
@@ -263,10 +268,9 @@ class BackupActivity(RsyncProgressActivity):
     msg_sync_failed = "Backup has failed (error code: {res})."
 
     def get_rsync_params(self) -> List[str]:
-        mntpoint = self.shell.os.path(USB_MOUNTPOINT)
-        assert os.path.exists(mntpoint)
+        assert os.path.exists(self.target_dir)
         src_dir = self.shell.os.path("//")
-        dest_dir = os.path.join(mntpoint, BACKUP_DEST)
+        dest_dir = os.path.join(self.target_dir, BACKUP_DEST)
         os.makedirs(dest_dir, exist_ok=True)
 
         excludes = [f"--exclude={exc}" for exc in EXCLUDES]
@@ -307,9 +311,8 @@ class RestoreActivity(RsyncProgressActivity):
     msg_sync_failed = "Restore has failed (error code: {res})."
 
     def get_rsync_params(self) -> List[str]:
-        mntpoint = self.shell.os.path(USB_MOUNTPOINT)
         dest_dir = self.shell.os.path("//")
-        src_dir = os.path.join(mntpoint, BACKUP_DEST)
+        src_dir = os.path.join(self.target_dir, BACKUP_DEST)
         return ["--recursive", "--times", src_dir + "/", dest_dir]
 
     def _on_sync_done(self, w: urwid.Widget) -> None:

@@ -5,6 +5,7 @@ from ovshell_fileman.api import AutomountWatcher, RsyncRunner, RsyncStatusLine
 
 class AutomountWatcherStub(AutomountWatcher):
     stub_running = False
+    mountpoint: str = ""
 
     _mount_handlers: List[Callable[[], None]]
     _unmount_handlers: List[Callable[[], None]]
@@ -47,6 +48,9 @@ class AutomountWatcherStub(AutomountWatcher):
     def stub_device_out(self) -> None:
         for h in self._device_out_handlers:
             h()
+
+    def get_mountpoint(self) -> str:
+        return self.mountpoint
 
 
 class RsyncRunnerStub(RsyncRunner):

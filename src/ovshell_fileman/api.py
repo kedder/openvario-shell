@@ -75,6 +75,10 @@ class AutomountWatcher(Protocol):
     async def run(self) -> None:
         pass  # pragma: nocover
 
+    @abstractmethod
+    def get_mountpoint(self) -> str:
+        pass  # pragma: nocover
+
 
 @dataclass
 class RsyncStatusLine:

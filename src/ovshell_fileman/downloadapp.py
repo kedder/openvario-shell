@@ -9,7 +9,7 @@ from ovshell import api
 from ovshell import widget
 
 from .api import ProgressState, AutomountWatcher, Downloader, DownloadFilter, FileInfo
-from .usbcurtain import USBStorageCurtain, make_usbstick_watcher, USB_MOUNTPOINT
+from .usbcurtain import USBStorageCurtain, make_usbstick_watcher
 from .downloader import DownloaderImpl
 from .utils import format_size
 
@@ -37,15 +37,13 @@ class LogDownloaderApp(api.App):
         self.shell = shell
 
     def launch(self) -> None:
-        act = LogDownloaderActivity(
-            self.shell, make_usbstick_watcher(self.shell.os), self._make_downloader()
-        )
-        self.shell.screen.push_activity(act)
-
-    def _make_downloader(self) -> Downloader:
-        mntdir = self.shell.os.path(USB_MOUNTPOINT)
+        mountwatcher = make_usbstick_watcher(self.shell.os)
         xcsdir = self.shell.os.path(self.shell.settings.getstrict("xcsoar.home", str))
-        return DownloaderImpl(os.path.join(xcsdir, "logs"), mntdir)
+        mntdir = mountwatcher.get_mountpoint()
+        downloader = DownloaderImpl(os.path.join(xcsdir, "logs"), mntdir)
+
+        act = LogDownloaderActivity(self.shell, mountwatcher, downloader)
+        self.shell.screen.push_activity(act)
 
 
 class LogDownloaderActivity(api.Activity):

@@ -55,6 +55,9 @@ class AutomountWatcherImpl(AutomountWatcher):
     def on_unmount(self, handler: Callable[[], None]) -> None:
         self._unmount_handlers.append(handler)
 
+    def get_mountpoint(self) -> str:
+        return self._mountpoint
+
     def _device_in(self) -> None:
         if self._device:
             return
