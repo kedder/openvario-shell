@@ -65,7 +65,7 @@ class BackupRestoreMainActivity(api.Activity):
                     "remark",
                     "This app allows to copy files to and from USB stick directory ",
                 ),
-                ("highlight", BACKUP_DEST),
+                BACKUP_DEST,
                 ("remark", "."),
             ]
         )
@@ -81,17 +81,6 @@ class BackupRestoreMainActivity(api.Activity):
 
         b_restore = widget.PlainButton("Restore")
         urwid.connect_signal(b_restore, "click", self._on_restore)
-
-        b_exit = widget.PlainButton("Exit")
-        urwid.connect_signal(b_exit, "click", self._on_exit)
-
-        buttons = urwid.GridFlow(
-            [b_backup, b_restore, b_exit],
-            cell_width=15,
-            h_sep=1,
-            v_sep=1,
-            align="left",
-        )
 
         restore_help = urwid.Text(
             "The following directories will be copied from USB stick "
@@ -151,9 +140,6 @@ class BackupRestoreMainActivity(api.Activity):
         return api.ModalOptions(
             align="center", width=("relative", 80), valign="middle", height="pack",
         )
-
-    def _on_exit(self, w: urwid.Widget) -> None:
-        self.shell.screen.pop_activity()
 
     def _refresh_restore_dirs(self) -> None:
         mntpoint = self.shell.os.path(USB_MOUNTPOINT)
