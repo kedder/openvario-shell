@@ -7,6 +7,7 @@ LIGHT_ATTR_MAP = {
     "li normal": "li normal light",
     "success message": "success message light",
     "error message": "error message light",
+    "pg normal": "pg normal light",
 }
 
 
