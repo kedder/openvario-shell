@@ -1,11 +1,12 @@
 from typing import List, Optional, Coroutine
-from abc import abstractmethod
 import os
+import re
 import asyncio
+from abc import abstractmethod
+from pathlib import Path
 from dataclasses import dataclass
 
 import urwid
-import re
 
 from ovshell import api
 from ovshell import widget
@@ -16,11 +17,16 @@ from .utils import format_size
 
 
 BACKUP_DIRS = [
-    "//home/root",
-    "//var/lib/connman",
-    "//etc/opkg",
-    "//etc/dropbear",
-    "//opt/conf",
+    "/home/root",
+    "/var/lib/connman",
+    "/etc/opkg",
+    "/etc/dropbear",
+    "/opt/conf",
+]
+
+EXCLUDES = [
+    "/home/root/.profile",
+    "/home/root/.cache",
 ]
 
 BACKUP_DEST = "openvario/backup"
@@ -61,8 +67,7 @@ class BackupRestoreMainActivity(api.Activity):
             ]
         )
 
-        absdirs = _get_backup_dirs(self.shell.os)
-        backupdirs = urwid.Pile([urwid.Text(f"  * {d}") for d in absdirs])
+        backupdirs = urwid.Pile([urwid.Text(f"  * {d}") for d in BACKUP_DIRS])
 
         b_backup = widget.PlainButton("Backup")
         urwid.connect_signal(b_backup, "click", self._on_backup)
@@ -210,11 +215,38 @@ class BackupActivity(RsyncProgressActivity):
     def get_rsync_params(self) -> List[str]:
         mntpoint = self.shell.os.path(USB_MOUNTPOINT)
         assert os.path.exists(mntpoint)
+        src_dir = self.shell.os.path("//")
         dest_dir = os.path.join(mntpoint, "openvario", "backup")
         os.makedirs(dest_dir, exist_ok=True)
 
-        backupdirs = _get_backup_dirs(self.shell.os)
-        return ["--recursive", "--times"] + backupdirs + [dest_dir]
+        excludes = [f"--exclude={exc}" for exc in EXCLUDES]
+
+        allparents = set()
+        includes = []
+        for bdir in BACKUP_DIRS:
+            allparents.update(self._get_all_parents(bdir))
+            includes.append(f"--include={bdir}/**")
+
+        parent_includes = []
+        for pdir in sorted(allparents):
+            parent_includes.append(f"--include={pdir}/")
+
+        return (
+            ["--recursive", "--times"]
+            + excludes
+            + parent_includes
+            + includes
+            + ["--exclude=*", src_dir, dest_dir]
+        )
+
+    def _get_all_parents(self, dir: str) -> List[str]:
+        pdir = Path(dir)
+        root = Path("/")
+        parents = []
+        while pdir != root:
+            parents.append(str(pdir))
+            pdir = pdir.parent
+        return parents
 
 
 class RestoreActivity(RsyncProgressActivity):
@@ -225,7 +257,14 @@ class RestoreActivity(RsyncProgressActivity):
     msg_sync_failed = "Restore has failed (error code: {res})."
 
     def get_rsync_params(self) -> List[str]:
-        return ["-a"]
+        mntpoint = self.shell.os.path(USB_MOUNTPOINT)
+        dest_dir = self.shell.os.path("//")
+        src_dir = os.path.join(mntpoint, "openvario", "backup")
+        return ["--recursive", "--times", src_dir + "/", dest_dir]
+
+    def _on_sync_done(self, w: urwid.Widget) -> None:
+        # After restore, make sure all files are physically written
+        self.shell.os.sync()
 
 
 @dataclass
@@ -258,7 +297,7 @@ class RsyncProgressBar(urwid.ProgressBar):
         self.os = os
         self.rsync_params = rsync_params
         self._current_progress = ""
-        super().__init__("pg inverted", "pg complete")
+        super().__init__("pg normal", "pg complete")
 
     async def start(self) -> None:
         proc = await asyncio.create_subprocess_exec(
@@ -299,7 +338,3 @@ class RsyncProgressBar(urwid.ProgressBar):
         self._current_progress = (
             f"{prg.progress}% | {transferred} | {prg.rate} | {prg.elapsed}"
         )
-
-
-def _get_backup_dirs(os: api.OpenVarioOS) -> List[str]:
-    return [os.path(d) for d in BACKUP_DIRS]
