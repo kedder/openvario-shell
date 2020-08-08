@@ -160,13 +160,19 @@ class BackupRestoreMainActivity(api.Activity):
 
     def _on_backup(self, w: urwid.Widget) -> None:
         act = BackupActivity(
-            self.shell, self.rsync, self.backupdir.ensure_backup_destination()
+            self.shell,
+            self.rsync,
+            self.shell.os.path("//"),
+            self.backupdir.ensure_backup_destination(),
         )
         self.shell.screen.push_modal(act, self._get_rsync_modal_opts())
 
     def _on_restore(self, w: urwid.Widget) -> None:
         act = RestoreActivity(
-            self.shell, self.rsync, self.backupdir.get_backup_destination()
+            self.shell,
+            self.rsync,
+            self.shell.os.path("//"),
+            self.backupdir.get_backup_destination(),
         )
         self.shell.screen.push_modal(act, self._get_rsync_modal_opts())
 
@@ -202,17 +208,22 @@ class RsyncProgressActivity(api.Activity):
     msg_sync_failed: str
 
     def __init__(
-        self, shell: api.OpenVarioShell, rsync: RsyncRunner, backup_dest_dir: str
+        self,
+        shell: api.OpenVarioShell,
+        rsync: RsyncRunner,
+        backup_src_dir: str,
+        backup_dest_dir: str,
     ) -> None:
         self.shell = shell
         self.rsync = rsync
+        self.backup_src_dir = backup_src_dir
         self.backup_dest_dir = backup_dest_dir
 
     @abstractmethod
     def get_rsync_params(self) -> List[str]:
         pass
 
-    def create(self) -> None:
+    def create(self) -> urwid.Widget:
         self._progress = RsyncProgressBar(self.rsync, self.get_rsync_params())
         urwid.connect_signal(self._progress, "done", self._on_sync_done)
         urwid.connect_signal(self._progress, "failed", self._on_sync_failed)
@@ -286,7 +297,7 @@ class BackupActivity(RsyncProgressActivity):
     msg_sync_failed = "Backup has failed (error code: {res})."
 
     def get_rsync_params(self) -> List[str]:
-        src_dir = self.shell.os.path("//")
+        src_dir = self.backup_src_dir
         dest_dir = self.backup_dest_dir
 
         excludes = [f"--exclude={exc}" for exc in EXCLUDES]
@@ -327,7 +338,7 @@ class RestoreActivity(RsyncProgressActivity):
     msg_sync_failed = "Restore has failed (error code: {res})."
 
     def get_rsync_params(self) -> List[str]:
-        dest_dir = self.shell.os.path("//")
+        dest_dir = self.backup_src_dir
         src_dir = self.backup_dest_dir
         return ["--recursive", "--times", src_dir + "/", dest_dir]
 

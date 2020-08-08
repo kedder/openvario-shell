@@ -68,8 +68,13 @@ class RsyncRunnerStub(RsyncRunner):
 
 
 class BackupDirectoryStub(BackupDirectory):
+    backed_up_files: List[str]
+
+    def __init__(self) -> None:
+        self.backed_up_files = []
+
     def get_backed_up_files(self) -> List[str]:
-        return []
+        return self.backed_up_files
 
     def ensure_backup_destination(self) -> str:
         return ""
