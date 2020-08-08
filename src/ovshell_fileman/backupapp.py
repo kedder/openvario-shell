@@ -38,7 +38,7 @@ RSYNC_PROGRESS2_RE = r"([\d,]+)\s+(\d+)%\s+([\d\.]+.B\/s)\s+([\d:]+)(\s+\((.*)\)
 class BackupRestoreApp(api.App):
     name = "backup"
     title = "Backup"
-    description = "Backup & restore configuration and data"
+    description = "Copy files to and from USB stick"
     priority = 40
 
     def __init__(self, shell: api.OpenVarioShell):
@@ -59,15 +59,22 @@ class BackupRestoreMainActivity(api.Activity):
         self.mountwatcher = mountwatcher
 
     def create(self) -> urwid.Widget:
-        disclaimer = urwid.Text(
+        intro = urwid.Text(
             [
-                "The following directories will be backed up to USB stick directory ",
+                (
+                    "remark",
+                    "This app allows to copy files to and from USB stick directory ",
+                ),
                 ("highlight", BACKUP_DEST),
-                ":",
+                ("remark", "."),
             ]
+        )
+        backup_help = urwid.Text(
+            "The following directories will be copied to USB stick:"
         )
 
         backupdirs = urwid.Pile([urwid.Text(f"  * {d}") for d in BACKUP_DIRS])
+        self.restoredirs = urwid.Pile([])
 
         b_backup = widget.PlainButton("Backup")
         urwid.connect_signal(b_backup, "click", self._on_backup)
@@ -86,25 +93,48 @@ class BackupRestoreMainActivity(api.Activity):
             align="left",
         )
 
+        restore_help = urwid.Text(
+            "The following directories will be copied from USB stick "
+            "to root filesystem:"
+        )
+
         self._app_view = urwid.Filler(
             urwid.Pile(
-                [disclaimer, urwid.Divider(), backupdirs, urwid.Divider(), buttons]
+                [
+                    intro,
+                    urwid.Divider(),
+                    backup_help,
+                    urwid.Divider(),
+                    backupdirs,
+                    urwid.Divider(),
+                    self._button_grid([b_backup]),
+                    urwid.Divider(),
+                    restore_help,
+                    urwid.Divider(),
+                    self.restoredirs,
+                    urwid.Divider(),
+                    self._button_grid([b_restore]),
+                ]
             ),
             "top",
         )
 
-        # _stub = urwid.Text("Backup & Restore", align="center")
-        # self._app_view = urwid.Filler(_stub, "middle")
-
         curtain = USBStorageCurtain(self.mountwatcher, self._app_view)
+        urwid.connect_signal(curtain, "mounted", self._on_mounted)
 
         self.frame = urwid.Frame(
             curtain, header=widget.ActivityHeader("Backup & Restore")
         )
         return self.frame
 
+    def show(self) -> None:
+        self._refresh_restore_dirs()
+
     def activate(self) -> None:
         self.shell.screen.spawn_task(self, self.mountwatcher.run())
+
+    def _button_grid(self, buttons: List[urwid.Widget]) -> urwid.GridFlow:
+        return urwid.GridFlow(buttons, cell_width=15, h_sep=1, v_sep=1, align="left",)
 
     def _on_backup(self, w: urwid.Widget) -> None:
         act = BackupActivity(self.shell)
@@ -114,6 +144,9 @@ class BackupRestoreMainActivity(api.Activity):
         act = RestoreActivity(self.shell)
         self.shell.screen.push_modal(act, self._get_rsync_modal_opts())
 
+    def _on_mounted(self, w: urwid.Widget) -> None:
+        self._refresh_restore_dirs()
+
     def _get_rsync_modal_opts(self) -> api.ModalOptions:
         return api.ModalOptions(
             align="center", width=("relative", 80), valign="middle", height="pack",
@@ -121,6 +154,30 @@ class BackupRestoreMainActivity(api.Activity):
 
     def _on_exit(self, w: urwid.Widget) -> None:
         self.shell.screen.pop_activity()
+
+    def _refresh_restore_dirs(self) -> None:
+        mntpoint = self.shell.os.path(USB_MOUNTPOINT)
+        if not os.path.exists(mntpoint):
+            return
+
+        backup_dir = os.path.join(mntpoint, BACKUP_DEST)
+        if not os.path.exists(backup_dir):
+            msg = f"{BACKUP_DEST} does not exist on USB stick."
+            wdg = urwid.Text([("remark",)])
+            self.restoredirs.contents = [(wdg, ("pack", None))]
+            return
+
+        dirs = os.listdir(backup_dir)
+        if not dirs:
+            wdg = urwid.Text([("remark", f"No files to restore.")])
+            self.restoredirs.contents = [(wdg, ("pack", None))]
+            return
+
+        restoredir_contents = []
+        for rdir in os.listdir(backup_dir):
+            restoredir_contents.append((urwid.Text(f"  * {rdir}"), ("pack", None)))
+
+        self.restoredirs.contents = restoredir_contents
 
 
 class RsyncProgressActivity(api.Activity):
@@ -179,7 +236,7 @@ class RsyncProgressActivity(api.Activity):
             self.status_msg.set_text(
                 ["\n", ("error message", self.msg_sync_cancelled), "\n"]
             )
-            self._show_close_button()
+        self._show_close_button()
 
     def _on_close(self, w: urwid.Widget) -> None:
         self.shell.screen.pop_activity()
@@ -216,7 +273,7 @@ class BackupActivity(RsyncProgressActivity):
         mntpoint = self.shell.os.path(USB_MOUNTPOINT)
         assert os.path.exists(mntpoint)
         src_dir = self.shell.os.path("//")
-        dest_dir = os.path.join(mntpoint, "openvario", "backup")
+        dest_dir = os.path.join(mntpoint, BACKUP_DEST)
         os.makedirs(dest_dir, exist_ok=True)
 
         excludes = [f"--exclude={exc}" for exc in EXCLUDES]
@@ -259,10 +316,11 @@ class RestoreActivity(RsyncProgressActivity):
     def get_rsync_params(self) -> List[str]:
         mntpoint = self.shell.os.path(USB_MOUNTPOINT)
         dest_dir = self.shell.os.path("//")
-        src_dir = os.path.join(mntpoint, "openvario", "backup")
+        src_dir = os.path.join(mntpoint, BACKUP_DEST)
         return ["--recursive", "--times", src_dir + "/", dest_dir]
 
     def _on_sync_done(self, w: urwid.Widget) -> None:
+        super()._on_sync_done(w)
         # After restore, make sure all files are physically written
         self.shell.os.sync()
 
