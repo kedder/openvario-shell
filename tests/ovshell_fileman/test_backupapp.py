@@ -6,7 +6,7 @@ import urwid
 
 from ovshell import testing
 
-from ovshell_fileman.api import RsyncStatusLine
+from ovshell_fileman.api import RsyncStatusLine, RsyncFailedException
 from ovshell_fileman.backupapp import BackupRestoreApp, BackupRestoreMainActivity
 from ovshell_fileman.backupapp import BackupActivity, RestoreActivity
 
@@ -164,16 +164,106 @@ def test_restore_act_get_rsync_args(ovshell: testing.OpenVarioShellStub) -> None
     ]
 
 
+@pytest.mark.asyncio
+async def test_restore_show_progress(ovshell: testing.OpenVarioShellStub) -> None:
+    rsync = RsyncRunnerStub()
+    rsync.progress = [
+        RsyncStatusLine(0, 0, "0 KB/s", "00:01:00", None),
+        RsyncStatusLine(2000, 23, "15 KB/s", "01:28:20", None),
+        RsyncStatusLine(12000, 85, "12 KB/s", "03:29:12", None),
+    ]
+    act = RestoreActivity(ovshell, rsync, "/backup_src", "/backup_dest")
+    ovshell.screen.push_activity(act)
+
+    w = act.create()
+    act.activate()
+
+    await asyncio.sleep(0)
+    assert "0% | 0.0 B   | 0 KB/s | 00:01:00" in _render(w)
+    await asyncio.sleep(0)
+    assert "23% | 2.0 KiB | 15 KB/s | 01:28:20" in _render(w)
+    await asyncio.sleep(0)
+    assert "85% | 11.7 KiB | 12 KB/s | 03:29:12" in _render(w)
+    await asyncio.sleep(0)
+    assert "Restore has completed." in _render(w)
+    assert "Close" in _render(w)
+
+    _keypress(w, ["enter"])
+    assert ovshell.screen.stub_top_activity() == None
+
+
+@pytest.mark.asyncio
+async def test_restore_cancel(ovshell: testing.OpenVarioShellStub) -> None:
+    rsync = RsyncRunnerStub()
+    rsync.progress = [
+        RsyncStatusLine(0, 0, "0 KB/s", "00:01:00", None),
+        RsyncStatusLine(2000, 23, "15 KB/s", "01:28:20", None),
+        RsyncStatusLine(12000, 85, "12 KB/s", "03:29:12", None),
+    ]
+    act = RestoreActivity(ovshell, rsync, "/backup_src", "/backup_dest")
+    ovshell.screen.push_activity(act)
+
+    w = act.create()
+    act.activate()
+
+    await asyncio.sleep(0)
+    assert "0% | 0.0 B   | 0 KB/s | 00:01:00" in _render(w)
+    await asyncio.sleep(0)
+
+    # press the cancel button
+    assert "Cancel" in _render(w)
+    _keypress(w, ["enter"])
+
+    await asyncio.sleep(0)
+    assert "Restore was cancelled." in _render(w)
+
+    # close the activity
+    assert "Close" in _render(w)
+    _keypress(w, ["enter"])
+    assert ovshell.screen.stub_top_activity() == None
+
+
+@pytest.mark.asyncio
+async def test_restore_failure(ovshell: testing.OpenVarioShellStub) -> None:
+    rsync = RsyncRunnerStub()
+    rsync.progress = [
+        RsyncStatusLine(0, 0, "0 KB/s", "00:01:00", None),
+        RsyncFailedException(255, "Expected failure"),
+    ]
+    act = RestoreActivity(ovshell, rsync, "/backup_src", "/backup_dest")
+    ovshell.screen.push_activity(act)
+
+    w = act.create()
+    act.activate()
+
+    await asyncio.sleep(0)
+    assert "0% | 0.0 B   | 0 KB/s | 00:01:00" in _render(w)
+    await asyncio.sleep(0)
+
+    # rsync should fail at this point
+    assert "Restore has failed (error code: 255)." in _render(w)
+    assert "Expected failure" in _render(w)
+
+    # close the activity
+    assert "Close" in _render(w)
+    _keypress(w, ["enter"])
+    assert ovshell.screen.stub_top_activity() == None
+
+
 def _render(w: urwid.Widget) -> str:
-    size: Tuple[int, ...] = (60, 40)
-    if "flow" in w.sizing():
-        size = (60,)
-    canvas = w.render(size)
+    canvas = w.render(_get_size(w))
     contents = [t.decode("utf-8") for t in canvas.text]
     return "\n".join(contents)
 
 
 def _keypress(w: urwid.Widget, keys: List[str]) -> None:
     for key in keys:
-        nothandled = w.keypress((60, 40), key)
+        nothandled = w.keypress(_get_size(w), key)
         assert nothandled is None
+
+
+def _get_size(w: urwid.Widget) -> Tuple[int, ...]:
+    size: Tuple[int, ...] = (60, 40)
+    if "flow" in w.sizing():
+        size = (60,)
+    return size
