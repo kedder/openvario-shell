@@ -50,7 +50,7 @@ class BackupDirectoryImpl(BackupDirectory):
         if not os.path.exists(backup_dir):
             return []
 
-        return os.listdir(backup_dir)
+        return sorted(os.listdir(backup_dir))
 
     def ensure_backup_destination(self) -> str:
         assert os.path.exists(self._mountpoint)
@@ -221,7 +221,7 @@ class RsyncProgressActivity(api.Activity):
 
     @abstractmethod
     def get_rsync_params(self) -> List[str]:
-        pass
+        """Return params to rsync command as list of strings"""
 
     def create(self) -> urwid.Widget:
         self._progress = RsyncProgressBar(self.rsync, self.get_rsync_params())

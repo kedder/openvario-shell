@@ -1,5 +1,7 @@
 from typing import List, Tuple
+import os
 import asyncio
+from pathlib import Path
 
 import pytest
 import urwid
@@ -9,8 +11,42 @@ from ovshell import testing
 from ovshell_fileman.api import RsyncStatusLine, RsyncFailedException
 from ovshell_fileman.backupapp import BackupRestoreApp, BackupRestoreMainActivity
 from ovshell_fileman.backupapp import BackupActivity, RestoreActivity
+from ovshell_fileman.backupapp import BackupDirectoryImpl
 
 from .stubs import AutomountWatcherStub, RsyncRunnerStub, BackupDirectoryStub
+
+
+class TestBackupDirectoryImpl:
+    def test_ensure_backup_destination(self, tmp_path: Path) -> None:
+        backupdir = BackupDirectoryImpl(str(tmp_path))
+        backuppath = backupdir.ensure_backup_destination()
+        assert os.path.exists(backuppath)
+
+    def test_get_backup_destination(self, tmp_path: Path) -> None:
+        backupdir = BackupDirectoryImpl(str(tmp_path))
+        backuppath = backupdir.get_backup_destination()
+        assert Path(backuppath) == tmp_path.joinpath("openvario", "backup")
+
+    def test_get_backed_up_files_no_dir(self) -> None:
+        backupdir = BackupDirectoryImpl("/not/existing/dir")
+        assert backupdir.get_backed_up_files() == []
+
+    def test_get_backed_up_files_empty(self, tmp_path: Path) -> None:
+        backupdir = BackupDirectoryImpl(str(tmp_path))
+        assert backupdir.get_backed_up_files() == []
+
+    def test_get_backed_up_files_simple(self, tmp_path: Path) -> None:
+        # GIVEN
+        backupdir = BackupDirectoryImpl(str(tmp_path))
+        backuppath = Path(backupdir.ensure_backup_destination())
+        backuppath.joinpath("one.txt").touch()
+        backuppath.joinpath("subdir").mkdir()
+
+        # WHEN
+        files = backupdir.get_backed_up_files()
+
+        # THEN
+        assert files == ["one.txt", "subdir"]
 
 
 def test_app_start(ovshell: testing.OpenVarioShellStub) -> None:
