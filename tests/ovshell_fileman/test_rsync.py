@@ -1,4 +1,70 @@
-from ovshell_fileman.rsync import parse_rsync_line
+from pathlib import Path
+
+import pytest
+
+from ovshell_fileman.api import RsyncFailedException
+from ovshell_fileman.rsync import RsyncRunnerImpl, parse_rsync_line
+
+
+RSYNC_STUB_SCRIPT_SUCCESS = """#!/bin/sh
+echo -n "              0   0%    0.00kB/s    0:00:00 (xfr#0, ir-chk=1006/1007) \r"
+echo -n "    345,081,147  13%  298.34MB/s    0:00:01 (xfr#5, ir-chk=1297/1636) \r"
+echo -n "    879,293,491  33%  272.43MB/s    0:00:03 (xfr#14, ir-chk=1288/1636) \r"
+"""
+
+RSYNC_STUB_SCRIPT_ERROR = """#!/bin/sh
+echo -n "              0   0%    0.00kB/s    0:00:00 (xfr#0, ir-chk=1006/1007) \r"
+echo -n "    345,081,147  13%  298.34MB/s    0:00:01 (xfr#5, ir-chk=1297/1636) \r"
+>&2 echo "rsync has failed"
+exit 42
+"""
+
+
+class TestRsyncRunnerImpl:
+    @pytest.mark.asyncio
+    async def test_run_success(self, tmp_path: Path) -> None:
+        # GIVEN
+        rsync_path = tmp_path / "rsync-stub"
+        with open(rsync_path, "w") as f:
+            f.write(RSYNC_STUB_SCRIPT_SUCCESS)
+
+        # make the script executable
+        rsync_path.chmod(0o755)
+
+        rr = RsyncRunnerImpl(str(rsync_path))
+
+        # WHEN
+        progress = []
+        async for line in rr.run([]):
+            progress.append(line)
+
+        # THEN
+        assert len(progress) == 3
+
+    @pytest.mark.asyncio
+    async def test_run_error(self, tmp_path: Path) -> None:
+        # GIVEN
+        rsync_path = tmp_path / "rsync-stub"
+        with open(rsync_path, "w") as f:
+            f.write(RSYNC_STUB_SCRIPT_ERROR)
+
+        # make the script executable
+        rsync_path.chmod(0o755)
+
+        rr = RsyncRunnerImpl(str(rsync_path))
+
+        # WHEN
+        progress = []
+        with pytest.raises(RsyncFailedException) as einfo:
+            async for line in rr.run([]):
+                progress.append(line)
+
+        # THEN
+        assert len(progress) == 2
+
+        exc = einfo.value
+        assert exc.returncode == 42
+        assert exc.errors == "rsync has failed\n"
 
 
 def test_parse_rsync_line_malformed() -> None:
