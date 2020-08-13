@@ -62,14 +62,38 @@ class WelcomeWizardStep(WizardStepWidget):
 
 
 class OrientationWizardStep(WizardStepWidget):
-    title = "Pick device orientation"
+    title = "Device orientation"
 
     def __init__(self, shell: api.OpenVarioShell) -> None:
         self.shell = shell
+        self.shell = shell
+
+        msg = [
+            "Orient your Openvario device the way it will be mounted on "
+            "your instrument panel. Press ",
+            ("highlight", "↓"),
+            " and ",
+            ("highlight", "↑"),
+            " until orientation looks right. Press ",
+            ("highlight", "Enter"),
+            " to confirm.",
+        ]
+
+        content = urwid.Pile(
+            [
+                (
+                    "pack",
+                    urwid.GridFlow([self.make_next_button("Skip")], 12, 1, 1, "left"),
+                ),
+                ("pack", urwid.Divider()),
+                ("pack", urwid.Text(msg)),
+            ]
+        )
+        super().__init__(content)
 
 
 class CalibrateTouchWizardStep(WizardStepWidget):
-    title = "Calibrate touch screen"
+    title = "Touch screen calibration"
 
     def __init__(self, shell: api.OpenVarioShell) -> None:
         self.shell = shell
@@ -101,9 +125,12 @@ class SetupActivity(api.Activity):
         self.title = urwid.Text("")
         self.step = urwid.WidgetPlaceholder(urwid.SolidFill(" "))
 
+        self.content_pile = urwid.Pile(
+            [("pack", self.title), ("pack", urwid.Divider()), self.step]
+        )
+
         self.frame = urwid.Frame(
-            urwid.Pile([("pack", self.title), ("pack", urwid.Divider()), self.step,]),
-            header=widget.ActivityHeader("Setup wizard"),
+            self.content_pile, header=widget.ActivityHeader("Setup wizard"),
         )
 
         self._switch_step(0)
@@ -111,6 +138,17 @@ class SetupActivity(api.Activity):
 
     def _setup_steps(self, steps: List[WizardStepWidget]) -> None:
         assert len(steps) > 0
+        self._steps = {}
+        for n, step_w in enumerate(steps):
+            if n + 1 == len(steps):
+                next_handler = self._on_wizard_completed
+            else:
+
+                def next_handler(w: urwid.Widget, sn=n + 1) -> None:
+                    self._switch_step(sn)
+
+            urwid.connect_signal(step_w, "next", next_handler)
+            self._steps[n] = step_w
         self._steps = dict(enumerate(steps))
 
     def _switch_step(self, step_no: int) -> None:
@@ -119,5 +157,9 @@ class SetupActivity(api.Activity):
         self.title.set_text(
             [f"[{step_no + 1}/{total_steps}] ", ("highlight", f"{step_w.title}")]
         )
-        self.step.original_widget = step_w
-        self.frame._selectable = True
+        self.step.original_widget = urwid.Filler(step_w, valign="top")
+        self.content_pile.set_focus(self.step)
+        self.content_pile._selectable = True
+
+    def _on_wizard_completed(self, w: urwid.Widget) -> None:
+        self.shell.screen.pop_activity()
