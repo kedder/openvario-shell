@@ -7,6 +7,7 @@ from ovshell_core import settings
 from ovshell_core import serial
 from ovshell_core import gpstime
 from ovshell_core import upgradeapp
+from ovshell_core import setupapp
 from ovshell_core import devsim
 from ovshell_core import devindicators
 
@@ -31,7 +32,7 @@ class CoreExtension(api.Extension):
         ]
 
     def list_apps(self) -> Sequence[api.App]:
-        return [upgradeapp.SystemUpgradeApp(self.shell)]
+        return [upgradeapp.SystemUpgradeApp(self.shell), setupapp.SetupApp(self.shell)]
 
     def start(self) -> None:
         self.shell.processes.start(serial.maintain_serial_devices(self.shell))
