@@ -91,9 +91,9 @@ class OrientationWizardStep(WizardStepWidget):
 
         content = urwid.Pile(
             [
-                ("pack", _button_row([self.make_next_button("Skip")]),),
-                ("pack", urwid.Divider()),
                 ("pack", urwid.Text(msg)),
+                ("pack", urwid.Divider()),
+                ("pack", _button_row([self.make_next_button("Skip")]),),
                 ("pack", urwid.Divider()),
                 (len(orient_walker), self.orient_lb),
             ]
@@ -130,11 +130,9 @@ class CalibrateTouchWizardStep(WizardStepWidget):
 
         content = urwid.Pile(
             [
-                ("pack", _button_row([self.make_next_button("Skip")]),),
-                ("pack", urwid.Divider()),
                 ("pack", urwid.Text(msg)),
                 ("pack", urwid.Divider()),
-                ("pack", _button_row([cal_btn]),),
+                ("pack", _button_row([self.make_next_button("Skip"), cal_btn]),),
             ]
         )
         super().__init__(content)
@@ -156,11 +154,9 @@ class CalibrateSensorsWizardStep(WizardStepWidget):
 
         content = urwid.Pile(
             [
-                ("pack", _button_row([self.make_next_button("Skip")]),),
-                ("pack", urwid.Divider()),
                 ("pack", urwid.Text(msg)),
                 ("pack", urwid.Divider()),
-                ("pack", _button_row([cal_btn]),),
+                ("pack", _button_row([self.make_next_button("Skip"), cal_btn]),),
             ]
         )
         super().__init__(content)
@@ -180,7 +176,7 @@ class SetupActivity(api.Activity):
         )
 
     def create(self) -> urwid.Widget:
-        self.content = urwid.Filler(urwid.Padding(urwid.Text("Hello World")))
+        self.content = urwid.Filler(urwid.Padding(urwid.Text("")))
 
         self.title = urwid.Text("")
         self.step = urwid.WidgetPlaceholder(urwid.SolidFill(" "))
