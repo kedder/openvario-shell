@@ -52,10 +52,7 @@ class WelcomeWizardStep(WizardStepWidget):
             [
                 ("pack", urwid.Text(welcome_msg)),
                 ("pack", urwid.Divider()),
-                (
-                    "pack",
-                    urwid.GridFlow([self.make_next_button("Start")], 12, 1, 1, "left"),
-                ),
+                ("pack", _button_row([self.make_next_button("Start")]),),
             ]
         )
         super().__init__(content)
@@ -81,10 +78,7 @@ class OrientationWizardStep(WizardStepWidget):
 
         content = urwid.Pile(
             [
-                (
-                    "pack",
-                    urwid.GridFlow([self.make_next_button("Skip")], 12, 1, 1, "left"),
-                ),
+                ("pack", _button_row([self.make_next_button("Skip")]),),
                 ("pack", urwid.Divider()),
                 ("pack", urwid.Text(msg)),
             ]
@@ -98,12 +92,53 @@ class CalibrateTouchWizardStep(WizardStepWidget):
     def __init__(self, shell: api.OpenVarioShell) -> None:
         self.shell = shell
 
+        msg = [
+            "If your Openvario is equipped with a touch-screen, ",
+            "it needs to be calibrated. You will need to press the indicated ",
+            "areas of the screen. It is recommended to press resistive ",
+            "touch-screen with your fingernail.",
+            "\n\n",
+            "If touch-screen is not installed, skip this step.",
+        ]
+
+        cal_btn = widget.PlainButton("Calibrate")
+
+        content = urwid.Pile(
+            [
+                ("pack", _button_row([self.make_next_button("Skip")]),),
+                ("pack", urwid.Divider()),
+                ("pack", urwid.Text(msg)),
+                ("pack", urwid.Divider()),
+                ("pack", _button_row([cal_btn]),),
+            ]
+        )
+        super().__init__(content)
+
 
 class CalibrateSensorsWizardStep(WizardStepWidget):
-    title = "Calibrate sensors"
+    title = "Sensor calibration"
 
     def __init__(self, shell: api.OpenVarioShell) -> None:
         self.shell = shell
+
+        msg = [
+            "If your Openvario has sensorboard connected, calibrate sensors here. ",
+            "\n\n",
+            "If sensors are not installed, skip this step.",
+        ]
+
+        cal_btn = widget.PlainButton("Calibrate")
+
+        content = urwid.Pile(
+            [
+                ("pack", _button_row([self.make_next_button("Skip")]),),
+                ("pack", urwid.Divider()),
+                ("pack", urwid.Text(msg)),
+                ("pack", urwid.Divider()),
+                ("pack", _button_row([cal_btn]),),
+            ]
+        )
+        super().__init__(content)
 
 
 class SetupActivity(api.Activity):
@@ -162,4 +197,26 @@ class SetupActivity(api.Activity):
         self.content_pile._selectable = True
 
     def _on_wizard_completed(self, w: urwid.Widget) -> None:
+        done_msg = [
+            ("highlight", "Setup is completed"),
+            "\n\n",
+            "Openvario is ready to use. Happy flying!",
+        ]
+
+        exit_btn = widget.PlainButton("Exit")
+        urwid.connect_signal(exit_btn, "click", self._on_exit)
+
+        done_contents = [
+            (urwid.Text(done_msg), ("pack", None)),
+            (urwid.Divider(), ("pack", None)),
+            (_button_row([exit_btn]), ("pack", None)),
+            (urwid.SolidFill(" "), ("weight", 1)),
+        ]
+        self.content_pile.contents = done_contents
+
+    def _on_exit(self, w: urwid.Widget) -> None:
         self.shell.screen.pop_activity()
+
+
+def _button_row(buttons: List[urwid.Widget]) -> urwid.GridFlow:
+    return urwid.GridFlow(buttons, 14, 1, 1, "left")
