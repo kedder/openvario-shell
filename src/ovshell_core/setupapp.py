@@ -5,6 +5,8 @@ import urwid
 from ovshell import api
 from ovshell import widget
 
+from ovshell_core import rotation
+
 
 class SetupApp(api.App):
     name = "setup"
@@ -66,7 +68,7 @@ class OrientationWizardStep(WizardStepWidget):
         self.shell = shell
 
         msg = [
-            "Orient your Openvario device the way it will be mounted on "
+            "Orient your Openvario device the way it will be mounted on ",
             "your instrument panel. Press ",
             ("highlight", "↓"),
             " and ",
@@ -76,14 +78,37 @@ class OrientationWizardStep(WizardStepWidget):
             " to confirm.",
         ]
 
+        orient_walker = urwid.SimpleFocusListWalker([])
+        for oval, otxt in rotation.get_rotations():
+            mitem = widget.SelectableListItem(otxt)
+            urwid.connect_signal(
+                mitem, "click", self._save_orientation, user_args=[oval]
+            )
+            orient_walker.append(mitem)
+
+        self.orient_lb = urwid.ListBox(orient_walker)
+        urwid.connect_signal(orient_walker, "modified", self._on_focus_changed)
+
         content = urwid.Pile(
             [
                 ("pack", _button_row([self.make_next_button("Skip")]),),
                 ("pack", urwid.Divider()),
                 ("pack", urwid.Text(msg)),
+                ("pack", urwid.Divider()),
+                (len(orient_walker), self.orient_lb),
             ]
         )
         super().__init__(content)
+
+    def _on_focus_changed(self) -> None:
+        _, idx = self.orient_lb.get_focus()
+        rots = rotation.get_rotations()
+        rot, _ = rots[idx]
+        rotation.apply_rotation(self.shell.os, rot)
+
+    def _save_orientation(self, orient: str, w: urwid.Widget) -> None:
+        self.shell.settings.set("core.screen_orientation", orient, save=True)
+        self.next_step()
 
 
 class CalibrateTouchWizardStep(WizardStepWidget):
