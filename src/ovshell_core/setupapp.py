@@ -1,4 +1,5 @@
-from typing import List
+from typing import List, Callable
+import asyncio
 
 import urwid
 
@@ -65,7 +66,6 @@ class OrientationWizardStep(WizardStepWidget):
 
     def __init__(self, shell: api.OpenVarioShell) -> None:
         self.shell = shell
-        self.shell = shell
 
         msg = [
             "Orient your Openvario device the way it will be mounted on ",
@@ -114,6 +114,8 @@ class OrientationWizardStep(WizardStepWidget):
 class CalibrateTouchWizardStep(WizardStepWidget):
     title = "Touch screen calibration"
 
+    cal_scipt = "//usr/bin/ov-calibrate-ts.sh"
+
     def __init__(self, shell: api.OpenVarioShell) -> None:
         self.shell = shell
 
@@ -127,6 +129,7 @@ class CalibrateTouchWizardStep(WizardStepWidget):
         ]
 
         cal_btn = widget.PlainButton("Calibrate")
+        urwid.connect_signal(cal_btn, "click", self._on_calibrate)
 
         content = urwid.Pile(
             [
@@ -136,6 +139,21 @@ class CalibrateTouchWizardStep(WizardStepWidget):
             ]
         )
         super().__init__(content)
+
+    def _on_calibrate(self, w: urwid.Widget) -> None:
+        cmd = self.shell.os.path(self.cal_scipt)
+        runact = CommandRunnerActivity(
+            self.shell.screen,
+            "Touch screen calibration",
+            "Calibrating touch screen...",
+            cmd,
+            [],
+        )
+        runact.on_success(self._on_calibrate_complete)
+        self.shell.screen.push_modal(runact, runact.get_modal_opts())
+
+    def _on_calibrate_complete(self) -> None:
+        self.next_step()
 
 
 class CalibrateSensorsWizardStep(WizardStepWidget):
@@ -151,6 +169,7 @@ class CalibrateSensorsWizardStep(WizardStepWidget):
         ]
 
         cal_btn = widget.PlainButton("Calibrate")
+        urwid.connect_signal(cal_btn, "click", self._on_calibrate)
 
         content = urwid.Pile(
             [
@@ -160,6 +179,9 @@ class CalibrateSensorsWizardStep(WizardStepWidget):
             ]
         )
         super().__init__(content)
+
+    def _on_calibrate(self, w: urwid.Widget) -> None:
+        pass
 
 
 class SetupActivity(api.Activity):
@@ -241,3 +263,69 @@ class SetupActivity(api.Activity):
 
 def _button_row(buttons: List[urwid.Widget]) -> urwid.GridFlow:
     return urwid.GridFlow(buttons, 14, 1, 1, "left")
+
+
+class CommandRunnerActivity(api.Activity):
+    _success_handlers: List[Callable[[], None]]
+    _failure_handlers: List[Callable[[], None]]
+
+    def __init__(
+        self,
+        screen: api.ScreenManager,
+        title: str,
+        description: str,
+        command: str,
+        args: List[str],
+    ) -> None:
+        self.screen = screen
+        self.title = title
+        self.description = description
+        self.command = command
+        self.args = args
+
+        self._success_handlers = []
+        self._failure_handlers = []
+
+    def create(self) -> urwid.Widget:
+        message = urwid.Text(self.description)
+        return urwid.LineBox(urwid.Pile([message]), title=self.title)
+
+    def get_modal_opts(self) -> api.ModalOptions:
+        return api.ModalOptions(
+            align="center", width=("relative", 90), valign="middle", height="pack",
+        )
+
+    def activate(self) -> None:
+        self.screen.spawn_task(self, self.run(self.command, self.args))
+
+    def on_success(self, handler: Callable[[], None]) -> None:
+        self._success_handlers.append(handler)
+
+    def on_failure(self, handler: Callable[[], None]) -> None:
+        self._failure_handlers.append(handler)
+
+    async def run(self, command: str, args: List[str]) -> None:
+        proc = await asyncio.create_subprocess_exec(
+            command,
+            *args,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            limit=200,
+        )
+
+        result = await proc.wait()
+        loop = asyncio.get_event_loop()
+        if result != 0:
+            assert proc.stderr is not None
+            errors = await proc.stderr.read()
+            loop.call_soon(self._handle_error, result, errors.decode())
+        else:
+            loop.call_soon(self._handle_success)
+
+    def _handle_error(self, result: int, errors: str) -> None:
+        pass
+
+    def _handle_success(self) -> None:
+        self.screen.pop_activity()
+        for h in self._success_handlers:
+            h()
