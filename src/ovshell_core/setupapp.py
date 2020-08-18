@@ -145,7 +145,7 @@ class CalibrateTouchWizardStep(WizardStepWidget):
         runact = CommandRunnerActivity(
             self.shell.screen,
             "Touch screen calibration",
-            "Calibrating touch screen...",
+            "Calibrating touch screen. Please wait...",
             cmd,
             [],
         )
@@ -158,6 +158,9 @@ class CalibrateTouchWizardStep(WizardStepWidget):
 
 class CalibrateSensorsWizardStep(WizardStepWidget):
     title = "Sensor calibration"
+
+    cal_script = "//opt/bin/sensorcal"
+    cal_args = ["-i", "-c"]
 
     def __init__(self, shell: api.OpenVarioShell) -> None:
         self.shell = shell
@@ -181,7 +184,19 @@ class CalibrateSensorsWizardStep(WizardStepWidget):
         super().__init__(content)
 
     def _on_calibrate(self, w: urwid.Widget) -> None:
-        pass
+        cmd = self.shell.os.path(self.cal_script)
+        runact = CommandRunnerActivity(
+            self.shell.screen,
+            "Sensor screen calibration",
+            "Calibrating sensors. Please wait...",
+            cmd,
+            self.cal_args,
+        )
+        runact.on_success(self._on_calibrate_complete)
+        self.shell.screen.push_modal(runact, runact.get_modal_opts())
+
+    def _on_calibrate_complete(self) -> None:
+        self.next_step()
 
 
 class SetupActivity(api.Activity):

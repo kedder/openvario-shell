@@ -1,0 +1,4 @@
+#!/bin/sh
+echo Calibrating sensors...
+sleep 1
+echo Done
