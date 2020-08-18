@@ -87,6 +87,7 @@ class OrientationWizardStep(WizardStepWidget):
             orient_walker.append(mitem)
 
         self.orient_lb = urwid.ListBox(orient_walker)
+        self._set_current_rotation(self.orient_lb)
         urwid.connect_signal(orient_walker, "modified", self._on_focus_changed)
 
         content = urwid.Pile(
@@ -100,7 +101,18 @@ class OrientationWizardStep(WizardStepWidget):
         )
         super().__init__(content)
 
+    def _set_current_rotation(self, lb: urwid.ListBox) -> None:
+        rots = [n for n, title in rotation.get_rotations()]
+        cur_rot = self.shell.settings.get("core.screen_orientation", str) or "0"
+        focus_pos = rots.index(cur_rot)
+        lb.set_focus(focus_pos, "above")
+
     def _on_focus_changed(self) -> None:
+        focus = self._w.get_focus_widgets()
+        if self.orient_lb not in focus:
+            # Do not change orientation until listbox is in focus
+            return
+
         _, idx = self.orient_lb.get_focus()
         rots = rotation.get_rotations()
         rot, _ = rots[idx]
