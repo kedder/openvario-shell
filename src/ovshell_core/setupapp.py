@@ -303,7 +303,8 @@ class CommandRunnerActivity(api.Activity):
 
     def create(self) -> urwid.Widget:
         message = urwid.Text(self.description)
-        return urwid.LineBox(urwid.Pile([message]), title=self.title)
+        self.contents = urwid.Pile([message])
+        return urwid.LineBox(self.contents, title=self.title)
 
     def get_modal_opts(self) -> api.ModalOptions:
         return api.ModalOptions(
@@ -338,9 +339,17 @@ class CommandRunnerActivity(api.Activity):
             loop.call_soon(self._handle_success)
 
     def _handle_error(self, result: int, errors: str) -> None:
-        pass
+        self.screen.pop_activity()
+        error_msg = urwid.Text([("error message", "Command failed"), "\n\n", errors])
+        dialog = self.screen.push_dialog(self.title, error_msg)
+        dialog.add_button("Close", self._run_error_handlers)
 
     def _handle_success(self) -> None:
         self.screen.pop_activity()
         for h in self._success_handlers:
             h()
+
+    def _run_error_handlers(self) -> bool:
+        for h in self._failure_handlers:
+            h()
+        return True
