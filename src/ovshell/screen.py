@@ -229,7 +229,7 @@ class ScreenManagerImpl(ScreenManager):
         # details here, because of lack of public way to do this.
         self._mainloop.screen._palette = palette.copy()
         for name, entry in palette.items():
-            (basic, mono, high_88, high_true) = entry
+            (basic, mono, high_88, high_256, high_true) = entry
             signals.emit_signal(
                 self._mainloop.screen,
                 urwid.UPDATE_PALETTE_ENTRY,
@@ -237,6 +237,7 @@ class ScreenManagerImpl(ScreenManager):
                 basic,
                 mono,
                 high_88,
+                high_256,
                 high_true,
             )
         self._mainloop.screen.clear()

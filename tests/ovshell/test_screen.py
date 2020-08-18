@@ -48,8 +48,16 @@ def test_push_activity() -> None:
 
 
 def test_pop_activity() -> None:
-    mainloop = mock.Mock(name="MainLoop")
-    mainloop.screen._palette = {}
+    # GIVEN
+    # Create a basic palette and an urwid main loop - we are messing with the internal
+    # implementation of palette handling.
+    palette = [
+        ("text", "white", "black", ""),
+    ]
+    asyncioloop = asyncio.get_event_loop()
+    evl = urwid.AsyncioEventLoop(loop=asyncioloop)
+    mainloop = urwid.MainLoop(None, palette=palette, event_loop=evl)
+
     screen = ScreenManagerImpl(mainloop)
     act1 = ActivityStub("Activity One")
     act2 = ActivityStub("Activity Two")
