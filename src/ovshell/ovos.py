@@ -1,8 +1,22 @@
+from typing import List
+import asyncio
 import sys
 import os
 import subprocess
 
 from ovshell import api
+
+
+class OSProcessImpl(api.OSProcess):
+    def __init__(self, proc: asyncio.subprocess.Process) -> None:
+        self._process = proc
+
+    async def wait(self) -> int:
+        return await self._process.wait()
+
+    async def read_stderr(self) -> bytes:
+        assert self._process.stderr is not None
+        return await self._process.stderr.read()
 
 
 class OpenVarioOSImpl(api.OpenVarioOS):
@@ -17,6 +31,16 @@ class OpenVarioOSImpl(api.OpenVarioOS):
         if fname.startswith("//"):
             return fname[1:]
         return fname
+
+    async def run(self, command: str, args: List[str]) -> api.OSProcess:
+        proc = await asyncio.create_subprocess_exec(
+            self.path(command),
+            *args,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            limit=200,
+        )
+        return OSProcessImpl(proc)
 
     def sync(self) -> None:
         os.sync()

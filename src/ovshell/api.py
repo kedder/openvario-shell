@@ -430,6 +430,16 @@ class ScreenManager(Protocol):
         """
 
 
+class OSProcess(Protocol):
+    @abstractmethod
+    async def wait(self) -> int:
+        """Wait for process to finish, return return code"""
+
+    @abstractmethod
+    async def read_stderr(self) -> bytes:
+        """Read stderr stream"""
+
+
 class OpenVarioOS(Protocol):
     """Operating system abstractions
 
@@ -454,6 +464,10 @@ class OpenVarioOS(Protocol):
         forward slash (//). In that case the first slash is replaced with
         the path, specified by OVSHELL_ROOTFS environment variable.
         """
+
+    @abstractmethod
+    async def run(self, command: str, args: List[str]) -> OSProcess:
+        """Run a system command and return instance, representing a running process"""
 
     @abstractmethod
     def sync(self) -> None:

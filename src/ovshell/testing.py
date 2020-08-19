@@ -183,6 +183,14 @@ class StoredSettingsStub(api.StoredSettings):
         pass
 
 
+class OSPRocessStub(api.OSProcess):
+    async def wait(self) -> int:
+        return 0
+
+    async def read_stderr(self) -> bytes:
+        return b""
+
+
 class OpenVarioOSStub(api.OpenVarioOS):
     def __init__(self, log: List[str], rootfs: str) -> None:
         self._log = log
@@ -200,6 +208,9 @@ class OpenVarioOSStub(api.OpenVarioOS):
             return path
 
         return os.path.join(self._rootfs, path[2:])
+
+    async def run(self, command: str, args: List[str]) -> api.OSProcess:
+        return OSPRocessStub()
 
     def sync(self) -> None:
         self._log.append("OS: sync")
