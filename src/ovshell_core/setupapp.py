@@ -155,7 +155,7 @@ class CalibrateTouchWizardStep(WizardStepWidget):
     def _on_calibrate(self, w: urwid.Widget) -> None:
         cmd = self.shell.os.path(self.cal_scipt)
         runact = CommandRunnerActivity(
-            self.shell.screen,
+            self.shell,
             "Touch screen calibration",
             "Calibrating touch screen. Please wait...",
             cmd,
@@ -198,7 +198,7 @@ class CalibrateSensorsWizardStep(WizardStepWidget):
     def _on_calibrate(self, w: urwid.Widget) -> None:
         cmd = self.shell.os.path(self.cal_script)
         runact = CommandRunnerActivity(
-            self.shell.screen,
+            self.shell,
             "Sensor screen calibration",
             "Calibrating sensors. Please wait...",
             cmd,
@@ -298,13 +298,13 @@ class CommandRunnerActivity(api.Activity):
 
     def __init__(
         self,
-        screen: api.ScreenManager,
+        shell: api.OpenVarioShell,
         title: str,
         description: str,
         command: str,
         args: List[str],
     ) -> None:
-        self.screen = screen
+        self.shell = shell
         self.title = title
         self.description = description
         self.command = command
@@ -324,7 +324,7 @@ class CommandRunnerActivity(api.Activity):
         )
 
     def activate(self) -> None:
-        self.screen.spawn_task(self, self.run(self.command, self.args))
+        self.shell.screen.spawn_task(self, self.run(self.command, self.args))
 
     def on_success(self, handler: Callable[[], None]) -> None:
         self._success_handlers.append(handler)
@@ -333,31 +333,23 @@ class CommandRunnerActivity(api.Activity):
         self._failure_handlers.append(handler)
 
     async def run(self, command: str, args: List[str]) -> None:
-        proc = await asyncio.create_subprocess_exec(
-            command,
-            *args,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-            limit=200,
-        )
-
+        proc = await self.shell.os.run(command, args)
         result = await proc.wait()
         loop = asyncio.get_event_loop()
         if result != 0:
-            assert proc.stderr is not None
-            errors = await proc.stderr.read()
+            errors = await proc.read_stderr()
             loop.call_soon(self._handle_error, result, errors.decode())
         else:
             loop.call_soon(self._handle_success)
 
     def _handle_error(self, result: int, errors: str) -> None:
-        self.screen.pop_activity()
+        self.shell.screen.pop_activity()
         error_msg = urwid.Text([("error message", "Command failed"), "\n\n", errors])
-        dialog = self.screen.push_dialog(self.title, error_msg)
+        dialog = self.shell.screen.push_dialog(self.title, error_msg)
         dialog.add_button("Close", self._run_error_handlers)
 
     def _handle_success(self) -> None:
-        self.screen.pop_activity()
+        self.shell.screen.pop_activity()
         for h in self._success_handlers:
             h()
 
