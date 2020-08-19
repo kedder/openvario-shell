@@ -150,6 +150,10 @@ class ScreenManagerStub(api.ScreenManager):
         for act, task in self._tasks:
             task.cancel()
 
+    async def stub_wait_for_tasks(self, act: api.Activity) -> None:
+        acttasks = [t for a, t in self._tasks if a is act]
+        await asyncio.wait(acttasks)
+
     def stub_get_indicator(self, iid: str) -> Optional[TopIndicatorStub]:
         return self._indicators.get(iid)
 
