@@ -88,7 +88,9 @@ class AppManagerImpl(api.AppManager):
         return set(self.shell.settings.get("ovshell.pinned_apps", list) or [])
 
     def _set_pinned(self, pinned: Set[str], persist: bool = False):
-        self.shell.settings.set("ovshell.pinned_apps", sorted(pinned) or [])
+        self.shell.settings.set(
+            "ovshell.pinned_apps", sorted(pinned) or [], save=persist
+        )
 
 
 class OpenvarioShellImpl(OpenVarioShell):
