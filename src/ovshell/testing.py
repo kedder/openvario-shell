@@ -188,14 +188,21 @@ class StoredSettingsStub(api.StoredSettings):
 
 
 class OSPRocessStub(api.OSProcess):
+    def __init__(self, returncode: int = 0, stderr: bytes = b"") -> None:
+        self._returncode = returncode
+        self._stderr = stderr
+
     async def wait(self) -> int:
-        return 0
+        return self._returncode
 
     async def read_stderr(self) -> bytes:
-        return b""
+        return self._stderr
 
 
 class OpenVarioOSStub(api.OpenVarioOS):
+    _stub_run_returncode: int = 0
+    _stub_run_stderr: bytes = b""
+
     def __init__(self, log: List[str], rootfs: str) -> None:
         self._log = log
         self._rootfs = rootfs
@@ -214,7 +221,7 @@ class OpenVarioOSStub(api.OpenVarioOS):
         return os.path.join(self._rootfs, path[2:])
 
     async def run(self, command: str, args: List[str]) -> api.OSProcess:
-        return OSPRocessStub()
+        return OSPRocessStub(self._stub_run_returncode, self._stub_run_stderr)
 
     def sync(self) -> None:
         self._log.append("OS: sync")
@@ -224,6 +231,10 @@ class OpenVarioOSStub(api.OpenVarioOS):
 
     def restart(self) -> None:
         self._log.append("OS: Restart")
+
+    def stub_expect_run(self, result: int = 0, stderr: bytes = b"") -> None:
+        self._stub_run_returncode = result
+        self._stub_run_stderr = stderr
 
 
 class NMEAStreamStub(api.NMEAStream):
