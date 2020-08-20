@@ -29,6 +29,7 @@ class TestSetupActivity:
     def test_wizard_go_through(self, ovshell: testing.OpenVarioShellStub) -> None:
         # GIVEN
         act = setupapp.SetupActivity(ovshell)
+        ovshell.screen.push_activity(act)
         w = act.create()
 
         rendered = _render(w)
@@ -50,6 +51,9 @@ class TestSetupActivity:
 
         rendered = _render(w)
         assert "Setup is completed" in rendered
+
+        _keypress(w, ["enter"])
+        assert ovshell.screen.stub_top_activity() is None
 
 
 class TestOrientationWizardStep:
@@ -131,6 +135,55 @@ class TestCalibrateSensorsWizardStep:
         assert self.completed == True
 
     def _completed(self, w: urwid.Widget) -> None:
+        self.completed = True
+
+
+class TestCommandRunnerActivity:
+    completed = False
+
+    def setup_method(self):
+        self.completed = False
+
+    @pytest.mark.asyncio
+    async def test_success(self, ovshell: testing.OpenVarioShellStub) -> None:
+        # GIVEN
+        act = setupapp.CommandRunnerActivity(ovshell, "Test", "Running test", "cmd", [])
+        ovshell.screen.push_activity(act)
+        w = act.create()
+
+        assert "Test" in _render(w)
+        assert "Running test" in _render(w)
+
+        # WHEN
+        act.activate()
+        await ovshell.screen.stub_wait_for_tasks(act)
+
+        # THEN
+        assert ovshell.screen.stub_top_activity() is None
+
+    @pytest.mark.asyncio
+    async def test_failure(self, ovshell: testing.OpenVarioShellStub) -> None:
+        # GIVEN
+        act = setupapp.CommandRunnerActivity(ovshell, "Test", "Running test", "cmd", [])
+        act.on_failure(self._completed)
+        ovshell.screen.push_activity(act)
+        w = act.create()
+        ovshell.os.stub_expect_run(2, b"Error happened")
+
+        # WHEN
+        act.activate()
+        await ovshell.screen.stub_wait_for_tasks(act)
+
+        # THEN
+        dialog = ovshell.screen.stub_dialog()
+        assert dialog is not None
+        assert dialog.title == "Test"
+        assert "Error happened" in _render(dialog.content)
+        closed = dialog.stub_press_button("Close")
+        assert closed
+        assert self.completed
+
+    def _completed(self) -> None:
         self.completed = True
 
 
