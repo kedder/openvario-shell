@@ -11,15 +11,20 @@ from ovshell_core import rotation
 
 class SetupApp(api.App):
     name = "setup"
-    title = "Setup"
+    title = "Initial Setup"
     description = "System setup and calibration wizard"
     priority = 10
 
-    def __init__(self, shell: api.OpenVarioShell):
+    def __init__(self, shell: api.OpenVarioShell, ext_id: str) -> None:
         self.shell = shell
+        self.ext_id = ext_id
+
+    def install(self, appinfo: api.AppInfo) -> None:
+        self.shell.apps.pin(appinfo)
 
     def launch(self) -> None:
-        act = SetupActivity(self.shell)
+        app_id = f"{self.ext_id}.{self.name}"
+        act = SetupActivity(self.shell, app_id)
         self.shell.screen.push_activity(act)
 
 
@@ -212,8 +217,9 @@ class CalibrateSensorsWizardStep(WizardStepWidget):
 
 
 class SetupActivity(api.Activity):
-    def __init__(self, shell: api.OpenVarioShell) -> None:
+    def __init__(self, shell: api.OpenVarioShell, app_id: str) -> None:
         self.shell = shell
+        self.app_id = app_id
 
         self._setup_steps(
             [
@@ -285,6 +291,10 @@ class SetupActivity(api.Activity):
         self.content_pile.contents = done_contents
 
     def _on_exit(self, w: urwid.Widget) -> None:
+        # Unpin setup app after the first use
+        appinfo = self.shell.apps.get(self.app_id)
+        if appinfo is not None and appinfo.pinned:
+            self.shell.apps.unpin(appinfo, persist=True)
         self.shell.screen.pop_activity()
 
 

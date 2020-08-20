@@ -2,6 +2,7 @@ from typing import Callable, List, Optional
 import asyncio
 
 import urwid
+from urwid.widget import Divider
 
 import ovshell
 from ovshell import api
@@ -36,9 +37,8 @@ class MainMenuActivity(api.Activity):
         btxt = urwid.BigText("Openvario", urwid.font.Thin6x6Font())
         logo = urwid.Padding(btxt, "center", "clip")
 
-        m_pinned_apps = self._get_pinned_apps()
-        if m_pinned_apps:
-            m_pinned_apps.append(urwid.Divider())
+        self.pinned_apps = urwid.Pile([])
+        self._refresh_pinned_apps()
 
         m_apps = widget.SelectableListItem("Applications")
         urwid.connect_signal(m_apps, "click", self._on_apps)
@@ -47,7 +47,7 @@ class MainMenuActivity(api.Activity):
         m_shutdown = widget.SelectableListItem("Shut down")
         urwid.connect_signal(m_shutdown, "click", self._on_quit)
         menu = urwid.Pile(
-            m_pinned_apps + [m_apps, m_settings, urwid.Divider(), m_shutdown]
+            [self.pinned_apps, m_apps, m_settings, urwid.Divider(), m_shutdown]
         )
 
         # Reserve space for counter
@@ -89,7 +89,10 @@ class MainMenuActivity(api.Activity):
                 self, self.autostart_countdown(timeout, autostart)
             )
 
-    def _get_pinned_apps(self) -> urwid.Widget:
+    def show(self) -> None:
+        self._refresh_pinned_apps()
+
+    def _refresh_pinned_apps(self) -> None:
         m_items = []
         for appinfo in self.shell.apps.list():
             if not appinfo.pinned:
@@ -99,9 +102,14 @@ class MainMenuActivity(api.Activity):
             urwid.connect_signal(
                 button, "click", self._on_pinned_app, user_args=[appinfo]
             )
-            m_items.append(button)
+            m_items.append((button, ("pack", None)))
 
-        return m_items
+        self.pinned_apps.contents = m_items
+
+        if m_items:
+            self.pinned_apps.contents.append((urwid.Divider(), ("pack", None)))
+            self.pinned_apps.set_focus(0)
+            self.pinned_apps._selectable = True
 
     def _on_settings(self, w: urwid.Widget) -> None:
         settings_act = SettingsActivity(self.shell)

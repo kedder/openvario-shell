@@ -15,7 +15,7 @@ from ovshell_core import setupapp
 class TestSetupApp:
     def test_launch(self, ovshell: testing.OpenVarioShellStub) -> None:
         # GIVEN
-        app = setupapp.SetupApp(ovshell)
+        app = setupapp.SetupApp(ovshell, "test")
 
         # WHEN
         app.launch()
@@ -28,7 +28,7 @@ class TestSetupApp:
 class TestSetupActivity:
     def test_wizard_go_through(self, ovshell: testing.OpenVarioShellStub) -> None:
         # GIVEN
-        act = setupapp.SetupActivity(ovshell)
+        act = setupapp.SetupActivity(ovshell, "test")
         ovshell.screen.push_activity(act)
         w = act.create()
 

@@ -32,7 +32,10 @@ class CoreExtension(api.Extension):
         ]
 
     def list_apps(self) -> Sequence[api.App]:
-        return [upgradeapp.SystemUpgradeApp(self.shell), setupapp.SetupApp(self.shell)]
+        return [
+            upgradeapp.SystemUpgradeApp(self.shell),
+            setupapp.SetupApp(self.shell, self.id),
+        ]
 
     def start(self) -> None:
         self.shell.processes.start(serial.maintain_serial_devices(self.shell))
