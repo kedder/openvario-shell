@@ -29,7 +29,9 @@ device that is:
 * Run XCSoar, optionally automatically after configurable timeout
 * Pick preferred XCSoar language
 * Chose screen orientation, screen brightness, font size and more
+* Calibrate touchscreen and sensors
 * Download flight logs to USB flash drive with responsive UI
+* Copy files to and from USB flash drive, backup and restore configuration
 * Integrate with third party apps (like [Competition Manager](https://github.com/kedder/openvario-compman))
 
 ## Installation
