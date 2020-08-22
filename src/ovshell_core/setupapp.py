@@ -274,7 +274,7 @@ class SetupActivity(api.Activity):
 
     def _on_wizard_completed(self, w: urwid.Widget) -> None:
         done_msg = [
-            ("highlight", "Setup is completed"),
+            ("highlight", "Setup is complete"),
             "\n\n",
             "Openvario is ready to use. Happy flying!",
         ]

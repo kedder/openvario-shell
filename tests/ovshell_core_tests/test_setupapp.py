@@ -50,7 +50,7 @@ class TestSetupActivity:
         _keypress(w, ["enter"])
 
         rendered = _render(w)
-        assert "Setup is completed" in rendered
+        assert "Setup is complete" in rendered
 
         _keypress(w, ["enter"])
         assert ovshell.screen.stub_top_activity() is None
