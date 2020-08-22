@@ -4,6 +4,10 @@ Changelog for openvario-shell
 0.6 (unreleased)
 ----------------
 
+- Backup app: transfer files between USB stick and Openvario.
+- Initial setup app: wizard to pick device orientation, calibrate touch screen and
+  sensors.
+- About app: display system information.
 - Flush filesystem caches before shutting down.
 
 
