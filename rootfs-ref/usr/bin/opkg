@@ -31,6 +31,15 @@ case "$1" in
         sleep 0.5
         echo "Done"
         ;;
+    list-installed)
+        echo "sensord - 0.3.4-r0"
+        echo "xcsoar-maps-alps - 0.1-r3"
+        echo "xcsoar-maps-default - 0.1-r1"
+        echo "xcsoar-menu - 0.1-r3"
+        echo "xcsoar-profiles - 0.1-r1"
+        echo "xcsoar-testing - git-r11"
+        echo "zap-console-fonts - 2.3-r0"
+        ;;
     *)
         echo "Command not recognized"
         exit 1
