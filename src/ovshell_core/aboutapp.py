@@ -58,7 +58,7 @@ class AboutActivity(api.Activity):
             ]
         )
 
-        versions_header = urwid.Text([("highlight", "Version information")])
+        versions_header = urwid.Text([("highlight", "System information")])
 
         self.versions = urwid.Pile([])
 
@@ -84,10 +84,12 @@ class AboutActivity(api.Activity):
 
     def _populate_versions(self) -> None:
         ver_defs = [
-            ("Openvario", self.sys_info.get_openvario_version()),
-            ("XCSoar", self.sys_info.get_installed_package_version("xcsoar")),
-            ("Sensor daemon", self.sys_info.get_installed_package_version("sensord")),
-            ("Vario daemon", self.sys_info.get_installed_package_version("variod")),
+            ("Openvario image", self.sys_info.get_openvario_version()),
+            ("XCSoar", self._get_any_version(["xcsoar", "xcsoar-testing"])),
+            ("Sensor daemon", self._get_any_version(["sensord", "sensord-testing"]),),
+            ("Vario daemon", self._get_any_version(["variod", "veriod-testing"]),),
+            ("Linux kernel", self.sys_info.get_kernel_version()),
+            ("Hostname", self.sys_info.get_hostname()),
         ]
         contents = [(self._make_version_wdg(t, f), ("pack", None)) for t, f in ver_defs]
         self.versions.contents = contents
@@ -96,13 +98,13 @@ class AboutActivity(api.Activity):
         self, title: str, fetcher: Coroutine[None, None, Optional[str]]
     ) -> urwid.Widget:
         version_wdg = urwid.Text(("progress", "..."))
-        self.shell.screen.spawn_task(self, self._fetch_version(version_wdg, fetcher))
+        self.shell.screen.spawn_task(self, self._update_version(version_wdg, fetcher))
         return urwid.Columns(
             [("weight", 1, urwid.Text(title)), ("weight", 3, version_wdg)],
             dividechars=1,
         )
 
-    async def _fetch_version(
+    async def _update_version(
         self, wdg: urwid.Text, fetcher: Coroutine[None, None, Optional[str]]
     ) -> None:
         ver = await fetcher
@@ -110,3 +112,10 @@ class AboutActivity(api.Activity):
             wdg.set_text(("success message", ver))
         else:
             wdg.set_text("N/A")
+
+    async def _get_any_version(self, pkgs: List[str]) -> Optional[str]:
+        for pkgname in pkgs:
+            ver = await self.sys_info.get_installed_package_version(pkgname)
+            if ver is not None:
+                return ver
+        return None

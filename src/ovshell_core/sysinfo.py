@@ -1,6 +1,7 @@
 from abc import abstractmethod
 import asyncio
 import os
+import platform
 import re
 from typing import Dict, List, Optional, Tuple, cast
 
@@ -21,7 +22,7 @@ class SystemInfo:
         """Return kernel version"""
 
     @abstractmethod
-    async def fetch_hostname(self) -> Optional[str]:
+    async def get_hostname(self) -> Optional[str]:
         """Return hostname"""
 
 
@@ -50,10 +51,11 @@ class SystemInfoImpl(SystemInfo):
         return self._installed_pkgs.get(package_name)
 
     async def get_kernel_version(self) -> Optional[str]:
-        return None
+        uname = os.uname()
+        return f"{uname.sysname} {uname.release}"
 
-    async def fetch_hostname(self) -> Optional[str]:
-        return None
+    async def get_hostname(self) -> Optional[str]:
+        return os.uname().nodename
 
     async def _read_installed_packages(self) -> Dict[str, str]:
         proc = await self.os.run("//usr/bin/opkg", ["list-installed"])

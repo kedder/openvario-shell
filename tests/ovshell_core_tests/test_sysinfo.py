@@ -84,3 +84,23 @@ class TestSystemInfoImpl:
         assert ovshell.get_stub_log() == [
             "OS: Running //usr/bin/opkg list-installed",
         ]
+
+    @pytest.mark.asyncio
+    async def test_get_kernel_version(
+        self, ovshell: testing.OpenVarioShellStub
+    ) -> None:
+        # GIVEN
+        sysinfo = SystemInfoImpl(ovshell.os)
+        # WHEN
+        ver = await sysinfo.get_kernel_version()
+        # THEN
+        assert ver is not None
+
+    @pytest.mark.asyncio
+    async def test_get_hostname(self, ovshell: testing.OpenVarioShellStub) -> None:
+        # GIVEN
+        sysinfo = SystemInfoImpl(ovshell.os)
+        # WHEN
+        ver = await sysinfo.get_hostname()
+        # THEN
+        assert ver is not None

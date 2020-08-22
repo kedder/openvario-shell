@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 import asyncio
 import pytest
 
@@ -10,16 +10,21 @@ from ovshell_core.sysinfo import SystemInfo
 
 
 class SystemInfoStub(SystemInfo):
+    pkg_versions: Dict[str, str]
+
+    def __init__(self) -> None:
+        self.pkg_versions = {}
+
     async def get_openvario_version(self) -> Optional[str]:
         return "00000 (stub)"
 
     async def get_installed_package_version(self, package_name: str) -> Optional[str]:
-        return None
+        return self.pkg_versions.get(package_name)
 
     async def get_kernel_version(self) -> Optional[str]:
         return "5.7.0-stub"
 
-    async def fetch_hostname(self) -> Optional[str]:
+    async def get_hostname(self) -> Optional[str]:
         return "openvario-stub"
 
 
@@ -40,8 +45,10 @@ class TestAboutActivity:
     @pytest.mark.asyncio
     async def test_wizard_diplay(self, ovshell: testing.OpenVarioShellStub) -> None:
         # GIVEN
+        sys_info_stub = SystemInfoStub()
+        sys_info_stub.pkg_versions = {"xcsoar-testing": "7.0.0-preview15"}
         act = aboutapp.AboutActivity(ovshell)
-        act.sys_info = SystemInfoStub()
+        act.sys_info = sys_info_stub
         w = act.create()
         act.activate()
 
@@ -56,6 +63,7 @@ class TestAboutActivity:
         rendered = _render(w)
         assert "..." not in rendered
         assert "N/A" in rendered
+        assert "7.0.0-preview15" in rendered
         assert "00000 (stub)" in rendered
 
 
