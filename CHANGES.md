@@ -1,7 +1,7 @@
 Changelog for openvario-shell
 =============================
 
-0.6 (unreleased)
+0.6 (2020-08-23)
 ----------------
 
 - Backup app: transfer files between USB stick and Openvario.
