@@ -188,19 +188,25 @@ class StoredSettingsStub(api.StoredSettings):
 
 
 class OSPRocessStub(api.OSProcess):
-    def __init__(self, returncode: int = 0, stderr: bytes = b"") -> None:
+    def __init__(
+        self, returncode: int = 0, stdout: bytes = b"", stderr: bytes = b""
+    ) -> None:
         self._returncode = returncode
-        self._stderr = stderr
+        self.stdout = asyncio.streams.StreamReader()
+        self.stdout.feed_data(stdout)
+        self.stdout.feed_eof()
+        self.stderr = asyncio.streams.StreamReader()
+        self.stderr.feed_data(stderr)
+        self.stderr.feed_eof()
 
     async def wait(self) -> int:
+        await asyncio.sleep(0)
         return self._returncode
-
-    async def read_stderr(self) -> bytes:
-        return self._stderr
 
 
 class OpenVarioOSStub(api.OpenVarioOS):
     _stub_run_returncode: int = 0
+    _stub_run_stdout: bytes = b""
     _stub_run_stderr: bytes = b""
 
     def __init__(self, log: List[str], rootfs: str) -> None:
@@ -221,10 +227,13 @@ class OpenVarioOSStub(api.OpenVarioOS):
         return os.path.join(self._rootfs, path[2:])
 
     async def run(self, command: str, args: List[str]) -> api.OSProcess:
-        return OSPRocessStub(self._stub_run_returncode, self._stub_run_stderr)
+        self._log.append(f"OS: Running {command} {' '.join(args)}")
+        return OSPRocessStub(
+            self._stub_run_returncode, self._stub_run_stdout, self._stub_run_stderr
+        )
 
     def sync(self) -> None:
-        self._log.append("OS: sync")
+        self._log.append("OS: Sync")
 
     def shut_down(self) -> None:
         self._log.append("OS: Shut down")
@@ -232,8 +241,11 @@ class OpenVarioOSStub(api.OpenVarioOS):
     def restart(self) -> None:
         self._log.append("OS: Restart")
 
-    def stub_expect_run(self, result: int = 0, stderr: bytes = b"") -> None:
+    def stub_expect_run(
+        self, result: int = 0, stdout: bytes = b"", stderr: bytes = b""
+    ) -> None:
         self._stub_run_returncode = result
+        self._stub_run_stdout = stdout
         self._stub_run_stderr = stderr
 
 

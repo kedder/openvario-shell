@@ -168,7 +168,7 @@ class TestCommandRunnerActivity:
         act.on_failure(self._completed)
         ovshell.screen.push_activity(act)
         w = act.create()
-        ovshell.os.stub_expect_run(2, b"Error happened")
+        ovshell.os.stub_expect_run(2, stderr=b"Error happened")
 
         # WHEN
         act.activate()

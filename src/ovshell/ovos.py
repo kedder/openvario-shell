@@ -10,6 +10,10 @@ from ovshell import api
 class OSProcessImpl(api.OSProcess):
     def __init__(self, proc: asyncio.subprocess.Process) -> None:
         self._process = proc
+        assert proc.stdout is not None
+        self.stdout = proc.stdout
+        assert proc.stderr is not None
+        self.stderr = proc.stderr
 
     async def wait(self) -> int:
         return await self._process.wait()

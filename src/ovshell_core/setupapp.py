@@ -347,7 +347,7 @@ class CommandRunnerActivity(api.Activity):
         result = await proc.wait()
         loop = asyncio.get_event_loop()
         if result != 0:
-            errors = await proc.read_stderr()
+            errors = await proc.stderr.read()
             loop.call_soon(self._handle_error, result, errors.decode())
         else:
             loop.call_soon(self._handle_success)

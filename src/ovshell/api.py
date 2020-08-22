@@ -431,13 +431,12 @@ class ScreenManager(Protocol):
 
 
 class OSProcess(Protocol):
+    stdout: asyncio.streams.StreamReader
+    stderr: asyncio.streams.StreamReader
+
     @abstractmethod
     async def wait(self) -> int:
         """Wait for process to finish, return return code"""
-
-    @abstractmethod
-    async def read_stderr(self) -> bytes:
-        """Read stderr stream"""
 
 
 class OpenVarioOS(Protocol):
