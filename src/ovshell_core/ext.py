@@ -10,6 +10,7 @@ from ovshell_core import upgradeapp
 from ovshell_core import setupapp
 from ovshell_core import devsim
 from ovshell_core import devindicators
+from ovshell_core import aboutapp
 
 
 class CoreExtension(api.Extension):
@@ -35,6 +36,7 @@ class CoreExtension(api.Extension):
         return [
             upgradeapp.SystemUpgradeApp(self.shell),
             setupapp.SetupApp(self.shell, self.id),
+            aboutapp.AboutApp(self.shell),
         ]
 
     def start(self) -> None:
