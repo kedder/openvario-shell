@@ -1,8 +1,8 @@
 Changelog for openvario-shell
 =============================
 
-0.7 (unreleased)
-----------------
+0.6.1 (2020-08-23)
+------------------
 
 - Correctly determine version of variod.
 
