@@ -4,7 +4,7 @@ Changelog for openvario-shell
 0.7 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Correctly determine version of variod.
 
 
 0.6 (2020-08-23)

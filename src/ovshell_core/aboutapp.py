@@ -87,7 +87,7 @@ class AboutActivity(api.Activity):
             ("Openvario image", self.sys_info.get_openvario_version()),
             ("XCSoar", self._get_any_version(["xcsoar", "xcsoar-testing"])),
             ("Sensor daemon", self._get_any_version(["sensord", "sensord-testing"]),),
-            ("Vario daemon", self._get_any_version(["variod", "veriod-testing"]),),
+            ("Vario daemon", self._get_any_version(["variod", "variod-testing"]),),
             ("Linux kernel", self.sys_info.get_kernel_version()),
             ("Hostname", self.sys_info.get_hostname()),
         ]
