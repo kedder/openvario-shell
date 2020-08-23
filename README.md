@@ -41,10 +41,10 @@ The easiest way to install is using `opkg` package manager on
 internet-connected Openvario device.
 
 ```sh
-$ echo src/gz kedder_core http://openvario.lebedev.lt/opkg/armv7vet2hf-neon/ >> /etc/opkg/customfeeds.conf
-$ echo src/gz kedder_all http://openvario.lebedev.lt/opkg/all/ >> /etc/opkg/customfeeds.conf
-$ opkg update
-$ opkg install openvario-shell openvario-shell-autostart --force-removal-of-dependent-packages
+echo src/gz kedder_core http://openvario.lebedev.lt/opkg/armv7vet2hf-neon >> /etc/opkg/customfeeds.conf
+echo src/gz kedder_all http://openvario.lebedev.lt/opkg/all >> /etc/opkg/customfeeds.conf
+opkg update
+opkg install openvario-shell openvario-shell-autostart --force-removal-of-dependent-packages
 ```
 
 After executing these commands, `ovshell` command should be available. It will
@@ -54,7 +54,7 @@ In case you didn't like it and would like to return to stock Openvario menu,
 run this command:
 
 ```sh
-$ opkg install ovmenu-ng ovmenu-ng-autostart --force-removal-of-dependent-packages
+opkg install ovmenu-ng ovmenu-ng-autostart --force-removal-of-dependent-packages
 ```
 
 ## Development
@@ -70,21 +70,21 @@ of free options for Windows as well.
 don't have it yet, install with:
 
 ```sh
-$ pip install pipenv
+pip install pipenv
 ```
 
 After checking out the sources, `cd` to `openvario-shell` directory and run:
 
 ```sh
-$ pipenv shell
-$ pipenv install
+pipenv shell
+pipenv install
 ```
 
 After that, your development environment is ready, you should be able to run
 the app:
 
 ```sh
-$ ovshell
+ovshell
 ```
 
 It is possible to adjust few options by providing them in `.env` file, located
