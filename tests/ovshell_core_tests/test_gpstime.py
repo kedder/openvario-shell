@@ -118,7 +118,7 @@ def test_parse_gps_datetime_notime() -> None:
 def test_set_system_time_tolerable_offset() -> None:
     newtime = datetime(2020, 5, 29, 1, 1, 2)
     now = datetime(2020, 5, 29, 1, 1, 1)
-    assert gpstime.set_system_time(newtime, now) == False
+    assert gpstime.set_system_time(newtime, now) is False
 
 
 def test_set_system_time_now(monkeypatch) -> None:
@@ -128,7 +128,7 @@ def test_set_system_time_now(monkeypatch) -> None:
     newtime = datetime(2003, 5, 29, 1, 1, 1)
 
     # WHEN, THEN
-    assert gpstime.set_system_time(newtime) == True
+    assert gpstime.set_system_time(newtime) is True
     subpr_mock.run.assert_called_with(
         ["date", "+%F %H:%M:%S", "-s", "2003-05-29 01:01:01"],
         check=True,

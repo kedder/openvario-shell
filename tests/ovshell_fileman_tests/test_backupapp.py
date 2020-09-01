@@ -225,7 +225,7 @@ async def test_restore_show_progress(ovshell: testing.OpenVarioShellStub) -> Non
     assert "Close" in _render(w)
 
     _keypress(w, ["enter"])
-    assert ovshell.screen.stub_top_activity() == None
+    assert ovshell.screen.stub_top_activity() is None
 
 
 @pytest.mark.asyncio
@@ -256,7 +256,7 @@ async def test_restore_cancel(ovshell: testing.OpenVarioShellStub) -> None:
     # close the activity
     assert "Close" in _render(w)
     _keypress(w, ["enter"])
-    assert ovshell.screen.stub_top_activity() == None
+    assert ovshell.screen.stub_top_activity() is None
 
 
 @pytest.mark.asyncio
@@ -283,7 +283,7 @@ async def test_restore_failure(ovshell: testing.OpenVarioShellStub) -> None:
     # close the activity
     assert "Close" in _render(w)
     _keypress(w, ["enter"])
-    assert ovshell.screen.stub_top_activity() == None
+    assert ovshell.screen.stub_top_activity() is None
 
 
 def _render(w: urwid.Widget) -> str:

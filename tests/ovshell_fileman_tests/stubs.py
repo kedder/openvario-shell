@@ -1,4 +1,4 @@
-from typing import Callable, List, Optional, Union, AsyncGenerator
+from typing import Callable, List, Union, AsyncGenerator
 import asyncio
 
 from ovshell_fileman.api import (

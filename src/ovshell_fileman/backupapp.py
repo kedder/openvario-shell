@@ -1,6 +1,5 @@
-from typing import List, Optional, Coroutine
+from typing import List, Optional
 import os
-import re
 import asyncio
 from abc import abstractmethod
 from pathlib import Path
@@ -187,7 +186,7 @@ class BackupRestoreMainActivity(api.Activity):
     def _refresh_restore_dirs(self) -> None:
         dirs = self.backupdir.get_backed_up_files()
         if not dirs:
-            wdg = urwid.Text([("remark", f"No files to restore.")])
+            wdg = urwid.Text([("remark", "No files to restore.")])
             self.restoredirs.contents = [(wdg, ("pack", None))]
             return
 

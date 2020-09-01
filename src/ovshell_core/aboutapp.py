@@ -1,4 +1,4 @@
-from typing import Coroutine, List, Optional, Tuple
+from typing import Coroutine, List, Optional
 import urwid
 from ovshell import api
 from ovshell import widget

@@ -5,7 +5,6 @@ import urwid
 
 from ovshell import api
 from ovshell import widget
-
 from ovshell_core import rotation
 
 

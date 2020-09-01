@@ -1,5 +1,4 @@
 from typing import Dict, List, Optional, Tuple
-import asyncio
 import pytest
 
 import urwid

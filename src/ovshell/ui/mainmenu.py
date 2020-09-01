@@ -1,8 +1,7 @@
-from typing import Callable, List, Optional
+from typing import Optional
 import asyncio
 
 import urwid
-from urwid.widget import Divider
 
 import ovshell
 from ovshell import api

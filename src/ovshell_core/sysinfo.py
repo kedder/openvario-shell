@@ -1,9 +1,8 @@
 from abc import abstractmethod
 import asyncio
 import os
-import platform
 import re
-from typing import Dict, List, Optional, Tuple, cast
+from typing import Dict, Optional, Tuple, cast
 
 from ovshell import api
 

@@ -130,7 +130,7 @@ class CheckForUpdatesWidget(urwid.WidgetWrap):
         )
 
         content = urwid.Pile(
-            [("pack", self.message_line), ("pack", urwid.Divider()), update_term,]
+            [("pack", self.message_line), ("pack", urwid.Divider()), update_term]
         )
         # Force pack to be selectable, even though no widget is selectable at
         # the moment.
@@ -158,7 +158,7 @@ class CheckForUpdatesWidget(urwid.WidgetWrap):
         else:
             exit_btn = widget.PlainButton(" Exit ")
             urwid.connect_signal(exit_btn, "click", self._on_exit)
-            message = [("remark", f"No updates found")]
+            message = [("remark", "No updates found")]
             message_wdg = urwid.Columns(
                 [("pack", urwid.Text(message)), ("pack", exit_btn)], dividechars=1,
             )
@@ -288,7 +288,7 @@ class SystemUpgradeWidget(urwid.WidgetWrap):
         )
 
         content = urwid.Pile(
-            [("pack", self.message_line), ("pack", urwid.Divider()), update_term,]
+            [("pack", self.message_line), ("pack", urwid.Divider()), update_term]
         )
         # Force pack to be selectable, even though no widget is selectable at
         # the moment.
@@ -304,7 +304,7 @@ class SystemUpgradeWidget(urwid.WidgetWrap):
     def _on_opkg_upgrade_finished(self, wdg: urwid.Widget) -> None:
         exit_btn = widget.PlainButton(" Exit ")
         urwid.connect_signal(exit_btn, "click", self._on_exit)
-        message = ("success message", f"Upgrade completed!")
+        message = ("success message", "Upgrade completed!")
         message_wdg = urwid.Columns(
             [("pack", urwid.Text(message)), ("pack", exit_btn)], dividechars=1,
         )

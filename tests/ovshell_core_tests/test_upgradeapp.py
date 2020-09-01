@@ -1,6 +1,5 @@
-from typing import Callable, List, Optional
+from typing import Callable, List
 import asyncio
-from dataclasses import dataclass
 import mock
 
 import urwid

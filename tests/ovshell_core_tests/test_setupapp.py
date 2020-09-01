@@ -1,9 +1,6 @@
-import asyncio
-import os
 from pathlib import Path
 
 import pytest
-from tests.conftest import ovshell
 from typing import List, Tuple
 
 import urwid
@@ -105,7 +102,7 @@ class TestCalibrateTouchWizardStep:
 
         await ovshell.screen.stub_wait_for_tasks(topact)
 
-        assert self.completed == True
+        assert self.completed is True
 
     def _completed(self, w: urwid.Widget) -> None:
         self.completed = True
@@ -132,7 +129,7 @@ class TestCalibrateSensorsWizardStep:
 
         await ovshell.screen.stub_wait_for_tasks(topact)
 
-        assert self.completed == True
+        assert self.completed is True
 
     def _completed(self, w: urwid.Widget) -> None:
         self.completed = True
@@ -167,7 +164,7 @@ class TestCommandRunnerActivity:
         act = setupapp.CommandRunnerActivity(ovshell, "Test", "Running test", "cmd", [])
         act.on_failure(self._completed)
         ovshell.screen.push_activity(act)
-        w = act.create()
+        act.create()
         ovshell.os.stub_expect_run(2, stderr=b"Error happened")
 
         # WHEN

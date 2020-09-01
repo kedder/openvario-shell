@@ -1,12 +1,9 @@
 import asyncio
-import os
 from pathlib import Path
-from typing import AsyncIterable
 
 import pytest
 
 from ovshell import testing
-from ovshell.api import OpenVarioShell
 from ovshell_core.sysinfo import SystemInfoImpl
 
 ETC_OS_RELEASE_CONTENT = """ID="ovlinux"

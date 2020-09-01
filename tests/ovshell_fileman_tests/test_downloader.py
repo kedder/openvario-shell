@@ -65,19 +65,19 @@ def test_list_logs_filtering(tmp_path: Path) -> None:
 
     # WHEN, THEN
     logs = dl.list_logs(DownloadFilter(new=True))
-    assert [l.name for l in logs] == ["one.igc"]
+    assert [x.name for x in logs] == ["one.igc"]
 
     # Files are listed in reverse-chronological order
     logs = dl.list_logs(DownloadFilter(new=False))
-    assert [l.name for l in logs] == ["two.igc", "one.igc"]
+    assert [x.name for x in logs] == ["two.igc", "one.igc"]
 
     logs = dl.list_logs(DownloadFilter(new=True, igc=False, nmea=True))
-    assert [l.name for l in logs] == []
+    assert [x.name for x in logs] == []
 
     # Type is detected by extensions, that are case-insensitive
     srcdir.joinpath("three.NMEA").touch()
     logs = dl.list_logs(DownloadFilter(new=True, igc=False, nmea=True))
-    assert [l.name for l in logs] == ["three.NMEA"]
+    assert [x.name for x in logs] == ["three.NMEA"]
 
 
 @pytest.mark.asyncio

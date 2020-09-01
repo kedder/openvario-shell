@@ -1,9 +1,6 @@
-from typing import List, Optional, Coroutine, AsyncGenerator
-from typing_extensions import Protocol
+from typing import List, Optional, AsyncGenerator
 import re
 import asyncio
-from dataclasses import dataclass
-from abc import abstractmethod
 
 from ovshell_fileman.api import RsyncRunner, RsyncFailedException, RsyncStatusLine
 

@@ -1,4 +1,4 @@
-from typing import Callable, List, Optional
+from typing import List, Optional
 import asyncio
 from dataclasses import dataclass
 
