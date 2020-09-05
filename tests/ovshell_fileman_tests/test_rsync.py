@@ -19,6 +19,10 @@ echo -n "    345,081,147  13%  298.34MB/s    0:00:01 (xfr#5, ir-chk=1297/1636) \
 exit 42
 """
 
+RSYNC_STUB_SCRIPT_NO_PROGRESS = """#!/bin/sh
+echo "Rsync output doesn't contain progress"
+"""
+
 
 class TestRsyncRunnerImpl:
     @pytest.mark.asyncio
@@ -65,6 +69,28 @@ class TestRsyncRunnerImpl:
         exc = einfo.value
         assert exc.returncode == 42
         assert exc.errors == "rsync has failed\n"
+
+    @pytest.mark.asyncio
+    async def test_run_no_progress(self, tmp_path: Path) -> None:
+        # GIVEN
+        rsync_path = tmp_path / "rsync-stub"
+        with open(rsync_path, "w") as f:
+            f.write(RSYNC_STUB_SCRIPT_NO_PROGRESS)
+            for _ in range(2000):
+                f.write("echo Long line without marker character\n")
+
+        # make the script executable
+        rsync_path.chmod(0o755)
+
+        rr = RsyncRunnerImpl(str(rsync_path))
+
+        # WHEN
+        progress = []
+        async for line in rr.run([]):
+            progress.append(line)
+
+        # THEN
+        assert len(progress) == 0
 
 
 def test_parse_rsync_line_malformed() -> None:
