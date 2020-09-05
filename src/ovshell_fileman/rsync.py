@@ -18,7 +18,7 @@ class RsyncRunnerImpl(RsyncRunner):
             *params,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
-            limit=200,
+            limit=2000,
         )
 
         assert proc.stdout is not None
@@ -29,6 +29,10 @@ class RsyncRunnerImpl(RsyncRunner):
                 line = await proc.stdout.readuntil(b"\r")
             except asyncio.IncompleteReadError:
                 break
+            except asyncio.LimitOverrunError as e:
+                # We did not find status line in the output. Skip it.
+                await proc.stdout.readexactly(e.consumed)
+                continue
             rsync_progress = parse_rsync_line(line)
             if rsync_progress is not None:
                 yield rsync_progress

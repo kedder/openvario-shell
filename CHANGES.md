@@ -4,7 +4,7 @@ Changelog for openvario-shell
 0.7.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Avoid error in backup app when rsync produces a lot of unexpected output.
 
 
 0.6.1 (2020-08-23)
