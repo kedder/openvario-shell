@@ -1,12 +1,12 @@
 from pathlib import Path
 
 import pytest
-from typing import List, Tuple
-
 import urwid
 
 from ovshell import testing
 from ovshell_core import setupapp
+
+from tests.fixtures.urwid import UrwidMock
 
 
 class TestSetupApp:
@@ -25,37 +25,39 @@ class TestSetupApp:
 class TestSetupActivity:
     def test_wizard_go_through(self, ovshell: testing.OpenVarioShellStub) -> None:
         # GIVEN
+        urwid_mock = UrwidMock()
         act = setupapp.SetupActivity(ovshell, "test")
         ovshell.screen.push_activity(act)
         w = act.create()
 
-        rendered = _render(w)
+        rendered = urwid_mock.render(w)
         assert "Setup wizard" in rendered
         assert "his wizard will guide you through" in rendered
-        _keypress(w, ["enter"])
+        urwid_mock.keypress(w, ["enter"])
 
-        rendered = _render(w)
+        rendered = urwid_mock.render(w)
         assert "Device orientation" in rendered
-        _keypress(w, ["enter"])
+        urwid_mock.keypress(w, ["enter"])
 
-        rendered = _render(w)
+        rendered = urwid_mock.render(w)
         assert "Touch screen calibration" in rendered
-        _keypress(w, ["enter"])
+        urwid_mock.keypress(w, ["enter"])
 
-        rendered = _render(w)
+        rendered = urwid_mock.render(w)
         assert "Sensor calibration" in rendered
-        _keypress(w, ["enter"])
+        urwid_mock.keypress(w, ["enter"])
 
-        rendered = _render(w)
+        rendered = urwid_mock.render(w)
         assert "Setup is complete" in rendered
 
-        _keypress(w, ["enter"])
+        urwid_mock.keypress(w, ["enter"])
         assert ovshell.screen.stub_top_activity() is None
 
 
 class TestOrientationWizardStep:
     def test_switch_orientation(self, ovshell: testing.OpenVarioShellStub) -> None:
         # GIVEN
+        urwid_mock = UrwidMock()
         step = setupapp.OrientationWizardStep(ovshell)
         root = Path(ovshell.os.path("//"))
         root.joinpath("boot").mkdir()
@@ -63,13 +65,13 @@ class TestOrientationWizardStep:
         with open(root / "boot" / "config.uEnv", "w") as f:
             f.write("rotation=0")
 
-        rendered = _render(step)
+        rendered = urwid_mock.render(step)
         assert "Skip" in rendered
         assert "Landscape" in rendered
         assert "Portrait" in rendered
 
         # WHEN
-        _keypress(step, ["down", "down", "enter"])
+        urwid_mock.keypress(step, ["down", "down", "enter"])
 
         # THEN
         with open(ovshell.os.path("//sys/class/graphics/fbcon/rotate_all"), "r") as f:
@@ -90,11 +92,12 @@ class TestCalibrateTouchWizardStep:
     @pytest.mark.asyncio
     async def test_calibrate(self, ovshell: testing.OpenVarioShellStub) -> None:
         # GIVEN
+        urwid_mock = UrwidMock()
         step = setupapp.CalibrateTouchWizardStep(ovshell)
         urwid.connect_signal(step, "next", self._completed)
 
         # WHEN
-        _keypress(step, ["right", "enter"])
+        urwid_mock.keypress(step, ["right", "enter"])
         topact = ovshell.screen.stub_top_activity()
         assert isinstance(topact, setupapp.CommandRunnerActivity)
         topact.create()
@@ -117,11 +120,12 @@ class TestCalibrateSensorsWizardStep:
     @pytest.mark.asyncio
     async def test_calibrate(self, ovshell: testing.OpenVarioShellStub) -> None:
         # GIVEN
+        urwid_mock = UrwidMock()
         step = setupapp.CalibrateSensorsWizardStep(ovshell)
         urwid.connect_signal(step, "next", self._completed)
 
         # WHEN
-        _keypress(step, ["right", "enter"])
+        urwid_mock.keypress(step, ["right", "enter"])
         topact = ovshell.screen.stub_top_activity()
         assert isinstance(topact, setupapp.CommandRunnerActivity)
         topact.create()
@@ -144,12 +148,13 @@ class TestCommandRunnerActivity:
     @pytest.mark.asyncio
     async def test_success(self, ovshell: testing.OpenVarioShellStub) -> None:
         # GIVEN
+        urwid_mock = UrwidMock()
         act = setupapp.CommandRunnerActivity(ovshell, "Test", "Running test", "cmd", [])
         ovshell.screen.push_activity(act)
         w = act.create()
 
-        assert "Test" in _render(w)
-        assert "Running test" in _render(w)
+        assert "Test" in urwid_mock.render(w)
+        assert "Running test" in urwid_mock.render(w)
 
         # WHEN
         act.activate()
@@ -161,6 +166,7 @@ class TestCommandRunnerActivity:
     @pytest.mark.asyncio
     async def test_failure(self, ovshell: testing.OpenVarioShellStub) -> None:
         # GIVEN
+        urwid_mock = UrwidMock()
         act = setupapp.CommandRunnerActivity(ovshell, "Test", "Running test", "cmd", [])
         act.on_failure(self._completed)
         ovshell.screen.push_activity(act)
@@ -175,29 +181,10 @@ class TestCommandRunnerActivity:
         dialog = ovshell.screen.stub_dialog()
         assert dialog is not None
         assert dialog.title == "Test"
-        assert "Error happened" in _render(dialog.content)
+        assert "Error happened" in urwid_mock.render(dialog.content)
         closed = dialog.stub_press_button("Close")
         assert closed
         assert self.completed
 
     def _completed(self) -> None:
         self.completed = True
-
-
-def _render(w: urwid.Widget) -> str:
-    canvas = w.render(_get_size(w))
-    contents = [t.decode("utf-8") for t in canvas.text]
-    return "\n".join(contents)
-
-
-def _keypress(w: urwid.Widget, keys: List[str]) -> None:
-    for key in keys:
-        nothandled = w.keypress(_get_size(w), key)
-        assert nothandled is None
-
-
-def _get_size(w: urwid.Widget) -> Tuple[int, ...]:
-    size: Tuple[int, ...] = (60, 40)
-    if "flow" in w.sizing():
-        size = (60,)
-    return size

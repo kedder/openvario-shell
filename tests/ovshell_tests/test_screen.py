@@ -8,6 +8,8 @@ import asyncio
 from ovshell import api
 from ovshell.screen import ScreenManagerImpl
 
+from tests.fixtures.urwid import UrwidMock
+
 
 class ActivityStub(api.Activity):
     def __init__(self, text: str) -> None:
@@ -34,6 +36,7 @@ class ActivityStub(api.Activity):
 
 
 def test_push_activity() -> None:
+    urwid_mock = UrwidMock()
     mainloop = mock.Mock(name="MainLoop")
     screen = ScreenManagerImpl(mainloop)
     act = ActivityStub("Stub Activity")
@@ -43,7 +46,7 @@ def test_push_activity() -> None:
 
     # THEN
     act.activated == 1
-    view = _render(mainloop.widget)
+    view = urwid_mock.render(mainloop.widget)
     assert "Stub Activity" in view
 
 
@@ -51,6 +54,7 @@ def test_pop_activity() -> None:
     # GIVEN
     # Create a basic palette and an urwid main loop - we are messing with the internal
     # implementation of palette handling.
+    urwid_mock = UrwidMock()
     palette = [
         ("text", "white", "black", ""),
     ]
@@ -64,13 +68,13 @@ def test_pop_activity() -> None:
     screen.push_activity(act1)
     screen.push_activity(act2)
 
-    assert "Activity Two" in _render(mainloop.widget)
+    assert "Activity Two" in urwid_mock.render(mainloop.widget)
 
     # WHEN
     screen.pop_activity()
 
     # THEN
-    assert "Activity One" in _render(mainloop.widget)
+    assert "Activity One" in urwid_mock.render(mainloop.widget)
     assert act2.activated == 1
     assert act2.destroyed == 1
     assert act2.shown == 1
@@ -82,6 +86,7 @@ def test_pop_activity() -> None:
 
 
 def test_push_modal() -> None:
+    urwid_mock = UrwidMock()
     mainloop = mock.Mock(name="MainLoop")
     mainloop.screen._palette = {}
     screen = ScreenManagerImpl(mainloop)
@@ -96,13 +101,14 @@ def test_push_modal() -> None:
 
     # THEN
     # Modal activity does not obscure the main view
-    view = _render(mainloop.widget)
+    view = urwid_mock.render(mainloop.widget)
     assert "Modal Activity" in view
     assert "Activity One" in view
 
 
 def test_push_dialog() -> None:
     # GIVEN
+    urwid_mock = UrwidMock()
     mainloop = mock.Mock(name="MainLoop")
     mainloop.screen._palette = {}
     screen = ScreenManagerImpl(mainloop)
@@ -115,7 +121,7 @@ def test_push_dialog() -> None:
     dialog.add_button("Close", lambda: True)
 
     # THEN
-    view = _render(mainloop.widget)
+    view = urwid_mock.render(mainloop.widget)
     assert "Dialog Title" in view
     assert "Dialog content" in view
     assert "Close" in view
@@ -123,19 +129,19 @@ def test_push_dialog() -> None:
 
     # WHEN
     # Click the default button (Nevermind)
-    _keypress(mainloop.widget, ["enter"])
+    urwid_mock.keypress(mainloop.widget, ["enter"])
 
     # THEN
     # Dialog did not close
-    assert "Dialog Title" in _render(mainloop.widget)
+    assert "Dialog Title" in urwid_mock.render(mainloop.widget)
 
     # WHEN
     # Click the "close" button
-    _keypress(mainloop.widget, ["right", "enter"])
+    urwid_mock.keypress(mainloop.widget, ["right", "enter"])
 
     # THEN
     # Dialog closed
-    assert "Dialog Title" not in _render(mainloop.widget)
+    assert "Dialog Title" not in urwid_mock.render(mainloop.widget)
 
 
 @pytest.mark.asyncio
@@ -174,21 +180,23 @@ async def test_spawn_task() -> None:
 
 
 def test_set_indicator_simple() -> None:
+    urwid_mock = UrwidMock()
     mainloop = mock.Mock(urwid.MainLoop)
     screen = ScreenManagerImpl(mainloop)
 
     screen.set_indicator("test", "Hello World", api.IndicatorLocation.LEFT, 0)
 
-    view = _render(mainloop.widget)
+    view = urwid_mock.render(mainloop.widget)
     assert "Hello World" in view
 
     screen.remove_indicator("test")
-    view = _render(mainloop.widget)
+    view = urwid_mock.render(mainloop.widget)
     assert "Hello World" not in view
 
 
 def test_set_indicator_ordering() -> None:
     # GIVEN
+    urwid_mock = UrwidMock()
     mainloop = mock.Mock(urwid.MainLoop)
     screen = ScreenManagerImpl(mainloop)
     screen.set_indicator("3", "Three", api.IndicatorLocation.RIGHT, 3)
@@ -196,19 +204,7 @@ def test_set_indicator_ordering() -> None:
     screen.set_indicator("2", ["T", "w", "o"], api.IndicatorLocation.RIGHT, 2)
 
     # WHEN
-    view = _render(mainloop.widget)
+    view = urwid_mock.render(mainloop.widget)
 
     # THEN
     assert "One Two Three" in view
-
-
-def _render(w: urwid.Widget) -> str:
-    canvas = w.render((60, 30))
-    contents = [t.decode("utf-8") for t in canvas.text]
-    return "\n".join(contents)
-
-
-def _keypress(w: urwid.Widget, keys: List[str]) -> None:
-    for key in keys:
-        nothandled = w.keypress((60, 40), key)
-        assert nothandled is None

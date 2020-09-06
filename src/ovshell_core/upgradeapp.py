@@ -1,4 +1,4 @@
-from typing import Set, List
+from typing import Set, FrozenSet, List
 import subprocess
 from abc import abstractmethod
 from dataclasses import dataclass
@@ -186,6 +186,9 @@ class PackageSelectionWidget(urwid.WidgetWrap):
         self._screen = screen
         content = self._create_package_list_screen()
         super().__init__(content)
+
+    def sizing(self) -> FrozenSet[str]:
+        return frozenset(["box"])
 
     def _create_package_list_screen(self) -> urwid.Widget:
         self._package_walker = urwid.SimpleFocusListWalker([])

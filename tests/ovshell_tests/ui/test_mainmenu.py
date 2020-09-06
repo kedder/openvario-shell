@@ -1,12 +1,12 @@
-from typing import List
 import asyncio
 
 import pytest
-import urwid
 
 from ovshell import api
 from ovshell import testing
 from ovshell.ui.mainmenu import MainMenuActivity
+
+from tests.fixtures.urwid import UrwidMock
 
 
 @pytest.fixture
@@ -39,13 +39,14 @@ class MockApp(api.App):
 
 def test_mainmenu_start_initial(ovshell: testing.OpenVarioShellStub) -> None:
     # GIVEN
+    urwid_mock = UrwidMock()
     act = MainMenuActivity(ovshell)
 
     # WHEN
     w = act.create()
 
     # THEN
-    rendered = _render(w)
+    rendered = urwid_mock.render(w)
     assert "Main Menu" in rendered
     assert "Applications" in rendered
     assert "Settings" in rendered
@@ -53,11 +54,12 @@ def test_mainmenu_start_initial(ovshell: testing.OpenVarioShellStub) -> None:
 
 def test_mainmenu_exit(ovshell: testing.OpenVarioShellStub) -> None:
     # GIVEN
+    urwid_mock = UrwidMock()
     act = MainMenuActivity(ovshell)
     w = act.create()
 
     # WHEN
-    _keypress(w, ["esc"])
+    urwid_mock.keypress(w, ["esc"])
 
     # THEN
     quitdialog = ovshell.screen.stub_dialog()
@@ -69,7 +71,7 @@ def test_mainmenu_exit(ovshell: testing.OpenVarioShellStub) -> None:
     assert not closed
     finalact = ovshell.screen.stub_top_activity()
     assert finalact is not None
-    rendered = _render(finalact.create())
+    rendered = urwid_mock.render(finalact.create())
     assert "Openvario shutting down..." in rendered
     assert "OS: Shut down" in ovshell.get_stub_log()
 
@@ -97,6 +99,7 @@ async def test_mainmenu_autostart_timeout(
     ovshell: testing.OpenVarioShellStub, nosleep: None
 ) -> None:
     # GIVEN
+    urwid_mock = UrwidMock()
     app = MockApp()
     ovshell.apps.stub_add_app("mockapp", app, MockExtension())
     ovshell.settings.set("ovshell.autostart_app", "mockapp")
@@ -110,7 +113,7 @@ async def test_mainmenu_autostart_timeout(
     await asyncio.sleep(0)
 
     # THEN
-    rendered = _render(w)
+    rendered = urwid_mock.render(w)
 
     assert "Starting Mock App in" in rendered
     assert "Press any button to cancel" in rendered
@@ -118,7 +121,7 @@ async def test_mainmenu_autostart_timeout(
     # Let the countdown finish
     assert act.autostart_countdown_task is not None
     await act.autostart_countdown_task
-    rendered = _render(w)
+    rendered = urwid_mock.render(w)
     assert "Press any button to cancel" not in rendered
     assert app.launched
 
@@ -128,6 +131,7 @@ async def test_mainmenu_autostart_cancel(
     ovshell: testing.OpenVarioShellStub, nosleep: None
 ) -> None:
     # GIVEN
+    urwid_mock = UrwidMock()
     app = MockApp()
     ovshell.settings.set("ovshell.autostart_timeout", 3)
     ovshell.apps.stub_add_app("mockapp", app, MockExtension())
@@ -135,26 +139,14 @@ async def test_mainmenu_autostart_cancel(
     w = act.create()
     act.activate()
     await asyncio.sleep(0)
-    assert "Press any button to cancel" in _render(w)
+    assert "Press any button to cancel" in urwid_mock.render(w)
 
     # WHEN
-    _keypress(w, ["esc"])
+    urwid_mock.keypress(w, ["esc"])
     await asyncio.sleep(0)
 
     # THEN
-    rendered = _render(w)
+    rendered = urwid_mock.render(w)
     assert "Press any button to cancel" not in rendered
     assert act.autostart_countdown_task is not None
     assert act.autostart_countdown_task.cancelled()
-
-
-def _render(w: urwid.Widget) -> str:
-    canvas = w.render((60, 40))
-    contents = [t.decode("utf-8") for t in canvas.text]
-    return "\n".join(contents)
-
-
-def _keypress(w: urwid.Widget, keys: List[str]) -> None:
-    for key in keys:
-        nothandled = w.keypress((60, 40), key)
-        assert nothandled is None

@@ -1,10 +1,8 @@
-from typing import List, Tuple
 import os
 import asyncio
 from pathlib import Path
 
 import pytest
-import urwid
 
 from ovshell import testing
 
@@ -13,6 +11,7 @@ from ovshell_fileman.backupapp import BackupRestoreApp, BackupRestoreMainActivit
 from ovshell_fileman.backupapp import BackupActivity, RestoreActivity
 from ovshell_fileman.backupapp import BackupDirectoryImpl
 
+from tests.fixtures.urwid import UrwidMock
 from .stubs import AutomountWatcherStub, RsyncRunnerStub, BackupDirectoryStub
 
 
@@ -64,6 +63,7 @@ def test_app_start(ovshell: testing.OpenVarioShellStub) -> None:
 @pytest.mark.asyncio
 async def test_activity_mounting(ovshell: testing.OpenVarioShellStub) -> None:
     # GIVEN
+    urwid_mock = UrwidMock()
     mountwatcher = AutomountWatcherStub()
     rsync = RsyncRunnerStub()
     backupdir = BackupDirectoryStub()
@@ -73,26 +73,27 @@ async def test_activity_mounting(ovshell: testing.OpenVarioShellStub) -> None:
     act.show()
 
     await asyncio.sleep(0)
-    assert "Please insert USB storage" in _render(w)
+    assert "Please insert USB storage" in urwid_mock.render(w)
 
     # WHEN
     mountwatcher.stub_mount()
     await asyncio.sleep(0)
 
     # THEN
-    assert "This app allows to copy files to and from USB stick" in _render(w)
-    assert "No files to restore." in _render(w)
+    assert "This app allows to copy files to and from USB stick" in urwid_mock.render(w)
+    assert "No files to restore." in urwid_mock.render(w)
 
     # WHEN
     backupdir.backed_up_files = ["file_one", "file_two"]
     act.show()
-    assert "file_one" in _render(w)
-    assert "file_two" in _render(w)
+    assert "file_one" in urwid_mock.render(w)
+    assert "file_two" in urwid_mock.render(w)
 
 
 @pytest.mark.asyncio
 async def test_activity_backup(ovshell: testing.OpenVarioShellStub) -> None:
     # GIVEN
+    urwid_mock = UrwidMock()
     mountwatcher = AutomountWatcherStub()
     rsync = RsyncRunnerStub()
     backupdir = BackupDirectoryStub()
@@ -103,8 +104,8 @@ async def test_activity_backup(ovshell: testing.OpenVarioShellStub) -> None:
 
     # WHEN
     # Press the default button (Backup)
-    assert "Backup" in _render(w)
-    _keypress(w, ["enter"])
+    assert "Backup" in urwid_mock.render(w)
+    urwid_mock.keypress(w, ["enter"])
 
     # THEN
     pact = ovshell.screen.stub_top_activity()
@@ -114,6 +115,7 @@ async def test_activity_backup(ovshell: testing.OpenVarioShellStub) -> None:
 @pytest.mark.asyncio
 async def test_activity_restore(ovshell: testing.OpenVarioShellStub) -> None:
     # GIVEN
+    urwid_mock = UrwidMock()
     mountwatcher = AutomountWatcherStub()
     rsync = RsyncRunnerStub()
     backupdir = BackupDirectoryStub()
@@ -124,8 +126,8 @@ async def test_activity_restore(ovshell: testing.OpenVarioShellStub) -> None:
 
     # WHEN
     # Press the default button (Backup)
-    assert "Backup" in _render(w)
-    _keypress(w, ["down", "enter"])
+    assert "Backup" in urwid_mock.render(w)
+    urwid_mock.keypress(w, ["down", "enter"])
 
     # THEN
     pact = ovshell.screen.stub_top_activity()
@@ -135,6 +137,7 @@ async def test_activity_restore(ovshell: testing.OpenVarioShellStub) -> None:
 @pytest.mark.asyncio
 async def test_backup_act_create(ovshell: testing.OpenVarioShellStub) -> None:
     # GIVEN
+    urwid_mock = UrwidMock()
     rsync = RsyncRunnerStub()
     act = BackupActivity(ovshell, rsync, "/backup_src", "/backup_dest")
 
@@ -142,7 +145,7 @@ async def test_backup_act_create(ovshell: testing.OpenVarioShellStub) -> None:
     w = act.create()
 
     # THEN
-    rendered = _render(w)
+    rendered = urwid_mock.render(w)
     assert "Backup" in rendered
     assert "Copying files from Openvario to USB stick..." in rendered
     assert "Cancel" in rendered
@@ -202,6 +205,7 @@ def test_restore_act_get_rsync_args(ovshell: testing.OpenVarioShellStub) -> None
 
 @pytest.mark.asyncio
 async def test_restore_show_progress(ovshell: testing.OpenVarioShellStub) -> None:
+    urwid_mock = UrwidMock()
     rsync = RsyncRunnerStub()
     rsync.progress = [
         RsyncStatusLine(0, 0, "0 KB/s", "00:01:00", None),
@@ -215,21 +219,22 @@ async def test_restore_show_progress(ovshell: testing.OpenVarioShellStub) -> Non
     act.activate()
 
     await asyncio.sleep(0)
-    assert "0% | 0.0 B   | 0 KB/s | 00:01:00" in _render(w)
+    assert "0% | 0.0 B   | 0 KB/s | 00:01:00" in urwid_mock.render(w)
     await asyncio.sleep(0)
-    assert "23% | 2.0 KiB | 15 KB/s | 01:28:20" in _render(w)
+    assert "23% | 2.0 KiB | 15 KB/s | 01:28:20" in urwid_mock.render(w)
     await asyncio.sleep(0)
-    assert "85% | 11.7 KiB | 12 KB/s | 03:29:12" in _render(w)
+    assert "85% | 11.7 KiB | 12 KB/s | 03:29:12" in urwid_mock.render(w)
     await asyncio.sleep(0)
-    assert "Restore has completed." in _render(w)
-    assert "Close" in _render(w)
+    assert "Restore has completed." in urwid_mock.render(w)
+    assert "Close" in urwid_mock.render(w)
 
-    _keypress(w, ["enter"])
+    urwid_mock.keypress(w, ["enter"])
     assert ovshell.screen.stub_top_activity() is None
 
 
 @pytest.mark.asyncio
 async def test_restore_cancel(ovshell: testing.OpenVarioShellStub) -> None:
+    urwid_mock = UrwidMock()
     rsync = RsyncRunnerStub()
     rsync.progress = [
         RsyncStatusLine(0, 0, "0 KB/s", "00:01:00", None),
@@ -243,24 +248,25 @@ async def test_restore_cancel(ovshell: testing.OpenVarioShellStub) -> None:
     act.activate()
 
     await asyncio.sleep(0)
-    assert "0% | 0.0 B   | 0 KB/s | 00:01:00" in _render(w)
+    assert "0% | 0.0 B   | 0 KB/s | 00:01:00" in urwid_mock.render(w)
     await asyncio.sleep(0)
 
     # press the cancel button
-    assert "Cancel" in _render(w)
-    _keypress(w, ["enter"])
+    assert "Cancel" in urwid_mock.render(w)
+    urwid_mock.keypress(w, ["enter"])
 
     await asyncio.sleep(0)
-    assert "Restore was cancelled." in _render(w)
+    assert "Restore was cancelled." in urwid_mock.render(w)
 
     # close the activity
-    assert "Close" in _render(w)
-    _keypress(w, ["enter"])
+    assert "Close" in urwid_mock.render(w)
+    urwid_mock.keypress(w, ["enter"])
     assert ovshell.screen.stub_top_activity() is None
 
 
 @pytest.mark.asyncio
 async def test_restore_failure(ovshell: testing.OpenVarioShellStub) -> None:
+    urwid_mock = UrwidMock()
     rsync = RsyncRunnerStub()
     rsync.progress = [
         RsyncStatusLine(0, 0, "0 KB/s", "00:01:00", None),
@@ -273,33 +279,14 @@ async def test_restore_failure(ovshell: testing.OpenVarioShellStub) -> None:
     act.activate()
 
     await asyncio.sleep(0)
-    assert "0% | 0.0 B   | 0 KB/s | 00:01:00" in _render(w)
+    assert "0% | 0.0 B   | 0 KB/s | 00:01:00" in urwid_mock.render(w)
     await asyncio.sleep(0)
 
     # rsync should fail at this point
-    assert "Restore has failed (error code: 255)." in _render(w)
-    assert "Expected failure" in _render(w)
+    assert "Restore has failed (error code: 255)." in urwid_mock.render(w)
+    assert "Expected failure" in urwid_mock.render(w)
 
     # close the activity
-    assert "Close" in _render(w)
-    _keypress(w, ["enter"])
+    assert "Close" in urwid_mock.render(w)
+    urwid_mock.keypress(w, ["enter"])
     assert ovshell.screen.stub_top_activity() is None
-
-
-def _render(w: urwid.Widget) -> str:
-    canvas = w.render(_get_size(w))
-    contents = [t.decode("utf-8") for t in canvas.text]
-    return "\n".join(contents)
-
-
-def _keypress(w: urwid.Widget, keys: List[str]) -> None:
-    for key in keys:
-        nothandled = w.keypress(_get_size(w), key)
-        assert nothandled is None
-
-
-def _get_size(w: urwid.Widget) -> Tuple[int, ...]:
-    size: Tuple[int, ...] = (60, 40)
-    if "flow" in w.sizing():
-        size = (60,)
-    return size

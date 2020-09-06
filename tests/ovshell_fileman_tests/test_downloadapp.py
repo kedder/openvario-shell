@@ -2,7 +2,6 @@ from typing import List, Optional
 import asyncio
 from dataclasses import dataclass
 
-import urwid
 import pytest
 
 from ovshell import testing
@@ -13,6 +12,8 @@ from ovshell_fileman.api import (
     ProgressState,
 )
 from ovshell_fileman.downloadapp import LogDownloaderActivity, LogDownloaderApp
+
+from tests.fixtures.urwid import UrwidMock
 from .stubs import AutomountWatcherStub
 
 
@@ -73,14 +74,15 @@ def test_app_start(ovshell: testing.OpenVarioShellStub) -> None:
 async def test_activity_fs_mounting(
     activity_testbed: LogDownloaderActivityTestbed,
 ) -> None:
+    urwid_mock = UrwidMock()
     w = activity_testbed.activity.create()
     activity_testbed.activity.activate()
     await asyncio.sleep(0)
-    assert "Please insert USB storage" in _render(w)
+    assert "Please insert USB storage" in urwid_mock.render(w)
     activity_testbed.mountwatcher.stub_device_in()
-    assert "Mounting USB storage..." in _render(w)
+    assert "Mounting USB storage..." in urwid_mock.render(w)
     activity_testbed.mountwatcher.stub_device_out()
-    assert "Please insert USB storage" in _render(w)
+    assert "Please insert USB storage" in urwid_mock.render(w)
 
 
 @pytest.mark.asyncio
@@ -88,6 +90,7 @@ async def test_activity_list_files(
     activity_testbed: LogDownloaderActivityTestbed,
 ) -> None:
     # GIVEN
+    urwid_mock = UrwidMock()
     activity_testbed.downloader.stub_files = [
         FileInfo("two.igc", ".igc", size=20000, mtime=0, downloaded=False)
     ]
@@ -100,7 +103,7 @@ async def test_activity_list_files(
     activity_testbed.mountwatcher.stub_mount()
 
     # WHEN
-    rendered = _render(w)
+    rendered = urwid_mock.render(w)
 
     # THEN
     assert "two.igc" in rendered
@@ -111,6 +114,7 @@ async def test_activity_unmount(
     activity_testbed: LogDownloaderActivityTestbed,
 ) -> None:
     # GIVEN
+    urwid_mock = UrwidMock()
     activity_testbed.downloader.stub_files = [
         FileInfo("two.igc", ".igc", size=20000, mtime=0, downloaded=False)
     ]
@@ -122,11 +126,11 @@ async def test_activity_unmount(
     assert activity_testbed.mountwatcher.stub_running
     activity_testbed.mountwatcher.stub_mount()
 
-    assert "two.igc" in _render(w)
+    assert "two.igc" in urwid_mock.render(w)
 
     # WHEN
     activity_testbed.mountwatcher.stub_unmount()
-    assert "Please insert USB storage" in _render(w)
+    assert "Please insert USB storage" in urwid_mock.render(w)
 
 
 @pytest.mark.asyncio
@@ -134,6 +138,7 @@ async def test_activity_change_settings(
     activity_testbed: LogDownloaderActivityTestbed,
 ) -> None:
     # GIVEN
+    urwid_mock = UrwidMock()
     # Set initial settings
     activity_testbed.ovshell.settings.set(
         "fileman.download_logs.filter", {"new": True, "igc": True, "nmea": True}
@@ -145,7 +150,7 @@ async def test_activity_change_settings(
 
     # WHEN
     # Turn off all settings
-    _keypress(w, ["enter", "right", "enter", "right", "enter"])
+    urwid_mock.keypress(w, ["enter", "right", "enter", "right", "enter"])
 
     # THEN
     filt = activity_testbed.ovshell.settings.get("fileman.download_logs.filter", dict)
@@ -157,6 +162,7 @@ async def test_activity_download(
     activity_testbed: LogDownloaderActivityTestbed,
 ) -> None:
     # GIVEN
+    urwid_mock = UrwidMock()
     activity_testbed.downloader.stub_files = [
         FileInfo("two.igc", ".igc", size=20000, mtime=0, downloaded=False)
     ]
@@ -165,17 +171,17 @@ async def test_activity_download(
     activity_testbed.mountwatcher.stub_mount()
 
     # WHEN
-    _keypress(w, ["down", "enter"])
+    urwid_mock.keypress(w, ["down", "enter"])
 
     # THEN
     await asyncio.sleep(0)
-    assert "0 %" in _render(w)
+    assert "0 %" in urwid_mock.render(w)
     await asyncio.sleep(0)
-    assert "50 %" in _render(w)
+    assert "50 %" in urwid_mock.render(w)
     await asyncio.sleep(0)
-    assert "100 %" in _render(w)
+    assert "100 %" in urwid_mock.render(w)
     await asyncio.sleep(0)
-    assert "Done" in _render(w)
+    assert "Done" in urwid_mock.render(w)
 
 
 @pytest.mark.asyncio
@@ -183,6 +189,7 @@ async def test_activity_download_error(
     activity_testbed: LogDownloaderActivityTestbed,
 ) -> None:
     # GIVEN
+    urwid_mock = UrwidMock()
     activity_testbed.downloader.stub_files = [
         FileInfo("two.igc", ".igc", size=20000, mtime=0, downloaded=False)
     ]
@@ -192,24 +199,12 @@ async def test_activity_download_error(
     activity_testbed.downloader.failing = True
 
     # WHEN
-    _keypress(w, ["down", "enter"])
+    urwid_mock.keypress(w, ["down", "enter"])
 
     # THEN
     await asyncio.sleep(0)
-    assert "0 %" in _render(w)
+    assert "0 %" in urwid_mock.render(w)
     await asyncio.sleep(0)
-    assert "50 %" in _render(w)
+    assert "50 %" in urwid_mock.render(w)
     await asyncio.sleep(0)
-    assert "Failed" in _render(w)
-
-
-def _render(w: urwid.Widget) -> str:
-    canvas = w.render((60, 40))
-    contents = [t.decode("utf-8") for t in canvas.text]
-    return "\n".join(contents)
-
-
-def _keypress(w: urwid.Widget, keys: List[str]) -> None:
-    for key in keys:
-        nothandled = w.keypress((60, 40), key)
-        assert nothandled is None
+    assert "Failed" in urwid_mock.render(w)
