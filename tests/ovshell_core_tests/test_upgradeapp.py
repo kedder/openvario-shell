@@ -1,12 +1,11 @@
 from typing import Callable, List
 import asyncio
-import mock
 
 import urwid
 import pytest
 
 from ovshell import testing
-from ovshell_core.opkg import OpkgTools, OpkgToolsImpl, UpgradablePackage
+from ovshell_core.opkg import OpkgTools, UpgradablePackage, InstalledPackage
 from ovshell_core.upgradeapp import SystemUpgradeApp, CheckForUpdatesActivity
 from ovshell_core.upgradeapp import PackageSelectionWidget
 
@@ -26,28 +25,8 @@ class OpkgToolsStub(OpkgTools):
     def stub_set_upgradables(self, upgradables: List[UpgradablePackage]) -> None:
         self._upgradables = upgradables
 
-
-def test_OpkgToolsImpl_list_upgradables(monkeypatch) -> None:
-    # GIVEN
-    subpr_mock = mock.Mock(name="subprocess")
-    monkeypatch.setattr("ovshell_core.opkg.subprocess", subpr_mock)
-    opkgtools = OpkgToolsImpl("echo")
-
-    proc_mock = mock.Mock(name="Process")
-    proc_mock.returncode = 0
-    proc_mock.stdout = (
-        b"package_one - 1.4.0-r0 - 1.6.1-r0\n" b"package_two - 0.6-r0 - 0.6-r1\n"
-    )
-    subpr_mock.run.return_value = proc_mock
-
-    # WHEN
-    upgradables = opkgtools.list_upgradables()
-
-    # THEN
-    assert upgradables == [
-        UpgradablePackage("package_one", "1.4.0-r0", "1.6.1-r0"),
-        UpgradablePackage("package_two", "0.6-r0", "0.6-r1"),
-    ]
+    async def list_installed(self) -> List[InstalledPackage]:
+        return []
 
 
 def test_app_start(ovshell: testing.OpenVarioShellStub) -> None:

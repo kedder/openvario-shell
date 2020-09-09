@@ -4,7 +4,7 @@ import urwid
 
 from ovshell import api
 from ovshell import widget
-from .opkg import OpkgTools, OpkgToolsImpl, UpgradablePackage
+from .opkg import OpkgTools, UpgradablePackage, create_opkg_tools
 
 
 class UnselectableTerminal(urwid.Terminal):
@@ -25,8 +25,7 @@ class SystemUpgradeApp(api.App):
         self.shell = shell
 
     def launch(self) -> None:
-        opkg_bin = self.shell.os.path("//usr/bin/opkg")
-        opkg_tools = OpkgToolsImpl(opkg_bin)
+        opkg_tools = create_opkg_tools(self.shell.os)
         act = CheckForUpdatesActivity(self.shell, opkg_tools)
         self.shell.screen.push_activity(act)
 

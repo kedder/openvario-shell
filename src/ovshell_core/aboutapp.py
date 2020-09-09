@@ -3,6 +3,7 @@ import urwid
 from ovshell import api
 from ovshell import widget
 from ovshell_core.sysinfo import SystemInfo, SystemInfoImpl
+from ovshell_core.opkg import create_opkg_tools
 
 OV_HOMEPAGE = "https://openvario.org/"
 OVSHELL_HOMEPAGE = "https://github.com/kedder/openvario-shell"
@@ -27,7 +28,7 @@ class AboutActivity(api.Activity):
 
     def __init__(self, shell: api.OpenVarioShell) -> None:
         self.shell = shell
-        self.sys_info = SystemInfoImpl(shell.os)
+        self.sys_info = SystemInfoImpl(shell.os, create_opkg_tools(shell.os))
 
     def create(self) -> urwid.Widget:
         header = widget.ActivityHeader("About Openvario")

@@ -1,10 +1,12 @@
+from typing import Dict, Optional
 from abc import abstractmethod
 import asyncio
 import os
 import re
-from typing import Dict, Optional, Tuple, cast
 
 from ovshell import api
+
+from .opkg import OpkgTools
 
 
 class SystemInfo:
@@ -28,8 +30,9 @@ class SystemInfo:
 class SystemInfoImpl(SystemInfo):
     _installed_pkgs: Optional[Dict[str, str]] = None
 
-    def __init__(self, ovos: api.OpenVarioOS) -> None:
+    def __init__(self, ovos: api.OpenVarioOS, opkgtools: OpkgTools) -> None:
         self.os = ovos
+        self.opkgtools = opkgtools
         self._opkg_lock = asyncio.Lock()
 
     async def get_openvario_version(self) -> Optional[str]:
@@ -46,7 +49,8 @@ class SystemInfoImpl(SystemInfo):
     async def get_installed_package_version(self, package_name: str) -> Optional[str]:
         async with self._opkg_lock:
             if self._installed_pkgs is None:
-                self._installed_pkgs = await self._read_installed_packages()
+                installed = await self.opkgtools.list_installed()
+                self._installed_pkgs = {p.name: p.version for p in installed}
         return self._installed_pkgs.get(package_name)
 
     async def get_kernel_version(self) -> Optional[str]:
@@ -55,16 +59,3 @@ class SystemInfoImpl(SystemInfo):
 
     async def get_hostname(self) -> Optional[str]:
         return os.uname().nodename
-
-    async def _read_installed_packages(self) -> Dict[str, str]:
-        proc = await self.os.run("//usr/bin/opkg", ["list-installed"])
-        pkgs = []
-        while not proc.stdout.at_eof():
-            line = await proc.stdout.readline()
-            sline = line.decode().strip()
-            parts = sline.split(" - ")
-            if len(parts) != 2:
-                continue
-            pkgs.append(cast(Tuple[str, str], tuple(parts)))
-
-        return dict(pkgs)
