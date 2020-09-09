@@ -6,7 +6,7 @@ import urwid
 import pytest
 
 from ovshell import testing
-from ovshell_core.upgradeapp import OpkgTools, OpkgToolsImpl, UpgradablePackage
+from ovshell_core.opkg import OpkgTools, OpkgToolsImpl, UpgradablePackage
 from ovshell_core.upgradeapp import SystemUpgradeApp, CheckForUpdatesActivity
 from ovshell_core.upgradeapp import PackageSelectionWidget
 
@@ -30,7 +30,7 @@ class OpkgToolsStub(OpkgTools):
 def test_OpkgToolsImpl_list_upgradables(monkeypatch) -> None:
     # GIVEN
     subpr_mock = mock.Mock(name="subprocess")
-    monkeypatch.setattr("ovshell_core.upgradeapp.subprocess", subpr_mock)
+    monkeypatch.setattr("ovshell_core.opkg.subprocess", subpr_mock)
     opkgtools = OpkgToolsImpl("echo")
 
     proc_mock = mock.Mock(name="Process")
