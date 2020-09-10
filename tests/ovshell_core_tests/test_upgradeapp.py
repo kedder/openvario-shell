@@ -19,14 +19,17 @@ class OpkgToolsStub(OpkgTools):
     def __init__(self, upgradables: List[UpgradablePackage] = None) -> None:
         self._upgradables = upgradables or []
 
-    def list_upgradables(self) -> List[UpgradablePackage]:
+    async def list_upgradables(self) -> List[UpgradablePackage]:
         return self._upgradables
+
+    async def list_installed(self) -> List[InstalledPackage]:
+        return []
 
     def stub_set_upgradables(self, upgradables: List[UpgradablePackage]) -> None:
         self._upgradables = upgradables
 
-    async def list_installed(self) -> List[InstalledPackage]:
-        return []
+    def get_opkg_binary(self) -> str:
+        return self.opkg_binary
 
 
 def test_app_start(ovshell: testing.OpenVarioShellStub) -> None:
@@ -72,8 +75,8 @@ async def test_activity_no_updates(ovshell: testing.OpenVarioShellStub) -> None:
     assert "Checking for updates..." in view
 
     # Fourth render renders the finished command
-    # await asyncio.sleep(0.1)
     view = urwid_mock.render(wdg)
+    await ovshell.screen.stub_wait_for_tasks(act)
     view = urwid_mock.render(wdg)
     assert "No updates found" in view
 

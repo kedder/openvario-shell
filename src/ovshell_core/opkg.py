@@ -1,7 +1,6 @@
 from typing import List
 from abc import abstractmethod
 from dataclasses import dataclass
-import subprocess
 
 from ovshell.api import OpenVarioOS
 
@@ -20,15 +19,17 @@ class InstalledPackage:
 
 
 class OpkgTools:
-    opkg_binary: str
-
     @abstractmethod
-    def list_upgradables(self) -> List[UpgradablePackage]:
+    async def list_upgradables(self) -> List[UpgradablePackage]:
         """Return list of upgradable packages"""
 
     @abstractmethod
     async def list_installed(self) -> List[InstalledPackage]:
         """Return list of all installed packages"""
+
+    @abstractmethod
+    def get_opkg_binary(self) -> str:
+        """Return the absolute path to opkg binary"""
 
 
 class OpkgToolsImpl(OpkgTools):
@@ -36,15 +37,12 @@ class OpkgToolsImpl(OpkgTools):
         self.ovos = ovos
         self.opkg_binary = opkg_binary
 
-    def list_upgradables(self) -> List[UpgradablePackage]:
-        opkgbin = self.ovos.path(self.opkg_binary)
-        proc = subprocess.run([opkgbin, "list-upgradable"], capture_output=True)
-        if proc.returncode != 0:
-            return []
-
-        blines = proc.stdout.split(b"\n")
+    async def list_upgradables(self) -> List[UpgradablePackage]:
+        proc = await self.ovos.run(self.opkg_binary, ["list-upgradable"])
         upgradables = []
-        for bline in blines:
+        while not proc.stdout.at_eof():
+            bline = await proc.stdout.readline()
+
             line = bline.decode().strip()
             items = line.split(" - ")
             if len(items) != 3:
@@ -52,6 +50,11 @@ class OpkgToolsImpl(OpkgTools):
                 continue
             pkgname, old_version, new_version = items
             upgradables.append(UpgradablePackage(pkgname, old_version, new_version))
+
+        returncode = await proc.wait()
+        if returncode != 0:
+            return []
+
         return upgradables
 
     async def list_installed(self) -> List[InstalledPackage]:
@@ -66,6 +69,9 @@ class OpkgToolsImpl(OpkgTools):
             pkgs.append(InstalledPackage(name=parts[0], version=parts[1]))
 
         return pkgs
+
+    def get_opkg_binary(self) -> str:
+        return self.ovos.path(self.opkg_binary)
 
 
 def create_opkg_tools(ovos: OpenVarioOS) -> OpkgTools:
