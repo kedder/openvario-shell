@@ -70,14 +70,14 @@ of free options for Windows as well.
 don't have it yet, install with:
 
 ```sh
-pip install pipenv
+pip install pipenv  # or pip3 if you don't have "pip"
 ```
 
 After checking out the sources, `cd` to `openvario-shell` directory and run:
 
 ```sh
 pipenv shell
-pipenv install
+pipenv sync --dev
 ```
 
 After that, your development environment is ready, you should be able to run
