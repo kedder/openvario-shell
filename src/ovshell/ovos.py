@@ -51,10 +51,10 @@ class OpenVarioOSImpl(api.OpenVarioOS):
 
     def shut_down(self) -> None:
         self.sync()
-        subprocess.run(["halt"])
+        subprocess.run(["systemctl", "poweroff"])
 
     def restart(self) -> None:
-        subprocess.run(["reboot"])
+        subprocess.run(["systemctl", "reboot"])
 
 
 class OpenVarioOSSimulator(OpenVarioOSImpl):
