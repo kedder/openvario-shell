@@ -1,4 +1,4 @@
-all: test
+all: black test mypy
 
 ctags:
 	ctags -R `pipenv --venv` src
