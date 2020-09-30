@@ -1,5 +1,6 @@
 from typing import List
 from abc import abstractmethod
+from typing_extensions import Protocol
 
 from dataclasses import dataclass
 
@@ -26,13 +27,13 @@ class ConnmanService:
     type: str
 
 
-class ConnmanManager:
+class ConnmanManager(Protocol):
     @abstractmethod
     async def get_technologies(self) -> List[ConnmanTechnology]:
         pass
 
     @abstractmethod
-    async def list_services(self) -> List[ConnmanService]:
+    async def get_services(self) -> List[ConnmanService]:
         pass
 
     @abstractmethod

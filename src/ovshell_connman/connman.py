@@ -7,7 +7,7 @@ from dbus_next.aio import MessageBus
 from .api import ConnmanManager, ConnmanService, ConnmanTechnology
 
 
-class ConnmanManagerImpl:
+class ConnmanManagerImpl(ConnmanManager):
     _iface: Optional[BaseProxyInterface] = None
 
     def __init__(self) -> None:
@@ -40,4 +40,23 @@ class ConnmanManagerImpl:
                 )
             )
 
+        return res
+
+    async def get_services(self) -> List[ConnmanService]:
+        iface = await self._get_manager_iface()
+        svcs = await iface.call_get_services()
+        res = []
+        for path, svc in svcs:
+            res.append(
+                ConnmanService(
+                    path=path,
+                    auto_connect=svc["AutoConnect"].value,
+                    favorite=svc["Favorite"].value,
+                    name=svc["Name"].value,
+                    security=svc["Security"].value,
+                    state=svc["State"].value,
+                    strength=svc["Strength"].value,
+                    type=svc["Type"].value,
+                )
+            )
         return res
