@@ -4,6 +4,11 @@ import sys
 import os
 import subprocess
 
+from dbus_next.constants import BusType
+from dbus_next.aio import MessageBus
+from dbus_next.auth import AuthAnnonymous
+from dbus_next.errors import AuthError
+
 from ovshell import api
 
 
@@ -24,6 +29,8 @@ class OSProcessImpl(api.OSProcess):
 
 
 class OpenVarioOSImpl(api.OpenVarioOS):
+    _dbus: MessageBus = None
+
     def mount_boot(self) -> None:
         subprocess.run(["mount", "/dev/mmcblk0p1", "/boot"], check=True)
 
@@ -45,6 +52,20 @@ class OpenVarioOSImpl(api.OpenVarioOS):
             limit=200,
         )
         return OSProcessImpl(proc)
+
+    async def get_system_bus(self) -> MessageBus:
+        if self._dbus is not None:
+            return self._dbus
+
+        try:
+            bus = await MessageBus(bus_type=BusType.SYSTEM).connect()
+        except AuthError:
+            # Fallback to anonymous connection
+            bus = await MessageBus(
+                bus_type=BusType.SYSTEM, auth=AuthAnnonymous()
+            ).connect()
+        self._dbus = bus
+        return bus
 
     def sync(self) -> None:
         os.sync()

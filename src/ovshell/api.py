@@ -22,6 +22,8 @@ from contextlib import contextmanager
 import asyncio
 
 import urwid
+from dbus_next.message_bus import BaseMessageBus
+
 
 UrwidText = Union[str, Tuple[str, str], List[Union[str, Tuple[str, str]]]]
 BasicType = Union[int, str, float]
@@ -479,6 +481,10 @@ class OpenVarioOS(Protocol):
     @abstractmethod
     def restart(self) -> None:
         """Perform a system reboot"""
+
+    @abstractmethod
+    async def get_system_bus(self) -> BaseMessageBus:
+        """Return sysmtem DBUS object"""
 
 
 class Extension(Protocol):

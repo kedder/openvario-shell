@@ -12,9 +12,11 @@ from typing import (
 )
 import os
 import asyncio
+from unittest import mock
 from dataclasses import dataclass
 from contextlib import contextmanager
 import urwid
+from dbus_next.message_bus import BaseMessageBus
 
 from ovshell import api
 
@@ -247,6 +249,9 @@ class OpenVarioOSStub(api.OpenVarioOS):
         self._stub_run_returncode = result
         self._stub_run_stdout = stdout
         self._stub_run_stderr = stderr
+
+    async def get_system_bus(self) -> BaseMessageBus:
+        return mock.Mock(BaseMessageBus)
 
 
 class NMEAStreamStub(api.NMEAStream):
