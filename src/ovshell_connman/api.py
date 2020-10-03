@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict, Any, Optional
 from abc import abstractmethod
 from typing_extensions import Protocol
 
@@ -41,5 +41,30 @@ class ConnmanManager(Protocol):
         pass
 
     @abstractmethod
+    async def get_service(self, path: str) -> Optional[ConnmanService]:
+        pass
+
+    @abstractmethod
     async def scan_all(self) -> None:
+        pass
+
+
+class ConnmanAgent(Protocol):
+    """Interface for connman agent
+
+    See https://git.kernel.org/pub/scm/network/connman/connman.git/tree/doc/agent-api.txt
+    """
+
+    @abstractmethod
+    def report_error(self, service: ConnmanService, error: str) -> None:
+        pass
+
+    @abstractmethod
+    async def request_input(
+        self, service: ConnmanService, fields: Dict[str, Dict[str, str]]
+    ) -> Dict[str, Any]:
+        pass
+
+    @abstractmethod
+    def cancel(self) -> None:
         pass
