@@ -1,8 +1,17 @@
 from typing import List, Dict, Any, Optional, Sequence
+import enum
 from abc import abstractmethod
 from typing_extensions import Protocol
 
 from dataclasses import dataclass
+
+
+class ConnmanState(enum.Enum):
+    UNKNOWN = "unknown"
+    OFFLINE = "offline"
+    IDLE = "idle"
+    READY = "ready"
+    ONLINE = "online"
 
 
 @dataclass
@@ -44,6 +53,10 @@ class ConnmanManager(Protocol):
 
     @abstractmethod
     async def scan_all(self) -> None:
+        pass
+
+    @abstractmethod
+    def get_state(self) -> ConnmanState:
         pass
 
 

@@ -1,10 +1,10 @@
-from typing import Optional, List, Any, Dict, Sequence, Tuple
+from typing import Optional, List, Any, Dict, Tuple
 
 from dbus_next import Variant
 from dbus_next.message_bus import BaseMessageBus
 from dbus_next.proxy_object import BaseProxyInterface
 
-from .api import ConnmanManager, ConnmanService, ConnmanTechnology
+from .api import ConnmanManager, ConnmanService, ConnmanTechnology, ConnmanState
 from .agent import ConnmanAgentImpl
 from .agentiface import ConnmanAgentInterface
 
@@ -12,11 +12,13 @@ from .agentiface import ConnmanAgentInterface
 class ConnmanManagerImpl(ConnmanManager):
     technologies: List[ConnmanTechnology]
     services: List[ConnmanService]
+    _manager_props: Dict[str, Variant]
 
     def __init__(self, bus: BaseMessageBus) -> None:
         self._bus = bus
         self.technologies = []
         self.services = []
+        self._manager_props = {}
 
     async def setup(self) -> None:
         introspection = await self._bus.introspect("net.connman", "/")
@@ -25,6 +27,7 @@ class ConnmanManagerImpl(ConnmanManager):
 
         await self._register_agent(iface)
         self._subscribe_events(iface)
+        self._manager_props = await self._fetch_properties(iface)
         self.technologies = await self._fetch_technologies(iface)
         self.services = await self._fetch_services(iface)
 
@@ -43,6 +46,12 @@ class ConnmanManagerImpl(ConnmanManager):
 
     async def scan_all(self) -> None:
         pass
+
+    def get_state(self) -> ConnmanState:
+        if "State" not in self._manager_props:
+            return ConnmanState.UNKNOWN
+        state = self._manager_props["State"]
+        return ConnmanState(state.value)
 
     def _subscribe_events(self, iface: BaseProxyInterface):
         iface.on_property_changed(self._notify_property_changed)
@@ -66,6 +75,9 @@ class ConnmanManagerImpl(ConnmanManager):
             res.append(ConnmanTechnology(path, **props))
 
         return res
+
+    async def _fetch_properties(self, iface: BaseProxyInterface) -> Dict[str, Variant]:
+        return await iface.call_get_properties()
 
     def _convert_tech_props(self, props: Dict[str, Variant]) -> Dict[str, Any]:
         propmap = {
@@ -97,6 +109,7 @@ class ConnmanManagerImpl(ConnmanManager):
         return {pp: props[dp].value for dp, pp in propmap.items() if dp in props}
 
     def _notify_property_changed(self, name: str, value: Variant) -> None:
+        self._manager_props[name] = value
         print("PROP CANGED", name, value)
 
     def _notify_servics_changed(
