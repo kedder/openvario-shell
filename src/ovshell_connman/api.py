@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Sequence
 from abc import abstractmethod
 from typing_extensions import Protocol
 
@@ -12,7 +12,6 @@ class ConnmanTechnology:
     type: str
     connected: bool
     powered: bool
-    tethering: bool
 
 
 @dataclass
@@ -28,12 +27,11 @@ class ConnmanService:
 
 
 class ConnmanManager(Protocol):
-    @abstractmethod
-    async def get_technologies(self) -> List[ConnmanTechnology]:
-        pass
+    technologies: Sequence[ConnmanTechnology]
+    services: Sequence[ConnmanService]
 
     @abstractmethod
-    async def get_services(self) -> List[ConnmanService]:
+    async def setup(self) -> None:
         pass
 
     @abstractmethod

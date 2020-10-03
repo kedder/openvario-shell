@@ -1,5 +1,6 @@
-from typing import Optional, List
+from typing import Optional, List, Any, Dict, Sequence, Tuple
 
+from dbus_next import Variant
 from dbus_next.message_bus import BaseMessageBus
 from dbus_next.proxy_object import BaseProxyInterface
 
@@ -9,71 +10,26 @@ from .agentiface import ConnmanAgentInterface
 
 
 class ConnmanManagerImpl(ConnmanManager):
-    _iface: Optional[BaseProxyInterface] = None
+    technologies: List[ConnmanTechnology]
+    services: List[ConnmanService]
 
     def __init__(self, bus: BaseMessageBus) -> None:
         self._bus = bus
+        self.technologies = []
+        self.services = []
 
-    async def _get_manager_iface(self) -> BaseProxyInterface:
-        if self._iface is not None:
-            return self._iface
-
+    async def setup(self) -> None:
         introspection = await self._bus.introspect("net.connman", "/")
-
         proxy = self._bus.get_proxy_object("net.connman", "/", introspection)
         iface = proxy.get_interface("net.connman.Manager")
-        self._mgr_iface = iface
-        return iface
 
-    async def register_agent(self) -> None:
-        agent = ConnmanAgentImpl()
-        agent_iface = ConnmanAgentInterface(self, agent)
-        self._bus.export("/org/ovshell/connman", agent_iface)
-
-        mgr = await self._get_manager_iface()
-        await mgr.call_register_agent("/org/ovshell/connman")
-
-    async def get_technologies(self) -> List[ConnmanTechnology]:
-        iface = await self._get_manager_iface()
-        techs = await iface.call_get_technologies()
-        res = []
-        for path, tech in techs:
-            res.append(
-                ConnmanTechnology(
-                    path=path,
-                    name=tech["Name"].value,
-                    type=tech["Type"].value,
-                    connected=tech["Type"].value,
-                    powered=tech["Powered"].value,
-                    tethering=tech["Tethering"].value,
-                )
-            )
-
-        return res
-
-    async def get_services(self) -> List[ConnmanService]:
-        iface = await self._get_manager_iface()
-        svcs = await iface.call_get_services()
-        res = []
-        for path, svc in svcs:
-            res.append(
-                ConnmanService(
-                    path=path,
-                    auto_connect=svc["AutoConnect"].value,
-                    favorite=svc["Favorite"].value,
-                    name=svc["Name"].value,
-                    security=svc["Security"].value,
-                    state=svc["State"].value,
-                    strength=svc["Strength"].value,
-                    type=svc["Type"].value,
-                )
-            )
-        return res
+        await self._register_agent(iface)
+        self._subscribe_events(iface)
+        self.technologies = await self._fetch_technologies(iface)
+        self.services = await self._fetch_services(iface)
 
     async def get_service(self, path: str) -> Optional[ConnmanService]:
-        svcs = await self.get_services()
-
-        filtered = [svc for svc in svcs if svc.path == path]
+        filtered = [svc for svc in self.services if svc.path == path]
         if not filtered:
             return None
         assert len(filtered) == 1
@@ -87,3 +43,87 @@ class ConnmanManagerImpl(ConnmanManager):
 
     async def scan_all(self) -> None:
         pass
+
+    def _subscribe_events(self, iface: BaseProxyInterface):
+        iface.on_property_changed(self._notify_property_changed)
+        iface.on_services_changed(self._notify_servics_changed)
+        iface.on_technology_added(self._notify_tech_added)
+        iface.on_technology_removed(self._notify_tech_removed)
+
+    async def _register_agent(self, iface: BaseProxyInterface) -> None:
+        agent = ConnmanAgentImpl()
+        agent_iface = ConnmanAgentInterface(self, agent)
+        self._bus.export("/org/ovshell/connman", agent_iface)
+        await iface.call_register_agent("/org/ovshell/connman")
+
+    async def _fetch_technologies(
+        self, iface: BaseProxyInterface
+    ) -> List[ConnmanTechnology]:
+        techs = await iface.call_get_technologies()
+        res = []
+        for path, tech in techs:
+            props = self._convert_tech_props(tech)
+            res.append(ConnmanTechnology(path, **props))
+
+        return res
+
+    def _convert_tech_props(self, props: Dict[str, Variant]) -> Dict[str, Any]:
+        propmap = {
+            "Name": "name",
+            "Type": "type",
+            "Connected": "connected",
+            "Powered": "powered",
+        }
+        return {pp: props[dp].value for dp, pp in propmap.items() if dp in props}
+
+    async def _fetch_services(self, iface: BaseProxyInterface) -> List[ConnmanService]:
+        svcs = await iface.call_get_services()
+        res = []
+        for path, svc in svcs:
+            props = self._convert_service_props(svc)
+            res.append(ConnmanService(path, **props))
+        return res
+
+    def _convert_service_props(self, props: Dict[str, Variant]) -> Dict[str, Any]:
+        propmap = {
+            "AutoConnect": "auto_connect",
+            "Favorite": "favorite",
+            "Name": "name",
+            "Security": "security",
+            "State": "state",
+            "Strength": "strength",
+            "Type": "type",
+        }
+        return {pp: props[dp].value for dp, pp in propmap.items() if dp in props}
+
+    def _notify_property_changed(self, name: str, value: Variant) -> None:
+        print("PROP CANGED", name, value)
+
+    def _notify_servics_changed(
+        self, changed: List[Tuple[str, Dict[str, Variant]]], removed: List[str]
+    ):
+        svcmap = {svc.path: svc for svc in self.services}
+
+        # Update props
+        for path, dbusprops in changed:
+            svc = svcmap.get(path)
+            props = self._convert_service_props(dbusprops)
+            if svc is None:
+                svc = ConnmanService(path, **props)
+                svcmap[path] = svc
+            else:
+                svc.__dict__.update(props)
+
+        # Change order. This will also remove any removed services
+        self.services = [svcmap[path] for path, _ in changed]
+
+        print("New svcs:", self.services)
+
+    def _notify_tech_added(self, path: str, props: Dict[str, Any]) -> None:
+        tech = ConnmanTechnology(path, **self._convert_tech_props(props))
+        self.technologies.append(tech)
+        print("Tech added", tech)
+
+    def _notify_tech_removed(self, path: str) -> None:
+        self.technologies = [t for t in self.technologies if t.path != path]
+        print("Tech removed", path)
