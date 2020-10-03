@@ -28,7 +28,13 @@ setup(
     package_dir={"": "src"},
     packages=find_packages(where="src"),  # Required
     python_requires=">=3.7, <4",
-    install_requires=["urwid", "pyserial", "pyserial-asyncio", "typing-extensions"],
+    install_requires=[
+        "urwid",
+        "dbus-next",
+        "pyserial",
+        "pyserial-asyncio",
+        "typing-extensions",
+    ],
     extras_require={
         "dev": ["black", "mypy"],
         "test": ["pytest", "pytest-coverage", "pytest-asyncio", "pytest-mock"],
