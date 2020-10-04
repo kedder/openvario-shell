@@ -10,3 +10,4 @@ htmlcov
 .mypy_cache
 mypy-reports
 var
+build
