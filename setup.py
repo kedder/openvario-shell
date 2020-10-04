@@ -47,6 +47,7 @@ setup(
             "core=ovshell_core:extension",
             "xcsoar=ovshell_xcsoar:extension",
             "fileman=ovshell_fileman:extension",
+            "connman=ovshell_connman:extension",
         ],
     },
     project_urls={},
