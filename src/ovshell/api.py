@@ -441,6 +441,10 @@ class OSProcess(Protocol):
         """Wait for process to finish, return return code"""
 
 
+class DBusNotAvailableException(Exception):
+    pass
+
+
 class OpenVarioOS(Protocol):
     """Operating system abstractions
 
@@ -484,7 +488,10 @@ class OpenVarioOS(Protocol):
 
     @abstractmethod
     async def get_system_bus(self) -> BaseMessageBus:
-        """Return sysmtem DBUS object"""
+        """Return system DBUS object
+
+        May raise DBusNotAvailableError.
+        """
 
 
 class Extension(Protocol):

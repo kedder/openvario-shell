@@ -58,12 +58,15 @@ class OpenVarioOSImpl(api.OpenVarioOS):
             return self._dbus
 
         try:
-            bus = await MessageBus(bus_type=BusType.SYSTEM).connect()
-        except AuthError:
-            # Fallback to anonymous connection
-            bus = await MessageBus(
-                bus_type=BusType.SYSTEM, auth=AuthAnnonymous()
-            ).connect()
+            try:
+                bus = await MessageBus(bus_type=BusType.SYSTEM).connect()
+            except AuthError:
+                # Fallback to anonymous connection
+                bus = await MessageBus(
+                    bus_type=BusType.SYSTEM, auth=AuthAnnonymous()
+                ).connect()
+        except OSError as e:
+            raise api.DBusNotAvailableException() from e
         self._dbus = bus
         return bus
 
