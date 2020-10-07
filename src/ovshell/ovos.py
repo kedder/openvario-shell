@@ -31,6 +31,9 @@ class OSProcessImpl(api.OSProcess):
 class OpenVarioOSImpl(api.OpenVarioOS):
     _dbus: MessageBus = None
 
+    def __init__(self) -> None:
+        self._dbus_connect_lock = asyncio.Lock()
+
     def mount_boot(self) -> None:
         subprocess.run(["mount", "/dev/mmcblk0p1", "/boot"], check=True)
 
@@ -57,17 +60,19 @@ class OpenVarioOSImpl(api.OpenVarioOS):
         if self._dbus is not None:
             return self._dbus
 
-        try:
+        async with self._dbus_connect_lock:
             try:
-                bus = await MessageBus(bus_type=BusType.SYSTEM).connect()
-            except AuthError:
-                # Fallback to anonymous connection
-                bus = await MessageBus(
-                    bus_type=BusType.SYSTEM, auth=AuthAnnonymous()
-                ).connect()
-        except OSError as e:
-            raise api.DBusNotAvailableException() from e
-        self._dbus = bus
+                try:
+                    bus = await MessageBus(bus_type=BusType.SYSTEM).connect()
+                except AuthError:
+                    # Fallback to anonymous connection
+                    bus = await MessageBus(
+                        bus_type=BusType.SYSTEM, auth=AuthAnnonymous()
+                    ).connect()
+            except OSError as e:
+                raise api.DBusNotAvailableException() from e
+            self._dbus = bus
+
         return bus
 
     def sync(self) -> None:
