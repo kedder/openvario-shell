@@ -23,3 +23,8 @@ def test_unpack_variants() -> None:
 
     inp = Variant("aav", [[Variant("s", "foo"), Variant("u", 5)]])
     assert unpack_variants(inp) == [["foo", 5]]
+
+
+def test_unpack_variants_explicit() -> None:
+    inp = {"one": Variant("i", 1)}
+    assert unpack_variants(inp, "a{sv}") == {"one": 1}

@@ -59,6 +59,7 @@ class ConnmanManagerActivity(api.Activity):
                 ("pack", urwid.Text("Technologies")),
                 ("pack", self._tech_grid),
                 ("pack", urwid.Text("Connections")),
+                ("pack", self._make_scan_button()),
                 urwid.ListBox(self._svc_walker),
             ]
         )
@@ -72,6 +73,14 @@ class ConnmanManagerActivity(api.Activity):
         self.manager.on_technologies_changed(self._handle_techs_changed)
         self.manager.on_services_changed(self._handle_svcs_changed)
         self.shell.screen.spawn_task(self, self.manager.setup())
+
+    def _make_scan_button(self) -> urwid.Widget:
+        btn = widget.PlainButton("Scan")
+        urwid.connect_signal(btn, "click", self._handle_scan)
+        return btn
+
+    def _handle_scan(self, w: urwid.Widget) -> None:
+        self.shell.screen.spawn_task(self, self.manager.scan_all())
 
     def _handle_techs_changed(self) -> None:
         contents = []
@@ -99,4 +108,11 @@ class ConnmanManagerActivity(api.Activity):
                 # ("weight", 1, urwid.Text(svc.type)),
             ]
         )
-        return widget.SelectableItem(cols)
+        item = widget.SelectableItem(cols)
+        urwid.connect_signal(
+            item, "click", self._handle_service_clicked, user_args=[svc]
+        )
+        return item
+
+    def _handle_service_clicked(self, svc: ConnmanService, w: urwid.Widget) -> None:
+        self.shell.screen.spawn_task(self, self.manager.connect(svc))

@@ -1,10 +1,12 @@
 from typing import Any, Union
 
+from dbus_next.message_bus import BaseMessageBus
 from dbus_next.service import ServiceInterface, method
 from dbus_next.signature import SignatureType
 from dbus_next import Variant, DBusError
 
-from .api import ConnmanAgent, ConnmanManager
+from . import model
+from .api import ConnmanAgent, Canceled
 
 
 class ConnmanAgentInterface(ServiceInterface):
@@ -13,10 +15,17 @@ class ConnmanAgentInterface(ServiceInterface):
     See https://git.kernel.org/pub/scm/network/connman/connman.git/tree/doc/agent-api.txt
     """
 
-    def __init__(self, manager: ConnmanManager, impl: ConnmanAgent) -> None:
+    def __init__(self, impl: ConnmanAgent, bus: BaseMessageBus) -> None:
         super().__init__("net.connman.Agent")
-        self._manager = manager
+        self._bus = bus
         self._impl = impl
+
+    async def register(self) -> None:
+        introspection = await self._bus.introspect("net.connman", "/")
+        proxy = self._bus.get_proxy_object("net.connman", "/", introspection)
+        iface = proxy.get_interface("net.connman.Manager")
+        self._bus.export("/org/ovshell/connman", self)
+        await iface.call_register_agent("/org/ovshell/connman")
 
     @method("Release")
     def release(self):
@@ -93,17 +102,20 @@ class ConnmanAgentInterface(ServiceInterface):
         Possible Errors: net.connman.Agent.Error.Canceled
                  net.connman.Agent.Error.LaunchBrowser
         """
-        print("REQUEST INPUT", service, self._drop_variants(fields))
-        svc = await self._manager.get_service(service)
-        if svc is None:
-            raise DBusError(
-                "net.connman.Agent.Error.Canceled", f"Cannot find service {service}"
-            )
 
-        plain_fields = unpack_variants(fields, SignatureType("a{sv}"))
-        res = await self._impl.request_input(svc, plain_fields)
-        raise DBusError("net.connman.Agent.Error.Canceled", f"Not implemented")
+        # Fetch the service properties
+        introspection = await self._bus.introspect("net.connman", service)
+        proxy = self._bus.get_proxy_object("net.connman", service, introspection)
+        iface = proxy.get_interface("net.connman.Service")
+        props = await iface.call_get_properties()
+        svc = model.create_service_from_props(service, props)
 
+        plain_fields = unpack_variants(fields, "a{sv}")
+        print("REQUEST INPUT", svc, plain_fields)
+        try:
+            res = await self._impl.request_input(svc, plain_fields)
+        except Canceled as e:
+            raise DBusError("net.connman.Agent.Error.Canceled", str(e))
         return res
 
     @method("RequestPeerAuthorization")

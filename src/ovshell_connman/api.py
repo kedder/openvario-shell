@@ -48,10 +48,6 @@ class ConnmanManager(Protocol):
         pass
 
     @abstractmethod
-    async def get_service(self, path: str) -> Optional[ConnmanService]:
-        pass
-
-    @abstractmethod
     def on_technologies_changed(self, handler: Callable[[], None]) -> None:
         pass
 
@@ -66,6 +62,10 @@ class ConnmanManager(Protocol):
     @abstractmethod
     def get_state(self) -> ConnmanState:
         pass
+
+
+class Canceled(Exception):
+    pass
 
 
 class ConnmanAgent(Protocol):
