@@ -6,7 +6,7 @@ import urwid
 
 from ovshell import api
 from ovshell import widget
-from ovshell_connman.api import ConnmanManager
+from ovshell_connman.api import ConnmanManager, ConnmanService
 from ovshell_connman.manager import ConnmanManagerImpl
 
 
@@ -49,7 +49,19 @@ class ConnmanManagerActivity(api.Activity):
         self.manager = manager
 
     def create(self) -> urwid.Widget:
-        view = urwid.SolidFill("*")
+        # view = urwid.SolidFill("*")
+
+        self._svc_walker = urwid.SimpleFocusListWalker([urwid.Text("ONE")])
+        self._tech_grid = urwid.GridFlow([], 25, 1, 1, "left")
+
+        view = urwid.Pile(
+            [
+                ("pack", urwid.Text("Technologies")),
+                ("pack", self._tech_grid),
+                ("pack", urwid.Text("Connections")),
+                urwid.ListBox(self._svc_walker),
+            ]
+        )
 
         self.frame = urwid.Frame(
             view, header=widget.ActivityHeader("Network connections")
@@ -57,5 +69,34 @@ class ConnmanManagerActivity(api.Activity):
         return self.frame
 
     def activate(self) -> None:
-        # self.shell.screen.spawn_task(self, self.mountwatcher.run())
-        pass
+        self.manager.on_technologies_changed(self._handle_techs_changed)
+        self.manager.on_services_changed(self._handle_svcs_changed)
+        self.shell.screen.spawn_task(self, self.manager.setup())
+
+    def _handle_techs_changed(self) -> None:
+        contents = []
+        for tech in self.manager.technologies:
+            cb = urwid.CheckBox(tech.name, state=tech.powered)
+            contents.append((cb, (urwid.GIVEN, 25)))
+
+        self._tech_grid.contents = contents
+
+    def _handle_svcs_changed(self) -> None:
+        contents = []
+        for svc in self.manager.services:
+            contents.append(self._make_service_row(svc))
+
+        del self._svc_walker[:]
+        self._svc_walker.extend(contents)
+        self._svc_walker.set_focus(0)
+
+    def _make_service_row(self, svc: ConnmanService) -> urwid.Widget:
+        cols = urwid.Columns(
+            [
+                ("fixed", 2, urwid.Text("*" if svc.favorite else " ")),
+                ("weight", 2, urwid.Text(svc.name)),
+                ("weight", 1, urwid.Text(str(svc.strength))),
+                # ("weight", 1, urwid.Text(svc.type)),
+            ]
+        )
+        return widget.SelectableItem(cols)

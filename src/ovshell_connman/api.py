@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Optional, Sequence
+from typing import List, Dict, Any, Optional, Sequence, Callable
 import enum
 from abc import abstractmethod
 from typing_extensions import Protocol
@@ -49,6 +49,14 @@ class ConnmanManager(Protocol):
 
     @abstractmethod
     async def get_service(self, path: str) -> Optional[ConnmanService]:
+        pass
+
+    @abstractmethod
+    def on_technologies_changed(self, handler: Callable[[], None]) -> None:
+        pass
+
+    @abstractmethod
+    def on_services_changed(self, handler: Callable[[], None]) -> None:
         pass
 
     @abstractmethod

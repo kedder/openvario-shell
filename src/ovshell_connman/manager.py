@@ -1,4 +1,4 @@
-from typing import Optional, List, Any, Dict, Tuple
+from typing import Optional, List, Any, Dict, Tuple, Callable
 
 from dbus_next import Variant
 from dbus_next.message_bus import BaseMessageBus
@@ -14,11 +14,16 @@ class ConnmanManagerImpl(ConnmanManager):
     services: List[ConnmanService]
     _manager_props: Dict[str, Variant]
 
+    _tech_change_handlers: List[Callable[[], None]]
+    _svc_change_handlers: List[Callable[[], None]]
+
     def __init__(self, bus: BaseMessageBus) -> None:
         self._bus = bus
         self.technologies = []
         self.services = []
         self._manager_props = {}
+        self._tech_change_handlers = []
+        self._svc_change_handlers = []
 
     async def setup(self) -> None:
         introspection = await self._bus.introspect("net.connman", "/")
@@ -30,6 +35,9 @@ class ConnmanManagerImpl(ConnmanManager):
         self._manager_props = await self._fetch_properties(iface)
         self.technologies = await self._fetch_technologies(iface)
         self.services = await self._fetch_services(iface)
+
+        self._fire_tech_changed()
+        self._fire_svc_changed()
 
     async def get_service(self, path: str) -> Optional[ConnmanService]:
         filtered = [svc for svc in self.services if svc.path == path]
@@ -52,6 +60,12 @@ class ConnmanManagerImpl(ConnmanManager):
             return ConnmanState.UNKNOWN
         state = self._manager_props["State"]
         return ConnmanState(state.value)
+
+    def on_technologies_changed(self, handler: Callable[[], None]) -> None:
+        self._tech_change_handlers.append(handler)
+
+    def on_services_changed(self, handler: Callable[[], None]) -> None:
+        self._svc_change_handlers.append(handler)
 
     def _subscribe_events(self, iface: BaseProxyInterface):
         iface.on_property_changed(self._notify_property_changed)
@@ -110,7 +124,6 @@ class ConnmanManagerImpl(ConnmanManager):
 
     def _notify_property_changed(self, name: str, value: Variant) -> None:
         self._manager_props[name] = value
-        print("PROP CANGED", name, value)
 
     def _notify_servics_changed(
         self, changed: List[Tuple[str, Dict[str, Variant]]], removed: List[str]
@@ -129,14 +142,21 @@ class ConnmanManagerImpl(ConnmanManager):
 
         # Change order. This will also remove any removed services
         self.services = [svcmap[path] for path, _ in changed]
-
-        print("New svcs:", self.services)
+        self._fire_svc_changed()
 
     def _notify_tech_added(self, path: str, props: Dict[str, Any]) -> None:
         tech = ConnmanTechnology(path, **self._convert_tech_props(props))
         self.technologies.append(tech)
-        print("Tech added", tech)
+        self._fire_tech_changed()
 
     def _notify_tech_removed(self, path: str) -> None:
         self.technologies = [t for t in self.technologies if t.path != path]
-        print("Tech removed", path)
+        self._fire_tech_changed()
+
+    def _fire_tech_changed(self) -> None:
+        for h in self._tech_change_handlers:
+            h()
+
+    def _fire_svc_changed(self) -> None:
+        for h in self._svc_change_handlers:
+            h()
