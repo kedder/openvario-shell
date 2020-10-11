@@ -1,3 +1,5 @@
+from typing import Optional
+
 import urwid
 
 NORMAL_ATTR_MAP = {None: "bg"}
@@ -29,6 +31,23 @@ class SelectableListItem(urwid.Button):
 
     def _btnclicked(self, btn):
         self._emit("selected")
+
+
+class SelectableItem(urwid.WidgetWrap):
+    signals = ["click"]
+
+    def __init__(self, widget: urwid.Widget) -> None:
+        wdg = urwid.AttrMap(widget, "li normal", "li focus")
+        super().__init__(wdg)
+
+    def selectable(self):
+        return True
+
+    def keypress(self, size, key: str) -> Optional[str]:
+        if self._command_map[key] == "activate":
+            self._emit("click")
+            return None
+        return key
 
 
 class ActivityHeader(urwid.WidgetWrap):

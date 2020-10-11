@@ -145,7 +145,7 @@ class LogDownloaderActivity(api.Activity):
                 ("weight", 1, statusw),
             ]
         )
-        w = SelectableItem(cols)
+        w = widget.SelectableItem(cols)
 
         urwid.connect_signal(
             w, "click", self._file_clicked, user_args=[fileinfo, statusw]
@@ -184,20 +184,3 @@ class LogDownloaderActivity(api.Activity):
             return
 
         statusw.original_widget = urwid.Text(("success banner", " Done "))
-
-
-class SelectableItem(urwid.WidgetWrap):
-    signals = ["click"]
-
-    def __init__(self, widget: urwid.Widget) -> None:
-        wdg = urwid.AttrMap(widget, "li normal", "li focus")
-        super().__init__(wdg)
-
-    def selectable(self):
-        return True
-
-    def keypress(self, size, key: str) -> Optional[str]:
-        if self._command_map[key] == "activate":
-            self._emit("click")
-            return None
-        return key
