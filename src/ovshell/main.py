@@ -68,6 +68,7 @@ def run(argv) -> None:
 
     palette = [
         ("text", "white", "black", ""),
+        ("edit", "black", "yellow", ""),
         ("btn focus", "white", "dark red", ""),
         ("btn normal", "white", "dark blue", ""),
         ("li normal", "light cyan", "black", ""),
