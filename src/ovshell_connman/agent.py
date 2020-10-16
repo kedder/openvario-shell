@@ -22,7 +22,7 @@ class ConnmanAgentImpl(ConnmanAgent):
         # {'Passphrase': {'Type': 'psk', 'Requirement': 'mandatory'}}
         # {'Passphrase': {'Type': 'psk', 'Requirement': 'mandatory', 'Alternates': ['WPS']}, 'WPS': {'Type': 'wpspin', 'Requirement': 'alternate'}}
 
-        act = ConnmanInputActivity(service, fields)
+        act = ConnmanInputActivity(self.screen, service, fields)
         modal_opts = api.ModalOptions(
             align="center",
             width=("relative", 60),
@@ -31,10 +31,7 @@ class ConnmanAgentImpl(ConnmanAgent):
             min_width=54,
         )
         self.screen.push_modal(act, modal_opts)
-        try:
-            result = await act.done
-        finally:
-            self.screen.pop_activity()
+        result = await act.done
         return result
 
     def cancel(self) -> None:
@@ -44,7 +41,13 @@ class ConnmanAgentImpl(ConnmanAgent):
 class ConnmanInputActivity(api.Activity):
     content: Dict[str, Any]
 
-    def __init__(self, service: ConnmanService, fields: Dict[str, Dict[str, Any]]):
+    def __init__(
+        self,
+        screen: api.ScreenManager,
+        service: ConnmanService,
+        fields: Dict[str, Dict[str, Any]],
+    ):
+        self.screen = screen
         self.service = service
         self.fields = fields
         self.content = {name: None for name, _ in fields.items()}
@@ -88,6 +91,8 @@ class ConnmanInputActivity(api.Activity):
 
     def _handle_confirm(self, w: urwid.Widget) -> None:
         self.done.set_result(self.content)
+        self.screen.pop_activity()
 
     def _handle_cancel(self, w: urwid.Widget) -> None:
         self.done.set_exception(Canceled())
+        self.screen.pop_activity()

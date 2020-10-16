@@ -103,8 +103,9 @@ class ConnmanManagerActivity(api.Activity):
         cols = urwid.Columns(
             [
                 ("fixed", 2, urwid.Text("*" if svc.favorite else " ")),
-                ("weight", 2, urwid.Text(svc.name)),
+                ("weight", 3, urwid.Text(svc.name)),
                 ("weight", 1, urwid.Text(str(svc.strength))),
+                # ("weight", 1, urwid.Text(str(svc.state))),
                 # ("weight", 1, urwid.Text(svc.type)),
             ]
         )
@@ -115,4 +116,12 @@ class ConnmanManagerActivity(api.Activity):
         return item
 
     def _handle_service_clicked(self, svc: ConnmanService, w: urwid.Widget) -> None:
-        self.shell.screen.spawn_task(self, self.manager.connect(svc))
+        self.shell.screen.spawn_task(self, self._connect(svc))
+
+    async def _connect(self, svc: ConnmanService) -> None:
+        dlg = self.shell.screen.push_dialog(svc.name, urwid.Text("Connecting..."))
+        dlg.no_buttons()
+        try:
+            await self.manager.connect(svc)
+        finally:
+            self.shell.screen.pop_activity()
