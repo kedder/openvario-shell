@@ -1,4 +1,5 @@
-from typing import Optional
+from typing import Optional, Awaitable
+import asyncio
 
 import urwid
 
@@ -98,3 +99,35 @@ class KeySignals(urwid.WidgetWrap):
     def selectable(self):
         # We need this widget to be selectable in order to receive keypresses
         return True
+
+
+class Waiting(urwid.WidgetWrap):
+    def __init__(self, size) -> None:
+        self.size = size
+        self.text = urwid.Text(" " * size)
+        super().__init__(urwid.AttrMap(self.text, "progress"))
+
+    def start_waiting_for(self, awaitable: Awaitable[object]) -> None:
+        asyncio.create_task(self.wait_for(awaitable))
+
+    async def wait_for(self, awaitable: Awaitable[object]) -> None:
+        waiting_task = asyncio.create_task(self.show_wait())
+        try:
+            await awaitable
+        finally:
+            waiting_task.cancel()
+
+    async def show_wait(self) -> None:
+        size = self.size
+        forward = True
+        while True:
+            for n in range(size - 1):
+                s = [" "] * size
+                s[n if forward else size - 1 - n] = "*"
+                self.text.set_text("".join(s))
+                try:
+                    await asyncio.sleep(0.2)
+                finally:
+                    # We're canceled
+                    self.text.set_text(" " * size)
+            forward = not forward

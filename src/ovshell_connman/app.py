@@ -77,10 +77,12 @@ class ConnmanManagerActivity(api.Activity):
     def _make_scan_button(self) -> urwid.Widget:
         btn = widget.PlainButton("Scan")
         urwid.connect_signal(btn, "click", self._handle_scan)
-        return btn
+        self.scan_waiting = widget.Waiting(6)
+        return urwid.Columns([(8, btn), ("pack", self.scan_waiting)], dividechars=1)
 
     def _handle_scan(self, w: urwid.Widget) -> None:
-        self.shell.screen.spawn_task(self, self.manager.scan_all())
+        task = self.shell.screen.spawn_task(self, self.manager.scan_all())
+        self.scan_waiting.start_waiting_for(task)
 
     def _handle_techs_changed(self) -> None:
         contents = []
