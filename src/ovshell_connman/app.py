@@ -44,9 +44,12 @@ class ConnmanManagerApp(api.App):
 
 
 class ConnmanManagerActivity(api.Activity):
+    _conn_waits: Dict[str, widget.Waiting]
+
     def __init__(self, shell: api.OpenVarioShell, manager: ConnmanManager) -> None:
         self.shell = shell
         self.manager = manager
+        self._conn_waits = {}
 
     def create(self) -> urwid.Widget:
         # view = urwid.SolidFill("*")
@@ -102,10 +105,13 @@ class ConnmanManagerActivity(api.Activity):
         self._svc_walker.set_focus(0)
 
     def _make_service_row(self, svc: ConnmanService) -> urwid.Widget:
+        waiting = self._conn_waits.setdefault(svc.path, widget.Waiting(4))
+
         cols = urwid.Columns(
             [
                 ("fixed", 2, urwid.Text("*" if svc.favorite else " ")),
                 ("weight", 3, urwid.Text(svc.name)),
+                ("fixed", 4, waiting),
                 ("weight", 1, urwid.Text(str(svc.strength))),
                 # ("weight", 1, urwid.Text(str(svc.state))),
                 # ("weight", 1, urwid.Text(svc.type)),
@@ -121,9 +127,11 @@ class ConnmanManagerActivity(api.Activity):
         self.shell.screen.spawn_task(self, self._connect(svc))
 
     async def _connect(self, svc: ConnmanService) -> None:
-        dlg = self.shell.screen.push_dialog(svc.name, urwid.Text("Connecting..."))
-        dlg.no_buttons()
-        try:
-            await self.manager.connect(svc)
-        finally:
-            self.shell.screen.pop_activity()
+        waiting = self._conn_waits[svc.path]
+        await waiting.wait_for(self.manager.connect(svc))
+        # dlg = self.shell.screen.push_dialog(svc.name, urwid.Text("Connecting..."))
+        # dlg.no_buttons()
+        # try:
+        #     await self.manager.connect(svc)
+        # finally:
+        #     self.shell.screen.pop_activity()

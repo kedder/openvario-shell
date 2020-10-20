@@ -104,20 +104,28 @@ class KeySignals(urwid.WidgetWrap):
 class Waiting(urwid.WidgetWrap):
     def __init__(self, size) -> None:
         self.size = size
-        self.text = urwid.Text(" " * size)
-        super().__init__(urwid.AttrMap(self.text, "progress"))
+        # self.text = urwid.Text(" " * size)
+        self.text = urwid.Text("")
+        super().__init__(self.text)
 
     def start_waiting_for(self, awaitable: Awaitable[object]) -> None:
         asyncio.create_task(self.wait_for(awaitable))
 
-    async def wait_for(self, awaitable: Awaitable[object]) -> None:
+    async def wait_for(self, awaitable: Awaitable[object]) -> object:
         waiting_task = asyncio.create_task(self.show_wait())
         try:
-            await awaitable
+            return await awaitable
         finally:
             waiting_task.cancel()
 
     async def show_wait(self) -> None:
+        self._w = urwid.AttrMap(self.text, "progress")
+        try:
+            return await self._run_show_wait()
+        finally:
+            self._w = self.text
+
+    async def _run_show_wait(self) -> None:
         size = self.size
         forward = True
         while True:
