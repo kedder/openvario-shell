@@ -1,5 +1,4 @@
-from typing import Optional, Dict
-import os
+from typing import Dict
 import asyncio
 
 import urwid
@@ -121,7 +120,7 @@ class ConnmanManagerActivity(api.Activity):
         urwid.connect_signal(
             item, "click", self._handle_service_clicked, user_args=[svc]
         )
-        return item
+        return urwid.AttrMap(item, {}, {"progress": "li focus"})
 
     def _handle_service_clicked(self, svc: ConnmanService, w: urwid.Widget) -> None:
         self.shell.screen.spawn_task(self, self._connect(svc))
@@ -129,9 +128,3 @@ class ConnmanManagerActivity(api.Activity):
     async def _connect(self, svc: ConnmanService) -> None:
         waiting = self._conn_waits[svc.path]
         await waiting.wait_for(self.manager.connect(svc))
-        # dlg = self.shell.screen.push_dialog(svc.name, urwid.Text("Connecting..."))
-        # dlg.no_buttons()
-        # try:
-        #     await self.manager.connect(svc)
-        # finally:
-        #     self.shell.screen.pop_activity()
