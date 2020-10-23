@@ -116,7 +116,8 @@ class ConnmanAgentInterface(ServiceInterface):
             res = await self._impl.request_input(svc, plain_fields)
         except Canceled as e:
             raise DBusError("net.connman.Agent.Error.Canceled", str(e))
-        return res
+        varres = {k: Variant("s", v) for k, v in res.items()}
+        return varres
 
     @method("RequestPeerAuthorization")
     def request_peer_authorization(self, peer: "o", fields: "a{sv}") -> "a{sv}":  # type: ignore
