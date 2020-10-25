@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Callable, Awaitable
 import asyncio
 
 import urwid
@@ -43,12 +43,12 @@ class ConnmanManagerApp(api.App):
 
 
 class ConnmanManagerActivity(api.Activity):
-    _conn_waits: Dict[str, widget.Waiting]
+    _svc_waits: Dict[str, widget.Waiting]
 
     def __init__(self, shell: api.OpenVarioShell, manager: ConnmanManager) -> None:
         self.shell = shell
         self.manager = manager
-        self._conn_waits = {}
+        self._svc_waits = {}
 
     def create(self) -> urwid.Widget:
         # view = urwid.SolidFill("*")
@@ -104,7 +104,7 @@ class ConnmanManagerActivity(api.Activity):
         self._svc_walker.set_focus(0)
 
     def _make_service_row(self, svc: ConnmanService) -> urwid.Widget:
-        waiting = self._conn_waits.setdefault(svc.path, widget.Waiting(4))
+        waiting = self._svc_waits.setdefault(svc.path, widget.Waiting(4))
 
         cols = urwid.Columns(
             [
@@ -112,7 +112,7 @@ class ConnmanManagerActivity(api.Activity):
                 ("weight", 3, urwid.Text(svc.name)),
                 ("fixed", 4, waiting),
                 ("weight", 1, urwid.Text(str(svc.strength))),
-                # ("weight", 1, urwid.Text(str(svc.state))),
+                ("weight", 1, urwid.Text(str(svc.state))),
                 # ("weight", 1, urwid.Text(svc.type)),
             ]
         )
@@ -123,8 +123,47 @@ class ConnmanManagerActivity(api.Activity):
         return urwid.AttrMap(item, {}, {"progress": "li focus"})
 
     def _handle_service_clicked(self, svc: ConnmanService, w: urwid.Widget) -> None:
-        self.shell.screen.spawn_task(self, self._connect(svc))
+        # Find what actions we can perform with this service
+        actions = []
+        can_connect = False
+        if svc.state == "idle":
+            can_connect = True
+            actions.append(("Connect", self._connect))
+
+        if svc.favorite:
+            actions.append(("Forget", self._forget))
+
+        if svc.state in ("online", "ready"):
+            actions.append(("Disconnect", self._disconnect))
+
+        if can_connect and len(actions) == 1:
+            # The only action we can do here is to connect, just do that
+            # immediately.
+            self.shell.screen.spawn_task(self, self._connect(svc))
+            return
+
+        dialog = self.shell.screen.push_dialog(
+            svc.name, urwid.Text("Available actions:")
+        )
+        for label, action in actions:
+
+            def handler(
+                a: Callable[[ConnmanService], Awaitable[None]] = action,
+                s: ConnmanService = svc,
+            ) -> bool:
+                self.shell.screen.spawn_task(self, action(s))
+                return True
+
+            dialog.add_button(label, handler)
 
     async def _connect(self, svc: ConnmanService) -> None:
-        waiting = self._conn_waits[svc.path]
+        waiting = self._svc_waits[svc.path]
         await waiting.wait_for(self.manager.connect(svc))
+
+    async def _forget(self, svc: ConnmanService) -> None:
+        waiting = self._svc_waits[svc.path]
+        await waiting.wait_for(self.manager.remove(svc))
+
+    async def _disconnect(self, svc: ConnmanService) -> None:
+        waiting = self._svc_waits[svc.path]
+        await waiting.wait_for(self.manager.disconnect(svc))

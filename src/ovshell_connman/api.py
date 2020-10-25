@@ -48,6 +48,14 @@ class ConnmanManager(Protocol):
         pass
 
     @abstractmethod
+    async def remove(self, service: ConnmanService) -> None:
+        pass
+
+    @abstractmethod
+    async def disconnect(self, service: ConnmanService) -> None:
+        pass
+
+    @abstractmethod
     def on_technologies_changed(self, handler: Callable[[], None]) -> None:
         pass
 

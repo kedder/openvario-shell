@@ -44,6 +44,18 @@ class ConnmanManagerImpl(ConnmanManager):
         iface = proxy.get_interface("net.connman.Service")
         await iface.call_connect()
 
+    async def remove(self, service: ConnmanService) -> None:
+        introspection = await self._bus.introspect("net.connman", service.path)
+        proxy = self._bus.get_proxy_object("net.connman", service.path, introspection)
+        iface = proxy.get_interface("net.connman.Service")
+        await iface.call_remove()
+
+    async def disconnect(self, service: ConnmanService) -> None:
+        introspection = await self._bus.introspect("net.connman", service.path)
+        proxy = self._bus.get_proxy_object("net.connman", service.path, introspection)
+        iface = proxy.get_interface("net.connman.Service")
+        await iface.call_disconnect()
+
     async def scan_all(self) -> None:
         ifaces = []
         for tech in self.technologies:
