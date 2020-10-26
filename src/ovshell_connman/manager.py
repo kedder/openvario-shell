@@ -1,4 +1,4 @@
-from typing import Optional, List, Any, Dict, Tuple, Callable
+from typing import List, Any, Dict, Tuple, Callable
 import asyncio
 
 from dbus_next import Variant
@@ -7,6 +7,27 @@ from dbus_next.proxy_object import BaseProxyInterface
 
 from .api import ConnmanManager, ConnmanService, ConnmanTechnology, ConnmanState
 from . import model
+
+
+class ConnmanServiceProxy:
+    def __init__(self, svc: ConnmanService, bus: BaseMessageBus) -> None:
+        self._bus = bus
+        self._svc = svc
+
+    async def connect(self) -> None:
+        return await (await self._get_service_iface()).call_connect()
+
+    async def remove(self) -> None:
+        return await (await self._get_service_iface()).call_remove()
+
+    async def disconnect(self) -> None:
+        return await (await self._get_service_iface()).call_disconnect()
+
+    async def _get_service_iface(self) -> BaseProxyInterface:
+        introspection = await self._bus.introspect("net.connman", self._svc.path)
+        proxy = self._bus.get_proxy_object("net.connman", self._svc.path, introspection)
+        iface = proxy.get_interface("net.connman.Service")
+        return iface
 
 
 class ConnmanManagerImpl(ConnmanManager):
@@ -39,22 +60,13 @@ class ConnmanManagerImpl(ConnmanManager):
         self._fire_svc_changed()
 
     async def connect(self, service: ConnmanService) -> None:
-        introspection = await self._bus.introspect("net.connman", service.path)
-        proxy = self._bus.get_proxy_object("net.connman", service.path, introspection)
-        iface = proxy.get_interface("net.connman.Service")
-        await iface.call_connect()
+        return await ConnmanServiceProxy(service, self._bus).connect()
 
     async def remove(self, service: ConnmanService) -> None:
-        introspection = await self._bus.introspect("net.connman", service.path)
-        proxy = self._bus.get_proxy_object("net.connman", service.path, introspection)
-        iface = proxy.get_interface("net.connman.Service")
-        await iface.call_remove()
+        return await ConnmanServiceProxy(service, self._bus).remove()
 
     async def disconnect(self, service: ConnmanService) -> None:
-        introspection = await self._bus.introspect("net.connman", service.path)
-        proxy = self._bus.get_proxy_object("net.connman", service.path, introspection)
-        iface = proxy.get_interface("net.connman.Service")
-        await iface.call_disconnect()
+        return await ConnmanServiceProxy(service, self._bus).disconnect()
 
     async def scan_all(self) -> None:
         ifaces = []
