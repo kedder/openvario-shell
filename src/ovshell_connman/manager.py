@@ -30,6 +30,28 @@ class ConnmanServiceProxy:
         return iface
 
 
+class ConnmanTechnologyProxy:
+    def __init__(self, tech: ConnmanTechnology, bus: BaseMessageBus) -> None:
+        self._bus = bus
+        self._tech = tech
+
+    async def set_property(self, prop: str, value: Variant) -> None:
+        iface = await self._get_tech_iface()
+        return await iface.call_set_property(prop, value)
+
+    async def scan(self) -> None:
+        iface = await self._get_tech_iface()
+        return await iface.call_scan()
+
+    async def _get_tech_iface(self) -> BaseProxyInterface:
+        introspection = await self._bus.introspect("net.connman", self._tech.path)
+        proxy = self._bus.get_proxy_object(
+            "net.connman", self._tech.path, introspection
+        )
+        iface = proxy.get_interface("net.connman.Technology")
+        return iface
+
+
 class ConnmanManagerImpl(ConnmanManager):
     technologies: List[ConnmanTechnology]
     services: List[ConnmanService]
@@ -73,11 +95,9 @@ class ConnmanManagerImpl(ConnmanManager):
         for tech in self.technologies:
             if tech.type != "wifi":
                 continue
-            introspection = await self._bus.introspect("net.connman", tech.path)
-            proxy = self._bus.get_proxy_object("net.connman", tech.path, introspection)
-            ifaces.append(proxy.get_interface("net.connman.Technology"))
+            ifaces.append(ConnmanTechnologyProxy(tech, self._bus))
 
-        await asyncio.wait([iface.call_scan() for iface in ifaces])
+        await asyncio.wait([iface.scan() for iface in ifaces])
 
     def get_state(self) -> ConnmanState:
         if "State" not in self._manager_props:
