@@ -90,6 +90,10 @@ class ConnmanManagerImpl(ConnmanManager):
     async def disconnect(self, service: ConnmanService) -> None:
         return await ConnmanServiceProxy(service, self._bus).disconnect()
 
+    async def power(self, tech: ConnmanTechnology, on: bool) -> None:
+        proxy = ConnmanTechnologyProxy(tech, self._bus)
+        await proxy.set_property("Powered", Variant("b", on))
+
     async def scan_all(self) -> None:
         ifaces = []
         for tech in self.technologies:

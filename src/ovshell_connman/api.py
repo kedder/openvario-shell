@@ -56,6 +56,10 @@ class ConnmanManager(Protocol):
         pass
 
     @abstractmethod
+    async def power(self, tech: ConnmanTechnology, on: bool) -> None:
+        pass
+
+    @abstractmethod
     def on_technologies_changed(self, handler: Callable[[], None]) -> None:
         pass
 

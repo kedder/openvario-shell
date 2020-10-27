@@ -5,7 +5,7 @@ import urwid
 
 from ovshell import api
 from ovshell import widget
-from ovshell_connman.api import ConnmanManager, ConnmanService
+from ovshell_connman.api import ConnmanManager, ConnmanService, ConnmanTechnology
 from ovshell_connman.manager import ConnmanManagerImpl
 
 
@@ -90,9 +90,17 @@ class ConnmanManagerActivity(api.Activity):
         contents = []
         for tech in self.manager.technologies:
             cb = urwid.CheckBox(tech.name, state=tech.powered)
+            urwid.connect_signal(
+                cb, "change", self._handle_tech_power, user_args=[tech]
+            )
             contents.append((cb, (urwid.GIVEN, 25)))
 
         self._tech_grid.contents = contents
+
+    def _handle_tech_power(
+        self, tech: ConnmanTechnology, cb: urwid.CheckBox, state: bool
+    ) -> None:
+        self.shell.screen.spawn_task(self, self.manager.power(tech, state))
 
     def _handle_svcs_changed(self) -> None:
         contents = []
