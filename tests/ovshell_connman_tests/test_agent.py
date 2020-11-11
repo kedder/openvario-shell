@@ -5,6 +5,7 @@ import pytest
 from ovshell import testing
 from ovshell_connman.agent import ConnmanAgentImpl, ConnmanInputActivity
 from ovshell_connman.api import ConnmanService
+from tests.fixtures.urwid import UrwidMock
 
 
 class TestConnmanAgentImpl:
@@ -36,3 +37,39 @@ class TestConnmanAgentImpl:
         # Make sure task request_input returns
         res = await task
         assert res == {}
+
+
+class TestConnmanInputActivity:
+    @pytest.fixture(autouse=True)
+    def setup_service(self) -> None:
+        self.service = ConnmanService(
+            path="/path",
+            auto_connect=True,
+            favorite=True,
+            name="Sample Service",
+            security=["WPS"],
+            state="on",
+            strength=84,
+            type="wifi",
+        )
+
+    @pytest.mark.asyncio
+    async def test_password_input(self, ovshell: testing.OpenVarioShellStub) -> None:
+        urwid_mock = UrwidMock()
+        fields = {"Passphrase": {"Type": "psk", "Requirement": "mandatory"}}
+        act = ConnmanInputActivity(ovshell.screen, self.service, fields)
+        ovshell.screen.push_activity(act)
+
+        wdg = act.create()
+        rendered = urwid_mock.render(wdg)
+
+        assert "Sample Service" in rendered
+        assert "Passphrase" in rendered
+        assert "Confirm" in rendered
+
+        # Enter a password
+        urwid_mock.keypress(wdg, ["5", "e", "c", "r", "e", "t"])
+        urwid_mock.keypress(wdg, ["down", "enter"])
+
+        res = await act.done
+        assert res == {"Passphrase": "5ecret"}
