@@ -1,0 +1,69 @@
+from typing import List, Tuple, Dict
+
+import pytest
+from dbus_next import Variant
+
+from ovshell import testing
+from ovshell_connman.manager import ConnmanManagerImpl
+
+
+BusProps = Dict[str, Variant]
+BusObjList = List[Tuple[str, BusProps]]
+
+
+class NetConnmanManagerStub:
+    __technologies: BusObjList
+    __services: BusObjList
+    __properties: BusProps
+
+    def __init__(self) -> None:
+        self.__technologies = []
+        self.__services = []
+        self.__properties = {}
+
+    async def get_properties(self) -> BusProps:
+        return self.__properties
+
+    async def get_technologies(self) -> BusObjList:
+        return self.__technologies
+
+    async def get_services(self) -> BusObjList:
+        return self.__services
+
+    def stub_set_technologies(self, techs: BusObjList) -> None:
+        self.__technologies = techs
+
+    def stub_set_services(self, services: BusObjList) -> None:
+        self.__services = services
+
+    def stub_set_properties(self, properties: BusProps) -> None:
+        self.__properties = properties
+
+
+class TestConnmanManagerImpl:
+    @pytest.mark.asyncio
+    async def test_setup(self, ovshell: testing.OpenVarioShellStub) -> None:
+        # GIVEN
+        bus = ovshell.os.stub_connect_bus()
+        net_connman_manager = NetConnmanManagerStub()
+        net_connman_manager.stub_set_technologies(
+            [
+                (
+                    "/path1",
+                    {
+                        "Name": Variant("s", "One"),
+                        "Type": Variant("s", "wifi"),
+                        "Connected": Variant("b", False),
+                        "Powered": Variant("b", False),
+                    },
+                )
+            ]
+        )
+        bus.stub_register_interface("/", "net.connman.Manager", net_connman_manager)
+        mgr = ConnmanManagerImpl(await ovshell.os.get_system_bus())
+
+        # WHEN
+        await mgr.setup()
+
+        # THEN
+        assert len(mgr.technologies) == 1
