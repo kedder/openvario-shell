@@ -9,10 +9,10 @@ from typing import (
     Coroutine,
     Generator,
     Callable,
+    Any,
 )
 import os
 import asyncio
-from unittest import mock
 from dataclasses import dataclass
 from contextlib import contextmanager
 import urwid
@@ -206,10 +206,83 @@ class OSPRocessStub(api.OSProcess):
         return self._returncode
 
 
+class MessageBusIntrospectionStub:
+    def __init__(self, bus_name: str, path: str) -> None:
+        self.bus_name = bus_name
+        self.path = path
+
+
+class MessageBusProxyInterfaceStub:
+    def __init__(self, name: str, impl: Any) -> None:
+        self.__name = name
+        self.__impl = impl
+
+    def __getattr__(self, name: str) -> Any:
+        if name.startswith("on_"):
+            return self.__get_register_handler(name)
+        if name.startswith("call_"):
+            return self.__get_call_handler(name)
+
+    def __get_register_handler(self, name: str) -> Callable:
+        def register_handler(handler):
+            pass
+
+        return register_handler
+
+    def __get_call_handler(self, name: str) -> Callable:
+        async def call_method(*args, **kwargs):
+            meth = getattr(self.__impl, name[5:])
+            return await meth(*args, **kwargs)
+
+        return call_method
+
+
+class MessageBusProxyObjectStub:
+    def __init__(
+        self,
+        bus_name: str,
+        path: str,
+        introspection: MessageBusIntrospectionStub,
+        impls: Dict[str, Any],
+    ) -> None:
+        self.__bus_name = bus_name
+        self.__path = path
+        self.__introspection = introspection
+        self.__impls = impls
+
+    def get_interface(self, name: str) -> MessageBusProxyInterfaceStub:
+        return MessageBusProxyInterfaceStub(name, self.__impls[name])
+
+
+class MessageBusStub:
+    _impls: Dict[str, Dict[str, Any]]
+
+    def __init__(self) -> None:
+        self._impls = {}
+        pass
+
+    async def introspect(
+        self, bus_name: str, path: str, timeout: float = 30.0
+    ) -> MessageBusIntrospectionStub:
+        return MessageBusIntrospectionStub(bus_name, path)
+
+    def get_proxy_object(
+        self, bus_name: str, path: str, introspection: MessageBusIntrospectionStub
+    ) -> MessageBusProxyObjectStub:
+        return MessageBusProxyObjectStub(
+            bus_name, path, introspection, self._impls.get(path, {})
+        )
+
+    def stub_register_interface(self, path: str, iface_name: str, impl: Any) -> None:
+        ifaces = self._impls.setdefault(path, {})
+        ifaces[iface_name] = impl
+
+
 class OpenVarioOSStub(api.OpenVarioOS):
     _stub_run_returncode: int = 0
     _stub_run_stdout: bytes = b""
     _stub_run_stderr: bytes = b""
+    _stub_bus: Optional[MessageBusStub] = None
 
     def __init__(self, log: List[str], rootfs: str) -> None:
         self._log = log
@@ -251,7 +324,11 @@ class OpenVarioOSStub(api.OpenVarioOS):
         self._stub_run_stderr = stderr
 
     async def get_system_bus(self) -> BaseMessageBus:
-        return mock.Mock(BaseMessageBus)
+        return self._stub_bus
+
+    def stub_connect_bus(self) -> MessageBusStub:
+        self._stub_bus = MessageBusStub()
+        return self._stub_bus
 
 
 class NMEAStreamStub(api.NMEAStream):
