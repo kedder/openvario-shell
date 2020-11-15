@@ -94,14 +94,17 @@ class ConnmanManagerImpl(ConnmanManager):
         proxy = ConnmanTechnologyProxy(tech, self._bus)
         await proxy.set_property("Powered", Variant("b", on))
 
-    async def scan_all(self) -> None:
+    async def scan_all(self) -> int:
         ifaces = []
         for tech in self.technologies:
             if tech.type != "wifi":
                 continue
             ifaces.append(ConnmanTechnologyProxy(tech, self._bus))
 
-        await asyncio.wait([iface.scan() for iface in ifaces])
+        (done, pending) = await asyncio.wait(
+            [iface.scan() for iface in ifaces], return_when=asyncio.ALL_COMPLETED
+        )
+        return len([res.result for res in done])
 
     def get_state(self) -> ConnmanState:
         if "State" not in self._manager_props:

@@ -40,6 +40,16 @@ class NetConnmanManagerStub:
         self.__properties = properties
 
 
+class NetConnmanTechnologyStub:
+    scan_called: int = 0
+
+    def __init__(self) -> None:
+        pass
+
+    async def scan(self) -> None:
+        self.scan_called += 1
+
+
 class TestConnmanManagerImpl:
     @pytest.mark.asyncio
     async def test_setup(self, ovshell: testing.OpenVarioShellStub) -> None:
@@ -67,3 +77,50 @@ class TestConnmanManagerImpl:
 
         # THEN
         assert len(mgr.technologies) == 1
+
+    @pytest.mark.asyncio
+    async def test_scan_all(self, ovshell: testing.OpenVarioShellStub) -> None:
+        # GIVEN
+        bus = ovshell.os.stub_connect_bus()
+        net_connman_manager = NetConnmanManagerStub()
+
+        net_connman_manager.stub_set_technologies(
+            [
+                (
+                    "/eth",
+                    {
+                        "Name": Variant("s", "Ethernet"),
+                        "Type": Variant("s", "ethernet"),
+                        "Connected": Variant("b", False),
+                        "Powered": Variant("b", False),
+                    },
+                ),
+                (
+                    "/wifi",
+                    {
+                        "Name": Variant("s", "Wifi"),
+                        "Type": Variant("s", "wifi"),
+                        "Connected": Variant("b", False),
+                        "Powered": Variant("b", False),
+                    },
+                ),
+            ]
+        )
+
+        net_connman_tech = NetConnmanTechnologyStub()
+
+        bus.stub_register_interface("/", "net.connman.Manager", net_connman_manager)
+        bus.stub_register_interface("/wifi", "net.connman.Technology", net_connman_tech)
+        mgr = ConnmanManagerImpl(await ovshell.os.get_system_bus())
+        await mgr.setup()
+
+        # WHEN
+        assert len(mgr.technologies) > 0
+        scanned = await mgr.scan_all()
+
+        # THEN
+        assert scanned == 1  # only wifi is scanned
+        assert net_connman_tech.scan_called == 1
+
+    async def _setup_manager(self, ovshell: testing.OpenVarioShellStub) -> None:
+        pass

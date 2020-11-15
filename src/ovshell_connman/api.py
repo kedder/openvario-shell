@@ -68,7 +68,7 @@ class ConnmanManager(Protocol):
         pass
 
     @abstractmethod
-    async def scan_all(self) -> None:
+    async def scan_all(self) -> int:
         pass
 
     @abstractmethod
