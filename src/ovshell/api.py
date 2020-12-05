@@ -421,6 +421,10 @@ class ScreenManager(Protocol):
         """
 
     @abstractmethod
+    def set_status(self, text: UrwidText) -> None:
+        """Set status message."""
+
+    @abstractmethod
     def spawn_task(self, activity: Activity, coro: Coroutine) -> asyncio.Task:
         """Spawn a task for the activity.
 

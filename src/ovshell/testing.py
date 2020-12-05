@@ -87,6 +87,7 @@ class ScreenManagerStub(api.ScreenManager):
     _tasks: List[Tuple[api.Activity, asyncio.Task]]
     _dialog: Optional[DialogStub]
     _indicators: Dict[str, TopIndicatorStub]
+    _status: Optional[api.UrwidText]
 
     def __init__(self, log: List[str]) -> None:
         self._log = log
@@ -94,6 +95,7 @@ class ScreenManagerStub(api.ScreenManager):
         self._tasks = []
         self._dialog = None
         self._indicators = {}
+        self._status = None
 
     def draw(self) -> None:
         self._log.append("Screen redrawn")
@@ -133,6 +135,9 @@ class ScreenManagerStub(api.ScreenManager):
         task.add_done_callback(self._task_done)
         return task
 
+    def set_status(self, text: api.UrwidText) -> None:
+        self._status = text
+
     def _task_done(self, task: asyncio.Task) -> None:
         if task.cancelled():
             return
@@ -161,6 +166,9 @@ class ScreenManagerStub(api.ScreenManager):
 
     def stub_list_indicators(self) -> List[TopIndicatorStub]:
         return list(self._indicators.values())
+
+    def stub_get_status(self) -> Optional[api.UrwidText]:
+        return self._status
 
 
 class StoredSettingsStub(api.StoredSettings):
