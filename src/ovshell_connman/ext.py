@@ -23,6 +23,11 @@ class ConnmanExtension(api.Extension):
 
 async def start_connman_agent(shell: api.OpenVarioShell) -> None:
     agent = ConnmanAgentImpl(shell.screen)
-    bus = await shell.os.get_system_bus()
+    try:
+        bus = await shell.os.get_system_bus()
+    except api.DBusNotAvailableException:
+        # Cannot connect to dbus, ignore
+        shell.screen.set_status(("error message", "Cannot connect to D-BUS service"))
+        return
     iface = ConnmanAgentInterface(agent, bus)
     await iface.register()
