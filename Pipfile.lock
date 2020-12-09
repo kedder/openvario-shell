@@ -16,11 +16,11 @@
     "default": {
         "dbus-next": {
             "hashes": [
-                "sha256:05d7add7c6e6b5ecd1f81689a600c1cf8a5d0ea4e293e79c0f4c3ff2346b513c",
-                "sha256:4b2b42ce627ad8f41cd576977e60a6e5168e57248f084dc42a023cd4cdc04c68"
+                "sha256:7127b484d30606b0daaa5ce481873c57e651bbe6df0949ceb39f7addbca0086b",
+                "sha256:f656a3d3450b670f228248ffb1c3a703a69c4a8cb10cce63b108f17c8bd6c3de"
             ],
             "index": "pypi",
-            "version": "==0.2.1"
+            "version": "==0.2.2"
         },
         "importlib-metadata": {
             "hashes": [
