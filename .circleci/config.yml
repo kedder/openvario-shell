@@ -1,0 +1,45 @@
+version: 2.1
+
+orbs:
+  python: circleci/python@1.3.2
+
+jobs:
+  build-and-test:
+    parameters:
+      python_ver:
+        type: string
+    executor:
+      name: python/default
+      tag: << parameters.python_ver >>
+    steps:
+      - checkout
+      - restore_cache:
+          key: pipenv-<< parameters.python_ver >>-{{ checksum "Pipfile.lock" }}
+      - run:
+          name: Install dependencies
+          command: |
+            pip install pipenv coveralls[yaml]
+            pipenv install --dev
+      - save_cache:
+          key: pipenv-<< parameters.python_ver >>-{{ checksum "Pipfile.lock" }}
+          paths:
+            - /home/circleci/.local/share/
+      - run:
+          name: Test
+          command: |
+             pipenv run pytest --cov=ovshell --cov=ovshell_core --cov=ovshell_xcsoar --cov=ovshell_fileman --cov=ovshell_connman --cov-report=term tests
+             pipenv run black --check setup.py src tests
+             pipenv run mypy src tests
+      - run:
+          name: Generate reports
+          when: on_success
+          command: |
+            coveralls
+
+workflows:
+  main:
+    jobs:
+      - build-and-test:
+          matrix:
+            parameters:
+              python_ver: ["3.7", "3.8", "3.9"]
