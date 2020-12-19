@@ -1,4 +1,5 @@
 from typing import List
+import os
 from pathlib import Path
 
 import mock
@@ -54,8 +55,12 @@ def test_list_logs_filtering(tmp_path: Path) -> None:
     # GIVEN
     srcdir = tmp_path / "source"
     srcdir.mkdir()
-    srcdir.joinpath("one.igc").touch()
-    srcdir.joinpath("two.igc").touch()
+    oneigc = srcdir.joinpath("one.igc")
+    oneigc.touch()
+    os.utime(oneigc, (100000, 100000))
+    twoigc = srcdir.joinpath("two.igc")
+    twoigc.touch()
+    os.utime(twoigc, (101000, 101000))
 
     tgtdir = tmp_path / "target"
     tgtdir.joinpath("openvario", "igc").mkdir(parents=True)
