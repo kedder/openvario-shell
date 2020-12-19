@@ -1,6 +1,6 @@
 # Main Menu Shell for Openvario
 
-[![Build Status](https://travis-ci.com/kedder/openvario-shell.svg?branch=master)](https://travis-ci.com/kedder/openvario-shell)
+[![Build Status](https://circleci.com/gh/kedder/openvario-shell.svg?style=svg)](https://app.circleci.com/pipelines/github/kedder/openvario-shell/)
 [![Coverage Status](https://coveralls.io/repos/github/kedder/openvario-shell/badge.svg)](https://coveralls.io/github/kedder/openvario-shell)
 [![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
