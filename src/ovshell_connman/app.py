@@ -55,7 +55,7 @@ class ConnmanManagerActivity(api.Activity):
     def create(self) -> urwid.Widget:
         # view = urwid.SolidFill("*")
 
-        self._svc_walker = urwid.SimpleFocusListWalker([urwid.Text("ONE")])
+        self._svc_walker = urwid.SimpleFocusListWalker([urwid.Text("")])
         self._techs_ph = urwid.WidgetPlaceholder(urwid.Text(""))
 
         view = urwid.Pile(

@@ -18,7 +18,6 @@ class ConnmanAgentImpl(ConnmanAgent):
     async def request_input(
         self, service: ConnmanService, fields: Dict[str, Dict[str, Any]]
     ) -> Dict[str, Any]:
-        print("Requesting: ", fields)
         # {'Passphrase': {'Type': 'psk', 'Requirement': 'mandatory'}}
         # {'Passphrase': {'Type': 'psk', 'Requirement': 'mandatory', 'Alternates': ['WPS']}, 'WPS': {'Type': 'wpspin', 'Requirement': 'alternate'}}
 
@@ -35,7 +34,7 @@ class ConnmanAgentImpl(ConnmanAgent):
         return result
 
     def cancel(self) -> None:
-        print("CANCEL")
+        pass
 
 
 class ConnmanInputActivity(api.Activity):

@@ -111,7 +111,6 @@ class ConnmanAgentInterface(ServiceInterface):
         svc = model.create_service_from_props(service, props)
 
         plain_fields = unpack_variants(fields, "a{sv}")
-        print("REQUEST INPUT", svc, plain_fields)
         try:
             res = await self._impl.request_input(svc, plain_fields)
         except Canceled as e:
