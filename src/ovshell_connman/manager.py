@@ -71,14 +71,13 @@ class ConnmanManagerImpl(ConnmanManager):
     async def setup(self) -> None:
         introspection = await self._bus.introspect("net.connman", "/")
         proxy = self._bus.get_proxy_object("net.connman", "/", introspection)
-        iface = proxy.get_interface("net.connman.Manager")
+        self._manager_iface = proxy.get_interface("net.connman.Manager")
 
-        self._subscribe_events(iface)
-        self._manager_props = await self._fetch_properties(iface)
-        self.technologies = await self._fetch_technologies(iface)
-        self.services = await self._fetch_services(iface)
+        self._subscribe_events(self._manager_iface)
+        self._manager_props = await self._fetch_properties(self._manager_iface)
+        self.services = await self._fetch_services(self._manager_iface)
+        await self._refresh_technologies()
 
-        self._fire_tech_changed()
         self._fire_svc_changed()
 
     async def connect(self, service: ConnmanService) -> None:
@@ -93,6 +92,7 @@ class ConnmanManagerImpl(ConnmanManager):
     async def power(self, tech: ConnmanTechnology, on: bool) -> None:
         proxy = ConnmanTechnologyProxy(tech, self._bus)
         await proxy.set_property("Powered", Variant("b", on))
+        await self._refresh_technologies()
 
     async def scan_all(self) -> int:
         ifaces = []
@@ -117,6 +117,10 @@ class ConnmanManagerImpl(ConnmanManager):
 
     def on_services_changed(self, handler: Callable[[], None]) -> None:
         self._svc_change_handlers.append(handler)
+
+    async def _refresh_technologies(self) -> None:
+        self.technologies = await self._fetch_technologies(self._manager_iface)
+        self._fire_tech_changed()
 
     def _subscribe_events(self, iface: BaseProxyInterface):
         iface.on_property_changed(self._notify_property_changed)
