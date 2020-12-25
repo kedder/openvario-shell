@@ -1,4 +1,4 @@
-from typing import Dict, Callable, Awaitable, Optional
+from typing import Dict, Callable, Optional, Coroutine
 import asyncio
 
 import urwid
@@ -169,10 +169,10 @@ class ConnmanManagerActivity(api.Activity):
         for label, action in actions:
 
             def handler(
-                a: Callable[[ConnmanService], Awaitable[None]] = action,
+                a: Callable[[ConnmanService], Coroutine] = action,
                 s: ConnmanService = svc,
             ) -> bool:
-                self.shell.screen.spawn_task(self, action(s))
+                self.shell.screen.spawn_task(self, a(s))
                 return True
 
             dialog.add_button(label, handler)
