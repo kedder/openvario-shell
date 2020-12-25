@@ -75,19 +75,20 @@ class ConnmanManagerImpl(ConnmanManager):
 
         self._subscribe_events(self._manager_iface)
         self._manager_props = await self._fetch_properties(self._manager_iface)
-        self.services = await self._fetch_services(self._manager_iface)
         await self._refresh_technologies()
-
-        self._fire_svc_changed()
+        await self._refresh_services()
 
     async def connect(self, service: ConnmanService) -> None:
-        return await ConnmanServiceProxy(service, self._bus).connect()
+        await ConnmanServiceProxy(service, self._bus).connect()
+        await self._refresh_services()
 
     async def remove(self, service: ConnmanService) -> None:
-        return await ConnmanServiceProxy(service, self._bus).remove()
+        await ConnmanServiceProxy(service, self._bus).remove()
+        await self._refresh_services()
 
     async def disconnect(self, service: ConnmanService) -> None:
-        return await ConnmanServiceProxy(service, self._bus).disconnect()
+        await ConnmanServiceProxy(service, self._bus).disconnect()
+        await self._refresh_services()
 
     async def power(self, tech: ConnmanTechnology, on: bool) -> None:
         proxy = ConnmanTechnologyProxy(tech, self._bus)
@@ -118,15 +119,15 @@ class ConnmanManagerImpl(ConnmanManager):
     def on_services_changed(self, handler: Callable[[], None]) -> None:
         self._svc_change_handlers.append(handler)
 
-    async def _refresh_technologies(self) -> None:
-        self.technologies = await self._fetch_technologies(self._manager_iface)
-        self._fire_tech_changed()
-
     def _subscribe_events(self, iface: BaseProxyInterface):
         iface.on_property_changed(self._notify_property_changed)
         iface.on_services_changed(self._notify_servics_changed)
         iface.on_technology_added(self._notify_tech_added)
         iface.on_technology_removed(self._notify_tech_removed)
+
+    async def _refresh_technologies(self) -> None:
+        self.technologies = await self._fetch_technologies(self._manager_iface)
+        self._fire_tech_changed()
 
     async def _fetch_technologies(
         self, iface: BaseProxyInterface
@@ -140,6 +141,10 @@ class ConnmanManagerImpl(ConnmanManager):
 
     async def _fetch_properties(self, iface: BaseProxyInterface) -> Dict[str, Variant]:
         return await iface.call_get_properties()
+
+    async def _refresh_services(self) -> None:
+        self.services = await self._fetch_services(self._manager_iface)
+        self._fire_svc_changed()
 
     async def _fetch_services(self, iface: BaseProxyInterface) -> List[ConnmanService]:
         svcs = await iface.call_get_services()
