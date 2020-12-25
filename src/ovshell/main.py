@@ -88,6 +88,9 @@ def run(argv) -> None:
         ("remark", "dark gray", "black", ""),
         ("highlight", "yellow", "black", ""),
         ("topbar", "black", "white", ""),
+        # Toggles
+        ("disabled", "light red", "black", ""),
+        ("enabled", "light green", "black", ""),
         # Indicator color scheme
         ("ind normal", "black", "white", ""),
         ("ind error", "dark red", "white", ""),

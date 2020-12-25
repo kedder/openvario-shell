@@ -1,4 +1,4 @@
-from typing import Dict, Callable, Awaitable
+from typing import Dict, Callable, Awaitable, Optional
 import asyncio
 
 import urwid
@@ -45,6 +45,8 @@ class ConnmanManagerApp(api.App):
 class ConnmanManagerActivity(api.Activity):
     _svc_waits: Dict[str, widget.Waiting]
 
+    _techs_grid: Optional[urwid.GridFlow] = None
+
     def __init__(self, shell: api.OpenVarioShell, manager: ConnmanManager) -> None:
         self.shell = shell
         self.manager = manager
@@ -54,14 +56,12 @@ class ConnmanManagerActivity(api.Activity):
         # view = urwid.SolidFill("*")
 
         self._svc_walker = urwid.SimpleFocusListWalker([urwid.Text("ONE")])
-        self._tech_grid = urwid.GridFlow([], 25, 1, 1, "left")
+        self._techs_ph = urwid.WidgetPlaceholder(urwid.Text(""))
 
         view = urwid.Pile(
             [
-                ("pack", urwid.Text("Technologies")),
-                ("pack", self._tech_grid),
-                ("pack", urwid.Text("Connections")),
-                ("pack", self._make_scan_button()),
+                ("pack", self._techs_ph),
+                ("pack", urwid.Divider()),
                 urwid.ListBox(self._svc_walker),
             ]
         )
@@ -87,15 +87,28 @@ class ConnmanManagerActivity(api.Activity):
         self.scan_waiting.start_waiting_for(task)
 
     def _handle_techs_changed(self) -> None:
+        # Remember the old focus
+        focus = 0
+        if self._techs_grid is not None:
+            focus = self._techs_grid.focus_position
+
         contents = []
         for tech in self.manager.technologies:
-            cb = urwid.CheckBox(tech.name, state=tech.powered)
+
+            lbl = ("enabled" if tech.powered else "disabled", tech.name)
+            cb = urwid.CheckBox(lbl, state=tech.powered)
             urwid.connect_signal(
                 cb, "change", self._handle_tech_power, user_args=[tech]
             )
-            contents.append((cb, (urwid.GIVEN, 25)))
+            contents.append(cb)
 
-        self._tech_grid.contents = contents
+        self._techs_grid = urwid.GridFlow(contents, 25, 1, 1, "left")
+        self._techs_grid.set_focus(focus)
+        self._techs_ph.original_widget = urwid.LineBox(
+            urwid.Pile([self._techs_grid, urwid.Divider(), self._make_scan_button()]),
+            title="Technologies",
+            title_align="left",
+        )
 
     def _handle_tech_power(
         self, tech: ConnmanTechnology, cb: urwid.CheckBox, state: bool
