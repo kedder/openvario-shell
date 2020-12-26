@@ -123,7 +123,12 @@ class ConnmanManagerActivity(api.Activity):
 
         del self._svc_walker[:]
         self._svc_walker.extend(contents)
-        self._svc_walker.set_focus(focus_pos or 0)
+
+        # restore focus
+        if len(contents) < focus_pos:
+            focus_pos = len(contents) - 1
+        if focus_pos >= 0:
+            self._svc_walker.set_focus(focus_pos or 0)
 
     def _make_service_header(self) -> urwid.Widget:
         cols = urwid.Columns(
@@ -131,7 +136,7 @@ class ConnmanManagerActivity(api.Activity):
                 ("fixed", 1, urwid.Text("")),
                 ("weight", 3, urwid.Text("Service")),
                 ("fixed", 4, urwid.Text("")),
-                ("weight", 1, urwid.Text("Signal")),
+                ("fixed", 6, urwid.Text("Signal")),
                 ("weight", 1, urwid.Text("State")),
             ],
             dividechars=1,
@@ -140,13 +145,14 @@ class ConnmanManagerActivity(api.Activity):
 
     def _make_service_row(self, svc: ConnmanService) -> urwid.Widget:
         waiting = self._svc_waits.setdefault(svc.path, widget.Waiting(4))
+        strength_wdg = StrengthBar(svc.strength)
 
         cols = urwid.Columns(
             [
                 ("fixed", 1, urwid.Text("*" if svc.favorite else " ")),
                 ("weight", 3, urwid.Text(svc.name)),
                 ("fixed", 4, waiting),
-                ("weight", 1, urwid.Text(str(svc.strength))),
+                ("fixed", 6, strength_wdg),
                 ("weight", 1, urwid.Text(str(svc.state))),
                 # ("weight", 1, urwid.Text(svc.type)),
             ],
@@ -156,7 +162,16 @@ class ConnmanManagerActivity(api.Activity):
         urwid.connect_signal(
             item, "click", self._handle_service_clicked, user_args=[svc]
         )
-        return urwid.AttrMap(item, {}, {"progress": "li focus"})
+        return urwid.AttrMap(
+            item,
+            {},
+            {
+                "progress": "li focus",
+                "str good": "li focus",
+                "str weak": "li focus",
+                "str average": "li focus",
+            },
+        )
 
     def _handle_service_clicked(self, svc: ConnmanService, w: urwid.Widget) -> None:
         # Find what actions we can perform with this service
@@ -203,3 +218,30 @@ class ConnmanManagerActivity(api.Activity):
     async def _disconnect(self, svc: ConnmanService) -> None:
         waiting = self._svc_waits[svc.path]
         await waiting.wait_for(self.manager.disconnect(svc))
+
+
+class StrengthBar(urwid.Widget):
+    _sizing = frozenset([urwid.FLOW])
+    _block = "\N{BLACK SQUARE}"  # ■
+
+    def __init__(self, strength: int) -> None:
+        self._strength = strength
+
+    def rows(self, size, focus=False):
+        return 1
+
+    def render(self, size, focus=False) -> urwid.Canvas:
+        (maxcol,) = size
+
+        color = "str weak"
+        if self._strength > 33:
+            color = "str average"
+        if self._strength > 66:
+            color = "str good"
+
+        filled = int(round(self._strength / 100.0 * maxcol))
+        empty = maxcol - filled
+        bar = self._block * filled + " " * empty
+        txt = urwid.Text((color, bar))
+        c = txt.render((maxcol,))
+        return c

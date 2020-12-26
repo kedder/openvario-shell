@@ -91,6 +91,10 @@ def run(argv) -> None:
         # Toggles
         ("disabled", "light red", "black", ""),
         ("enabled", "light green", "black", ""),
+        # Strengths
+        ("str weak", "light red", "black", ""),
+        ("str average", "yellow", "black", ""),
+        ("str good", "light green", "black", ""),
         # Indicator color scheme
         ("ind normal", "black", "white", ""),
         ("ind error", "dark red", "white", ""),
