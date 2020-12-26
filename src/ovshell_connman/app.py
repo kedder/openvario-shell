@@ -116,13 +116,14 @@ class ConnmanManagerActivity(api.Activity):
         self.shell.screen.spawn_task(self, self.manager.power(tech, state))
 
     def _handle_svcs_changed(self) -> None:
+        _, focus_pos = self._svc_walker.get_focus()
         contents = []
         for svc in self.manager.services:
             contents.append(self._make_service_row(svc))
 
         del self._svc_walker[:]
         self._svc_walker.extend(contents)
-        self._svc_walker.set_focus(0)
+        self._svc_walker.set_focus(focus_pos or 0)
 
     def _make_service_row(self, svc: ConnmanService) -> urwid.Widget:
         waiting = self._svc_waits.setdefault(svc.path, widget.Waiting(4))
