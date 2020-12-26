@@ -30,6 +30,7 @@ jobs:
              pipenv run pytest --junit-xml var/test-results/results.xml --cov=ovshell --cov=ovshell_core --cov=ovshell_xcsoar --cov=ovshell_fileman --cov=ovshell_connman --cov-report=term tests
              pipenv run black --check setup.py src tests
              pipenv run mypy src tests
+             pipenv run isort --check-only setup.py src tests
       - store_test_results:
           path: var/test-results
       - run:
