@@ -102,10 +102,11 @@ class KeySignals(urwid.WidgetWrap):
 
 
 class Waiting(urwid.WidgetWrap):
+    _bullet = "\N{BLACK DIAMOND}"
+
     def __init__(self, size) -> None:
         self.size = size
-        # self.text = urwid.Text(" " * size)
-        self.text = urwid.Text("")
+        self.text = urwid.Text(" " * size)
         super().__init__(self.text)
 
     def start_waiting_for(self, awaitable: Awaitable[object]) -> None:
@@ -131,7 +132,7 @@ class Waiting(urwid.WidgetWrap):
         while True:
             for n in range(size - 1):
                 s = [" "] * size
-                s[n if forward else size - 1 - n] = "*"
+                s[n if forward else size - 1 - n] = self._bullet
                 self.text.set_text("".join(s))
                 try:
                     await asyncio.sleep(0.2)
