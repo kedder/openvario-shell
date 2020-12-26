@@ -125,7 +125,9 @@ class ConnmanManagerActivity(api.Activity):
         self._svc_walker.extend(contents)
 
         # restore focus
-        if len(contents) < focus_pos:
+        if focus_pos is None:
+            focus_pos = 0
+        if focus_pos >= len(self._svc_walker):
             focus_pos = len(contents) - 1
         if focus_pos >= 0:
             self._svc_walker.set_focus(focus_pos or 0)
@@ -133,10 +135,10 @@ class ConnmanManagerActivity(api.Activity):
     def _make_service_header(self) -> urwid.Widget:
         cols = urwid.Columns(
             [
+                ("fixed", 6, urwid.Text("Signal")),
                 ("fixed", 1, urwid.Text("")),
                 ("weight", 3, urwid.Text("Service")),
                 ("fixed", 4, urwid.Text("")),
-                ("fixed", 6, urwid.Text("Signal")),
                 ("weight", 1, urwid.Text("State")),
             ],
             dividechars=1,
@@ -145,14 +147,14 @@ class ConnmanManagerActivity(api.Activity):
 
     def _make_service_row(self, svc: ConnmanService) -> urwid.Widget:
         waiting = self._svc_waits.setdefault(svc.path, widget.Waiting(4))
-        strength_wdg = StrengthBar(svc.strength)
+        strength_wdg = StrengthBar(svc.strength, align=urwid.RIGHT)
 
         cols = urwid.Columns(
             [
+                ("fixed", 6, strength_wdg),
                 ("fixed", 1, urwid.Text("*" if svc.favorite else " ")),
                 ("weight", 3, urwid.Text(svc.name)),
                 ("fixed", 4, waiting),
-                ("fixed", 6, strength_wdg),
                 ("weight", 1, urwid.Text(str(svc.state))),
                 # ("weight", 1, urwid.Text(svc.type)),
             ],
@@ -224,8 +226,9 @@ class StrengthBar(urwid.Widget):
     _sizing = frozenset([urwid.FLOW])
     _block = "\N{BLACK SQUARE}"  # ■
 
-    def __init__(self, strength: int) -> None:
+    def __init__(self, strength: int, align: str = urwid.LEFT) -> None:
         self._strength = strength
+        self._align = align
 
     def rows(self, size, focus=False):
         return 1
@@ -240,8 +243,7 @@ class StrengthBar(urwid.Widget):
             color = "str good"
 
         filled = int(round(self._strength / 100.0 * maxcol))
-        empty = maxcol - filled
-        bar = self._block * filled + " " * empty
-        txt = urwid.Text((color, bar))
+        bar = self._block * filled
+        txt = urwid.Text((color, bar), align=self._align)
         c = txt.render((maxcol,))
         return c
