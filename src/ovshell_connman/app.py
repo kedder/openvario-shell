@@ -62,6 +62,7 @@ class ConnmanManagerActivity(api.Activity):
             [
                 ("pack", self._techs_ph),
                 ("pack", urwid.Divider()),
+                ("pack", self._make_service_header()),
                 urwid.ListBox(self._svc_walker),
             ]
         )
@@ -125,18 +126,32 @@ class ConnmanManagerActivity(api.Activity):
         self._svc_walker.extend(contents)
         self._svc_walker.set_focus(focus_pos or 0)
 
+    def _make_service_header(self) -> urwid.Widget:
+        cols = urwid.Columns(
+            [
+                ("fixed", 1, urwid.Text("")),
+                ("weight", 3, urwid.Text("Service")),
+                ("fixed", 4, urwid.Text("")),
+                ("weight", 1, urwid.Text("Signal")),
+                ("weight", 1, urwid.Text("State")),
+            ],
+            dividechars=1,
+        )
+        return cols
+
     def _make_service_row(self, svc: ConnmanService) -> urwid.Widget:
         waiting = self._svc_waits.setdefault(svc.path, widget.Waiting(4))
 
         cols = urwid.Columns(
             [
-                ("fixed", 2, urwid.Text("*" if svc.favorite else " ")),
+                ("fixed", 1, urwid.Text("*" if svc.favorite else " ")),
                 ("weight", 3, urwid.Text(svc.name)),
                 ("fixed", 4, waiting),
                 ("weight", 1, urwid.Text(str(svc.strength))),
                 ("weight", 1, urwid.Text(str(svc.state))),
                 # ("weight", 1, urwid.Text(svc.type)),
-            ]
+            ],
+            dividechars=1,
         )
         item = widget.SelectableItem(cols)
         urwid.connect_signal(
