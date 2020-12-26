@@ -4,7 +4,7 @@ from typing import Callable, Coroutine, Dict, Optional
 import urwid
 
 from ovshell import api, widget
-from ovshell_connman.api import ConnmanManager, ConnmanService, ConnmanTechnology
+from ovshell_connman.api import ConnmanManager, ConnmanService, ConnmanTechnology, ConnmanServiceState
 from ovshell_connman.manager import ConnmanManagerImpl
 
 
@@ -155,8 +155,7 @@ class ConnmanManagerActivity(api.Activity):
                 ("fixed", 1, urwid.Text("*" if svc.favorite else " ")),
                 ("weight", 3, urwid.Text(svc.name)),
                 ("fixed", 4, waiting),
-                ("weight", 1, urwid.Text(str(svc.state))),
-                # ("weight", 1, urwid.Text(svc.type)),
+                ("weight", 1, urwid.Text(svc.state.value)),
             ],
             dividechars=1,
         )
@@ -179,14 +178,14 @@ class ConnmanManagerActivity(api.Activity):
         # Find what actions we can perform with this service
         actions = []
         can_connect = False
-        if svc.state == "idle":
+        if svc.state == ConnmanServiceState.IDLE:
             can_connect = True
             actions.append(("Connect", self._connect))
 
         if svc.favorite:
             actions.append(("Forget", self._forget))
 
-        if svc.state in ("online", "ready"):
+        if svc.state in (ConnmanServiceState.ONLINE, ConnmanServiceState.READY):
             actions.append(("Disconnect", self._disconnect))
 
         if can_connect and len(actions) == 1:

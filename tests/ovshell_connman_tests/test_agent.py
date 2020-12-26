@@ -4,7 +4,7 @@ import pytest
 
 from ovshell import testing
 from ovshell_connman.agent import ConnmanAgentImpl, ConnmanInputActivity
-from ovshell_connman.api import ConnmanService
+from ovshell_connman.api import ConnmanService, ConnmanServiceState
 from tests.fixtures.urwid import UrwidMock
 
 
@@ -19,7 +19,7 @@ class TestConnmanAgentImpl:
             favorite=True,
             name="Test",
             security=["WPS"],
-            state="on",
+            state=ConnmanServiceState.ONLINE,
             strength=84,
             type="wifi",
         )
@@ -48,7 +48,7 @@ class TestConnmanInputActivity:
             favorite=True,
             name="Sample Service",
             security=["WPS"],
-            state="on",
+            state=ConnmanServiceState.ONLINE,
             strength=84,
             type="wifi",
         )

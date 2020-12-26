@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from dbus_next import Variant
 
-from .api import ConnmanService, ConnmanTechnology
+from .api import ConnmanService, ConnmanServiceState, ConnmanTechnology
 
 
 def create_service_from_props(path: str, props: Dict[str, Any]) -> ConnmanService:
@@ -43,8 +43,10 @@ def _convert_service_props(props: Dict[str, Variant]) -> Dict[str, Any]:
         "Favorite": "favorite",
         "Name": "name",
         "Security": "security",
-        "State": "state",
         "Strength": "strength",
         "Type": "type",
     }
-    return {pp: props[dp].value for dp, pp in propmap.items() if dp in props}
+    converted = {pp: props[dp].value for dp, pp in propmap.items() if dp in props}
+    if "State" in props:
+        converted["state"] = ConnmanServiceState(props["State"].value)
+    return converted

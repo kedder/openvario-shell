@@ -14,6 +14,16 @@ class ConnmanState(enum.Enum):
     ONLINE = "online"
 
 
+class ConnmanServiceState(enum.Enum):
+    IDLE = "idle"
+    FAILURE = "failure"
+    ASSOCIATION = "association"
+    CONFIGURATION = "configuration"
+    READY = "ready"
+    DISCONNECT = "disconnect"
+    ONLINE = "online"
+
+
 @dataclass
 class ConnmanTechnology:
     path: str
@@ -30,7 +40,7 @@ class ConnmanService:
     favorite: bool
     name: str
     security: List[str]
-    state: str
+    state: ConnmanServiceState
     strength: int
     type: str
 
