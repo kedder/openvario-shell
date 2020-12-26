@@ -1,25 +1,18 @@
-from typing import List, Optional
-import os
 import asyncio
+import os
 from abc import abstractmethod
 from pathlib import Path
+from typing import List, Optional
 
 import urwid
 
-from ovshell import api
-from ovshell import widget
+from ovshell import api, widget
 
-from .api import (
-    AutomountWatcher,
-    RsyncRunner,
-    RsyncStatusLine,
-    RsyncFailedException,
-    BackupDirectory,
-)
+from .api import AutomountWatcher, BackupDirectory, RsyncFailedException, RsyncRunner
+from .api import RsyncStatusLine
 from .rsync import RsyncRunnerImpl
 from .usbcurtain import USBStorageCurtain, make_usbstick_watcher
 from .utils import format_size
-
 
 BACKUP_DIRS = [
     "/home/root",

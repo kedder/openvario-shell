@@ -1,13 +1,12 @@
+import asyncio
 from typing import List
 
-import urwid
 import mock
 import pytest
-import asyncio
+import urwid
 
 from ovshell import api
 from ovshell.screen import ScreenManagerImpl
-
 from tests.fixtures.urwid import UrwidMock
 
 

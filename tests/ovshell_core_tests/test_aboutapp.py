@@ -1,10 +1,10 @@
 from typing import Dict, Optional
+
 import pytest
 
 from ovshell import testing
 from ovshell_core import aboutapp
 from ovshell_core.sysinfo import SystemInfo
-
 from tests.fixtures.urwid import UrwidMock
 
 

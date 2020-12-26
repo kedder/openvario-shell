@@ -1,9 +1,8 @@
 from typing import Sequence
 
 from ovshell import api
-
-from ovshell_fileman.downloadapp import LogDownloaderApp
 from ovshell_fileman.backupapp import BackupRestoreApp
+from ovshell_fileman.downloadapp import LogDownloaderApp
 
 
 class FileManagerExtension(api.Extension):

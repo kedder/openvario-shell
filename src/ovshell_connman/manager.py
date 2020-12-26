@@ -1,12 +1,12 @@
-from typing import List, Any, Dict, Tuple, Callable
 import asyncio
+from typing import Any, Callable, Dict, List, Tuple
 
 from dbus_next import Variant
 from dbus_next.message_bus import BaseMessageBus
 from dbus_next.proxy_object import BaseProxyInterface
 
-from .api import ConnmanManager, ConnmanService, ConnmanTechnology, ConnmanState
 from . import model
+from .api import ConnmanManager, ConnmanService, ConnmanState, ConnmanTechnology
 
 
 class ConnmanServiceProxy:

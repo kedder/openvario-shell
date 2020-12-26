@@ -1,4 +1,4 @@
-from ovshell.api import OpenVarioShell, Extension
+from ovshell.api import Extension, OpenVarioShell
 from ovshell_connman import ext
 
 

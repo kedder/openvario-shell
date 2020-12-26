@@ -1,13 +1,12 @@
-from typing import Optional
 import asyncio
+from typing import Optional
 
 import urwid
 
 import ovshell
-from ovshell import api
-from ovshell import widget
-from ovshell.ui.settings import SettingsActivity
+from ovshell import api, widget
 from ovshell.ui.apps import AppsActivity
+from ovshell.ui.settings import SettingsActivity
 
 
 class FinalScreenActivity(api.Activity):

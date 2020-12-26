@@ -1,8 +1,8 @@
-from typing import List
-import os
 import asyncio
+import os
+from typing import List
 
-from .api import ProgressState, Downloader, DownloadFilter, FileInfo
+from .api import Downloader, DownloadFilter, FileInfo, ProgressState
 
 
 class DownloaderImpl(Downloader):

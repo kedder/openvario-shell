@@ -1,7 +1,7 @@
-from typing import List, Coroutine, AsyncIterator, Tuple, Optional
 import asyncio
-from dataclasses import dataclass
 from contextlib import asynccontextmanager
+from dataclasses import dataclass
+from typing import AsyncIterator, Coroutine, List, Optional, Tuple
 
 import mock
 import pytest

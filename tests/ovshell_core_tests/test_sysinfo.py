@@ -4,8 +4,8 @@ from pathlib import Path
 import pytest
 
 from ovshell import testing
-from ovshell_core.sysinfo import SystemInfoImpl
 from ovshell_core.opkg import create_opkg_tools
+from ovshell_core.sysinfo import SystemInfoImpl
 
 ETC_OS_RELEASE_CONTENT = """ID="ovlinux"
 NAME="OpenVario Linux (for OpenVario Flight Computer)"

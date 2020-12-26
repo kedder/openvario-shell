@@ -1,11 +1,11 @@
-from typing import Dict, Any
 import asyncio
+from typing import Any, Dict
 
 import urwid
 
 from ovshell import api, widget
 
-from .api import ConnmanAgent, ConnmanService, Canceled
+from .api import Canceled, ConnmanAgent, ConnmanService
 
 
 class ConnmanAgentImpl(ConnmanAgent):

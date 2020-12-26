@@ -1,8 +1,8 @@
-from typing import Tuple, Optional
-import os
-import sys
 import argparse
 import asyncio
+import os
+import sys
+from typing import Optional, Tuple
 
 import urwid
 

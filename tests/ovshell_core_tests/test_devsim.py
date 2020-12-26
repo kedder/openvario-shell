@@ -5,7 +5,6 @@ import pytest
 from ovshell import testing
 from ovshell_core import devsim
 
-
 HERE = os.path.dirname(__file__)
 
 

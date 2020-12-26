@@ -1,10 +1,9 @@
-from typing import Dict, Callable, Optional, Coroutine
 import asyncio
+from typing import Callable, Coroutine, Dict, Optional
 
 import urwid
 
-from ovshell import api
-from ovshell import widget
+from ovshell import api, widget
 from ovshell_connman.api import ConnmanManager, ConnmanService, ConnmanTechnology
 from ovshell_connman.manager import ConnmanManagerImpl
 

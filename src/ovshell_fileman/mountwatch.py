@@ -1,6 +1,6 @@
-from typing import Callable, List
-import os
 import asyncio
+import os
+from typing import Callable, List
 
 from .api import AutomountWatcher
 

@@ -1,5 +1,5 @@
-from typing import Optional, Awaitable
 import asyncio
+from typing import Awaitable, Optional
 
 import urwid
 

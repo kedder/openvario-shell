@@ -1,11 +1,10 @@
+import asyncio
 from datetime import datetime
 
 import mock
 import pytest
-import asyncio
 
-from ovshell import api
-from ovshell import testing
+from ovshell import api, testing
 from ovshell_core import gpstime
 
 

@@ -1,10 +1,10 @@
-from typing import NoReturn, Set
-import os
 import asyncio
+import os
+from typing import NoReturn, Set
 
 import serial
-from serial_asyncio import open_serial_connection
 from serial.tools.list_ports import comports
+from serial_asyncio import open_serial_connection
 
 from ovshell import api
 

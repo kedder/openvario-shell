@@ -1,14 +1,13 @@
-from typing import Callable, List
 import asyncio
+from typing import Callable, List
 
-import urwid
 import pytest
+import urwid
 
 from ovshell import testing
-from ovshell_core.opkg import OpkgTools, UpgradablePackage, InstalledPackage
-from ovshell_core.upgradeapp import SystemUpgradeApp, CheckForUpdatesActivity
-from ovshell_core.upgradeapp import PackageSelectionWidget
-
+from ovshell_core.opkg import InstalledPackage, OpkgTools, UpgradablePackage
+from ovshell_core.upgradeapp import CheckForUpdatesActivity, PackageSelectionWidget
+from ovshell_core.upgradeapp import SystemUpgradeApp
 from tests.fixtures.urwid import UrwidMock
 
 

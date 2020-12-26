@@ -1,10 +1,9 @@
-from typing import Optional, Sequence, Tuple
 import os
 import subprocess
+from typing import Optional, Sequence, Tuple
 
 from ovshell import api
 from ovshell.ui.settings import StaticChoiceSetting
-
 from ovshell_core import rotation
 
 

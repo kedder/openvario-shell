@@ -1,14 +1,13 @@
-from typing import List, Tuple, Dict, Coroutine, Callable, Sequence
-from dataclasses import dataclass
 import asyncio
 import functools
+from dataclasses import dataclass
+from typing import Callable, Coroutine, Dict, List, Sequence, Tuple
 
 import urwid
 from urwid import signals
 
-from ovshell.api import ScreenManager, Activity, UrwidText, IndicatorLocation
-from ovshell import widget
-from ovshell import api
+from ovshell import api, widget
+from ovshell.api import Activity, IndicatorLocation, ScreenManager, UrwidText
 
 
 @dataclass

@@ -5,7 +5,6 @@ import pytest
 from ovshell_fileman.api import RsyncFailedException
 from ovshell_fileman.rsync import RsyncRunnerImpl, parse_rsync_line
 
-
 RSYNC_STUB_SCRIPT_SUCCESS = """#!/bin/sh
 echo -n "              0   0%    0.00kB/s    0:00:00 (xfr#0, ir-chk=1006/1007) \r"
 echo -n "    345,081,147  13%  298.34MB/s    0:00:01 (xfr#5, ir-chk=1297/1636) \r"

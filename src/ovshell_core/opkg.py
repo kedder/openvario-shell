@@ -1,6 +1,6 @@
-from typing import List
 from abc import abstractmethod
 from dataclasses import dataclass
+from typing import List
 
 from ovshell.api import OpenVarioOS
 

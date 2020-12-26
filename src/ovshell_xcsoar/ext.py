@@ -1,10 +1,10 @@
-from typing import Sequence, Dict, List
-import subprocess
 import os
-
-from ovshell import api
+import subprocess
+from typing import Dict, List, Sequence
 
 import urwid
+
+from ovshell import api
 
 
 class XCSoarExtension(api.Extension):

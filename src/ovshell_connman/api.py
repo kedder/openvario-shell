@@ -1,9 +1,9 @@
-from typing import List, Dict, Any, Optional, Sequence, Callable
 import enum
 from abc import abstractmethod
-from typing_extensions import Protocol
-
 from dataclasses import dataclass
+from typing import Any, Callable, Dict, List, Optional, Sequence
+
+from typing_extensions import Protocol
 
 
 class ConnmanState(enum.Enum):

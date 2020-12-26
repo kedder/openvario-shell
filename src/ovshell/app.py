@@ -1,15 +1,10 @@
-from typing import List, Iterable, Set, Optional, cast
-import pkg_resources
+from typing import Iterable, List, Optional, Set, cast
 
+import pkg_resources
 import urwid
 
-from ovshell.api import ScreenManager, OpenVarioShell
-from ovshell.api import Extension, ExtensionFactory
-from ovshell import api
-from ovshell import settings
-from ovshell import ovos
-from ovshell import device
-from ovshell import process
+from ovshell import api, device, ovos, process, settings
+from ovshell.api import Extension, ExtensionFactory, OpenVarioShell, ScreenManager
 
 
 class ExtensionManagerImpl(api.ExtensionManager):

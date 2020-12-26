@@ -1,19 +1,14 @@
-from typing import List, Optional
 import asyncio
 from dataclasses import dataclass
+from typing import List, Optional
 
 import pytest
 
 from ovshell import testing
-from ovshell_fileman.api import (
-    Downloader,
-    DownloadFilter,
-    FileInfo,
-    ProgressState,
-)
+from ovshell_fileman.api import Downloader, DownloadFilter, FileInfo, ProgressState
 from ovshell_fileman.downloadapp import LogDownloaderActivity, LogDownloaderApp
-
 from tests.fixtures.urwid import UrwidMock
+
 from .stubs import AutomountWatcherStub
 
 

@@ -5,7 +5,6 @@ from ovshell import api
 from .api import AutomountWatcher
 from .mountwatch import AutomountWatcherImpl
 
-
 USB_MOUNTPOINT = "//usb/usbstick"
 USB_MOUNTDEVICE = "//dev/sda1"
 
