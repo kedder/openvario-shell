@@ -1,29 +1,16 @@
 """Interfaces for Openvario extensions"""
 
-from typing import (
-    Dict,
-    List,
-    Union,
-    Optional,
-    Callable,
-    Sequence,
-    Iterable,
-    Tuple,
-    TypeVar,
-    Type,
-    Coroutine,
-    Generator,
-)
-import enum
-from typing_extensions import Protocol, AsyncIterator, runtime_checkable
-from abc import abstractmethod
-from dataclasses import dataclass
-from contextlib import contextmanager
 import asyncio
+import enum
+from abc import abstractmethod
+from contextlib import contextmanager
+from dataclasses import dataclass
+from typing import Callable, Coroutine, Dict, Generator, Iterable, List, Optional
+from typing import Sequence, Tuple, Type, TypeVar, Union
 
 import urwid
 from dbus_next.message_bus import BaseMessageBus
-
+from typing_extensions import AsyncIterator, Protocol, runtime_checkable
 
 UrwidText = Union[str, Tuple[str, str], List[Union[str, Tuple[str, str]]]]
 BasicType = Union[int, str, float]

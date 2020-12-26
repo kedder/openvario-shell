@@ -1,9 +1,9 @@
-from typing import Set, FrozenSet, List
+from typing import FrozenSet, List, Set
 
 import urwid
 
-from ovshell import api
-from ovshell import widget
+from ovshell import api, widget
+
 from .opkg import OpkgTools, UpgradablePackage, create_opkg_tools
 
 

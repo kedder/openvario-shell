@@ -1,18 +1,17 @@
-import os
 import asyncio
+import os
 from pathlib import Path
 
 import pytest
 
 from ovshell import testing
-
-from ovshell_fileman.api import RsyncStatusLine, RsyncFailedException
+from ovshell_fileman.api import RsyncFailedException, RsyncStatusLine
+from ovshell_fileman.backupapp import BackupActivity, BackupDirectoryImpl
 from ovshell_fileman.backupapp import BackupRestoreApp, BackupRestoreMainActivity
-from ovshell_fileman.backupapp import BackupActivity, RestoreActivity
-from ovshell_fileman.backupapp import BackupDirectoryImpl
-
+from ovshell_fileman.backupapp import RestoreActivity
 from tests.fixtures.urwid import UrwidMock
-from .stubs import AutomountWatcherStub, RsyncRunnerStub, BackupDirectoryStub
+
+from .stubs import AutomountWatcherStub, BackupDirectoryStub, RsyncRunnerStub
 
 
 class TestBackupDirectoryImpl:

@@ -2,10 +2,8 @@ import asyncio
 
 import pytest
 
-from ovshell import api
-from ovshell import testing
+from ovshell import api, testing
 from ovshell.ui.mainmenu import MainMenuActivity
-
 from tests.fixtures.urwid import UrwidMock
 
 

@@ -1,10 +1,9 @@
-from typing import Sequence, Tuple, Optional, List
 from abc import abstractmethod
+from typing import List, Optional, Sequence, Tuple
 
 import urwid
 
-from ovshell import widget
-from ovshell import api
+from ovshell import api, widget
 
 
 class StaticChoiceSetting(api.Setting):

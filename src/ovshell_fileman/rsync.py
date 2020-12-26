@@ -1,8 +1,8 @@
-from typing import List, Optional, AsyncGenerator
-import re
 import asyncio
+import re
+from typing import AsyncGenerator, List, Optional
 
-from ovshell_fileman.api import RsyncRunner, RsyncFailedException, RsyncStatusLine
+from ovshell_fileman.api import RsyncFailedException, RsyncRunner, RsyncStatusLine
 
 RSYNC_PROGRESS2_RE = r"([\d,]+)\s+(\d+)%\s+([\d\.]+.B\/s)\s+([\d:]+)(\s+\((.*)\))?"
 

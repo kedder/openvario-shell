@@ -1,16 +1,9 @@
-from typing import Sequence
 import os
+from typing import Sequence
 
 from ovshell import api
-
-from ovshell_core import settings
-from ovshell_core import serial
-from ovshell_core import gpstime
-from ovshell_core import upgradeapp
-from ovshell_core import setupapp
-from ovshell_core import devsim
-from ovshell_core import devindicators
-from ovshell_core import aboutapp
+from ovshell_core import aboutapp, devindicators, devsim, gpstime, serial, settings
+from ovshell_core import setupapp, upgradeapp
 
 
 class CoreExtension(api.Extension):

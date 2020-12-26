@@ -1,7 +1,8 @@
-from typing import Callable, List, Dict, Any, Optional, AsyncGenerator
-from typing_extensions import Protocol
 from abc import abstractmethod
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
+from typing import Any, AsyncGenerator, Callable, Dict, List, Optional
+
+from typing_extensions import Protocol
 
 
 @dataclass

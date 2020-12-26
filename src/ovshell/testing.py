@@ -1,20 +1,10 @@
-from typing import (
-    List,
-    Iterable,
-    Tuple,
-    Optional,
-    TypeVar,
-    Type,
-    Dict,
-    Coroutine,
-    Generator,
-    Callable,
-    Any,
-)
-import os
 import asyncio
-from dataclasses import dataclass
+import os
 from contextlib import contextmanager
+from dataclasses import dataclass
+from typing import Any, Callable, Coroutine, Dict, Generator, Iterable, List, Optional
+from typing import Tuple, Type, TypeVar
+
 import urwid
 from dbus_next.message_bus import BaseMessageBus
 

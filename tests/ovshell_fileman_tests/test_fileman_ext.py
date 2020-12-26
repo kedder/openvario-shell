@@ -1,6 +1,5 @@
-from ovshell import testing
-
 import ovshell_fileman
+from ovshell import testing
 
 
 def test_extension(ovshell: testing.OpenVarioShellStub) -> None:

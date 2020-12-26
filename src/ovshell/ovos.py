@@ -1,12 +1,12 @@
-from typing import List
 import asyncio
-import sys
 import os
 import subprocess
+import sys
+from typing import List
 
-from dbus_next.constants import BusType
 from dbus_next.aio import MessageBus
 from dbus_next.auth import AuthAnnonymous
+from dbus_next.constants import BusType
 from dbus_next.errors import AuthError
 
 from ovshell import api

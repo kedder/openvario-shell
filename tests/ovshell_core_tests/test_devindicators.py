@@ -2,8 +2,7 @@ import asyncio
 
 import pytest
 
-from ovshell import api
-from ovshell import testing
+from ovshell import api, testing
 from ovshell_core import devindicators
 
 

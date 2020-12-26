@@ -5,7 +5,6 @@ import urwid
 
 from ovshell import testing
 from ovshell_core import setupapp
-
 from tests.fixtures.urwid import UrwidMock
 
 

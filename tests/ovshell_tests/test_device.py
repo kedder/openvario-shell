@@ -1,11 +1,10 @@
+import asyncio
 from typing import List
 
-import asyncio
 import pytest
 
-from ovshell import device
-from ovshell import api
-from ovshell.device import nmea_checksum, format_nmea, is_nmea_valid, parse_nmea
+from ovshell import api, device
+from ovshell.device import format_nmea, is_nmea_valid, nmea_checksum, parse_nmea
 
 
 class DeviceStub(api.Device):

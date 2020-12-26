@@ -1,6 +1,5 @@
-from typing import Set, Coroutine
-
 import asyncio
+from typing import Coroutine, Set
 
 
 class ProcessManagerImpl:

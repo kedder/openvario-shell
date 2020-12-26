@@ -1,10 +1,9 @@
-from typing import List, Callable
 import asyncio
+from typing import Callable, List
 
 import urwid
 
-from ovshell import api
-from ovshell import widget
+from ovshell import api, widget
 from ovshell_core import rotation
 
 

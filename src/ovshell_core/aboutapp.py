@@ -1,9 +1,10 @@
 from typing import Coroutine, List, Optional
+
 import urwid
-from ovshell import api
-from ovshell import widget
-from ovshell_core.sysinfo import SystemInfo, SystemInfoImpl
+
+from ovshell import api, widget
 from ovshell_core.opkg import create_opkg_tools
+from ovshell_core.sysinfo import SystemInfo, SystemInfoImpl
 
 OV_HOMEPAGE = "https://openvario.org/"
 OVSHELL_HOMEPAGE = "https://github.com/kedder/openvario-shell"

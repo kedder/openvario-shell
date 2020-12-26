@@ -1,7 +1,6 @@
-from typing import List, Tuple
-
-import re
 import os
+import re
+from typing import List, Tuple
 
 from ovshell import api
 

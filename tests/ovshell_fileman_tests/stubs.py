@@ -1,13 +1,8 @@
-from typing import Callable, List, Union, AsyncGenerator
 import asyncio
+from typing import AsyncGenerator, Callable, List, Union
 
-from ovshell_fileman.api import (
-    AutomountWatcher,
-    RsyncRunner,
-    RsyncStatusLine,
-    BackupDirectory,
-    RsyncFailedException,
-)
+from ovshell_fileman.api import AutomountWatcher, BackupDirectory, RsyncFailedException
+from ovshell_fileman.api import RsyncRunner, RsyncStatusLine
 
 
 class AutomountWatcherStub(AutomountWatcher):

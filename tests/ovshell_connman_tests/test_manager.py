@@ -1,11 +1,10 @@
-from typing import List, Tuple, Dict
+from typing import Dict, List, Tuple
 
 import pytest
 from dbus_next import Variant
 
 from ovshell import testing
 from ovshell_connman.manager import ConnmanManagerImpl
-
 
 BusProps = Dict[str, Variant]
 BusObjList = List[Tuple[str, BusProps]]

@@ -1,16 +1,15 @@
-from typing import Optional, Dict
-import os
 import asyncio
 import functools
+import os
+from typing import Dict, Optional
 
 import urwid
 
-from ovshell import api
-from ovshell import widget
+from ovshell import api, widget
 
-from .api import ProgressState, AutomountWatcher, Downloader, DownloadFilter, FileInfo
-from .usbcurtain import USBStorageCurtain, make_usbstick_watcher
+from .api import AutomountWatcher, Downloader, DownloadFilter, FileInfo, ProgressState
 from .downloader import DownloaderImpl
+from .usbcurtain import USBStorageCurtain, make_usbstick_watcher
 from .utils import format_size
 
 

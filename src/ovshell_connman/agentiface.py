@@ -1,12 +1,12 @@
 from typing import Any, Union
 
+from dbus_next import DBusError, Variant
 from dbus_next.message_bus import BaseMessageBus
 from dbus_next.service import ServiceInterface, method
 from dbus_next.signature import SignatureType
-from dbus_next import Variant, DBusError
 
 from . import model
-from .api import ConnmanAgent, Canceled
+from .api import Canceled, ConnmanAgent
 
 
 class ConnmanAgentInterface(ServiceInterface):
