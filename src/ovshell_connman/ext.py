@@ -5,6 +5,7 @@ from ovshell_connman import app
 
 from .agent import ConnmanAgentImpl
 from .agentiface import ConnmanAgentInterface
+from .indicator import start_indicator
 
 
 class ConnmanExtension(api.Extension):
@@ -18,16 +19,19 @@ class ConnmanExtension(api.Extension):
         return [app.ConnmanManagerApp(self.shell)]
 
     def start(self) -> None:
-        self.shell.processes.start(start_connman_agent(self.shell))
+        self.shell.processes.start(start_services(self.shell))
 
 
-async def start_connman_agent(shell: api.OpenVarioShell) -> None:
-    agent = ConnmanAgentImpl(shell.screen)
+async def start_services(shell: api.OpenVarioShell) -> None:
     try:
         bus = await shell.os.get_system_bus()
     except api.DBusNotAvailableException:
         # Cannot connect to dbus, ignore
         shell.screen.set_status(("error message", "Cannot connect to D-BUS service"))
         return
+
+    agent = ConnmanAgentImpl(shell.screen)
     iface = ConnmanAgentInterface(agent, bus)
-    await iface.register()
+    shell.processes.start(iface.register())
+
+    shell.processes.start(start_indicator(shell.screen, bus))

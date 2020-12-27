@@ -4,7 +4,8 @@ from typing import Callable, Coroutine, Dict, Optional
 import urwid
 
 from ovshell import api, widget
-from ovshell_connman.api import ConnmanManager, ConnmanService, ConnmanTechnology, ConnmanServiceState
+from ovshell_connman.api import ConnmanManager, ConnmanService, ConnmanServiceState
+from ovshell_connman.api import ConnmanTechnology
 from ovshell_connman.manager import ConnmanManagerImpl
 
 
