@@ -121,7 +121,7 @@ class ConnmanManagerImpl(ConnmanManager):
 
     def _subscribe_events(self, iface: BaseProxyInterface):
         iface.on_property_changed(self._notify_property_changed)
-        iface.on_services_changed(self._notify_servics_changed)
+        iface.on_services_changed(self._notify_service_changed)
         iface.on_technology_added(self._notify_tech_added)
         iface.on_technology_removed(self._notify_tech_removed)
 
@@ -156,7 +156,7 @@ class ConnmanManagerImpl(ConnmanManager):
     def _notify_property_changed(self, name: str, value: Variant) -> None:
         self._manager_props[name] = value
 
-    def _notify_servics_changed(
+    def _notify_service_changed(
         self, changed: List[Tuple[str, Dict[str, Variant]]], removed: List[str]
     ):
         svcmap = {svc.path: svc for svc in self.services}
