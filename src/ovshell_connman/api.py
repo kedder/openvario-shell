@@ -54,6 +54,10 @@ class ConnmanManager(Protocol):
         pass
 
     @abstractmethod
+    def teardown(self) -> None:
+        pass
+
+    @abstractmethod
     async def connect(self, service: ConnmanService) -> None:
         pass
 

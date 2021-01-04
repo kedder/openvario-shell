@@ -77,6 +77,9 @@ class ConnmanManagerActivity(api.Activity):
         self.manager.on_services_changed(self._handle_svcs_changed)
         self.shell.screen.spawn_task(self, self.manager.setup())
 
+    def destroy(self) -> None:
+        self.manager.teardown()
+
     def _make_scan_button(self) -> urwid.Widget:
         btn = widget.PlainButton("Scan")
         urwid.connect_signal(btn, "click", self._handle_scan)

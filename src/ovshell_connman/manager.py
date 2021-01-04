@@ -78,6 +78,9 @@ class ConnmanManagerImpl(ConnmanManager):
         await self._refresh_technologies()
         await self._refresh_services()
 
+    def teardown(self) -> None:
+        self._unsubscribe_events(self._manager_iface)
+
     async def connect(self, service: ConnmanService) -> None:
         await ConnmanServiceProxy(service, self._bus).connect()
         await self._refresh_services()
@@ -124,6 +127,12 @@ class ConnmanManagerImpl(ConnmanManager):
         iface.on_services_changed(self._notify_service_changed)
         iface.on_technology_added(self._notify_tech_added)
         iface.on_technology_removed(self._notify_tech_removed)
+
+    def _unsubscribe_events(self, iface: BaseProxyInterface):
+        iface.off_property_changed(self._notify_property_changed)
+        iface.off_services_changed(self._notify_service_changed)
+        iface.off_technology_added(self._notify_tech_added)
+        iface.off_technology_removed(self._notify_tech_removed)
 
     async def _refresh_technologies(self) -> None:
         self.technologies = await self._fetch_technologies(self._manager_iface)
