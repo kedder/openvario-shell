@@ -13,15 +13,19 @@ jobs:
       tag: << parameters.python_ver >>
     steps:
       - checkout
+      - run:
+          name: Check python version
+          command: |
+            pyenv version > .cache-key
       - restore_cache:
-          key: pipenv-<< parameters.python_ver >>-{{ checksum "Pipfile.lock" }}
+          key: pipenv-{{ checksum "Pipfile.lock" }}-{{ checksum ".cache-key" }}
       - run:
           name: Install dependencies
           command: |
             pip install pipenv coveralls[yaml]
             pipenv install --dev
       - save_cache:
-          key: pipenv-<< parameters.python_ver >>-{{ checksum "Pipfile.lock" }}
+          key: pipenv-{{ checksum "Pipfile.lock" }}-{{ checksum ".cache-key" }}
           paths:
             - /home/circleci/.local/share/
       - run:
