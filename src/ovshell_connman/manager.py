@@ -1,4 +1,6 @@
 import asyncio
+import types
+import weakref
 from typing import Any, Callable, Dict, List, Tuple
 
 from dbus_next import Variant
@@ -57,8 +59,8 @@ class ConnmanManagerImpl(ConnmanManager):
     services: List[ConnmanService]
     _manager_props: Dict[str, Variant]
 
-    _tech_change_handlers: List[Callable[[], None]]
-    _svc_change_handlers: List[Callable[[], None]]
+    _tech_change_handlers: List[weakref.WeakMethod]
+    _svc_change_handlers: List[weakref.WeakMethod]
 
     def __init__(self, bus: BaseMessageBus) -> None:
         self._bus = bus
@@ -117,10 +119,12 @@ class ConnmanManagerImpl(ConnmanManager):
         return ConnmanState(state.value)
 
     def on_technologies_changed(self, handler: Callable[[], None]) -> None:
-        self._tech_change_handlers.append(handler)
+        assert isinstance(handler, types.MethodType)
+        self._tech_change_handlers.append(weakref.WeakMethod(handler))
 
     def on_services_changed(self, handler: Callable[[], None]) -> None:
-        self._svc_change_handlers.append(handler)
+        assert isinstance(handler, types.MethodType)
+        self._svc_change_handlers.append(weakref.WeakMethod(handler))
 
     def _subscribe_events(self, iface: BaseProxyInterface):
         iface.on_property_changed(self._notify_property_changed)
@@ -193,9 +197,13 @@ class ConnmanManagerImpl(ConnmanManager):
         self._fire_tech_changed()
 
     def _fire_tech_changed(self) -> None:
-        for h in self._tech_change_handlers:
-            h()
+        for wh in self._tech_change_handlers:
+            h = wh()
+            if h is not None:
+                h()
 
     def _fire_svc_changed(self) -> None:
-        for h in self._svc_change_handlers:
-            h()
+        for wh in self._svc_change_handlers:
+            h = wh()
+            if h is not None:
+                h()
