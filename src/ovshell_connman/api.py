@@ -1,7 +1,7 @@
 import enum
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Sequence
+from typing import Any, Callable, Dict, List, Sequence
 
 from typing_extensions import Protocol
 
@@ -49,15 +49,21 @@ class ConnmanManager(Protocol):
     technologies: Sequence[ConnmanTechnology]
 
     @abstractmethod
-    def list_services(self) -> Sequence[ConnmanService]:
-        pass
-
-    @abstractmethod
     async def setup(self) -> None:
         pass
 
     @abstractmethod
     def teardown(self) -> None:
+        pass
+
+    @abstractmethod
+    def list_services(self) -> Sequence[ConnmanService]:
+        pass
+
+    @abstractmethod
+    async def on_service_property_changed(
+        self, service: ConnmanService, handler: Callable[[ConnmanService], None]
+    ) -> None:
         pass
 
     @abstractmethod

@@ -1,7 +1,7 @@
 import asyncio
 import types
 import weakref
-from typing import Any, Callable, Dict, List, Sequence, Tuple
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from dbus_next import Variant
 from dbus_next.message_bus import BaseMessageBus
@@ -12,8 +12,11 @@ from .api import ConnmanManager, ConnmanService, ConnmanState, ConnmanTechnology
 
 
 class ConnmanServiceProxy:
+    _iface: Optional[BaseProxyInterface]
+
     def __init__(self, svc: ConnmanService, bus: BaseMessageBus) -> None:
         self._bus = bus
+        self._iface = None
         self.service = svc
 
     async def connect(self) -> None:
@@ -25,12 +28,28 @@ class ConnmanServiceProxy:
     async def disconnect(self) -> None:
         return await (await self._get_service_iface()).call_disconnect()
 
+    async def start_tracking(self) -> None:
+        iface = await self._get_service_iface()
+        iface.on_property_changed(self._on_property_changed)
+
+    def stop_tracking(self) -> None:
+        if self._iface is None:
+            return
+        self._iface.off_property_changed(self._on_property_changed)
+
+    def _on_property_changed(self, name: str, value: Variant) -> None:
+        model.update_service_from_props(self.service, {name: value})
+
     async def _get_service_iface(self) -> BaseProxyInterface:
+        if self._iface is not None:
+            return self._iface
+
         introspection = await self._bus.introspect("net.connman", self.service.path)
         proxy = self._bus.get_proxy_object(
             "net.connman", self.service.path, introspection
         )
         iface = proxy.get_interface("net.connman.Service")
+        self._iface = iface
         return iface
 
 
@@ -88,6 +107,8 @@ class ConnmanManagerImpl(ConnmanManager):
 
     def teardown(self) -> None:
         self._unsubscribe_events(self._manager_iface)
+        for svcp in self._svc_proxies.values():
+            svcp.stop_tracking()
 
     def list_services(self) -> Sequence[model.ConnmanService]:
         svcs = []
@@ -95,6 +116,11 @@ class ConnmanManagerImpl(ConnmanManager):
             sp = self._svc_proxies[path]
             svcs.append(sp.service)
         return svcs
+
+    async def on_service_property_changed(
+        self, service: ConnmanService, handler: Callable[[model.ConnmanService], None]
+    ) -> None:
+        svcp = self._svc_proxies[service.path]
 
     async def connect(self, service: ConnmanService) -> None:
         svcp = self._svc_proxies[service.path]
@@ -173,21 +199,15 @@ class ConnmanManagerImpl(ConnmanManager):
 
     async def _refresh_services(self) -> None:
         svcs = await self._manager_iface.call_get_services()
-
-        for path, svcprops in svcs:
-            svc = model.create_service_from_props(path, svcprops)
-            svcp = ConnmanServiceProxy(svc, self._bus)
-            self._svc_proxies[path] = svcp
-            self._svc_order.append(path)
-
-        self._fire_svc_changed()
+        self._notify_service_changed(svcs, [])
 
     def _notify_property_changed(self, name: str, value: Variant) -> None:
         self._manager_props[name] = value
 
     def _notify_service_changed(
         self, changed: List[Tuple[str, Dict[str, Variant]]], removed: List[str]
-    ):
+    ) -> None:
+        unseen = []
         # Update props
         for path, dbusprops in changed:
             svcp = self._svc_proxies.get(path)
@@ -195,12 +215,19 @@ class ConnmanManagerImpl(ConnmanManager):
                 svc = model.create_service_from_props(path, dbusprops)
                 svcp = ConnmanServiceProxy(svc, self._bus)
                 self._svc_proxies[path] = svcp
+                unseen.append(path)
             else:
                 svc = svcp.service
                 model.update_service_from_props(svc, dbusprops)
 
         self._svc_order = [path for path, _ in changed]
+        asyncio.create_task(self._start_tracking_services(unseen))
         self._fire_svc_changed()
+
+    async def _start_tracking_services(self, paths: List[str]) -> None:
+        for path in paths:
+            svcp = self._svc_proxies[path]
+            await svcp.start_tracking()
 
     def _notify_tech_added(self, path: str, props: Dict[str, Any]) -> None:
         tech = model.create_technology_from_props(path, props)
