@@ -122,7 +122,7 @@ class ConnmanManagerActivity(api.Activity):
     def _handle_svcs_changed(self) -> None:
         _, focus_pos = self._svc_walker.get_focus()
         contents = []
-        for svc in self.manager.services:
+        for svc in self.manager.list_services():
             contents.append(self._make_service_row(svc))
 
         del self._svc_walker[:]

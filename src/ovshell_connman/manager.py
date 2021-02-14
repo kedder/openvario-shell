@@ -1,7 +1,7 @@
 import asyncio
 import types
 import weakref
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Sequence, Tuple
 
 from dbus_next import Variant
 from dbus_next.message_bus import BaseMessageBus
@@ -14,7 +14,7 @@ from .api import ConnmanManager, ConnmanService, ConnmanState, ConnmanTechnology
 class ConnmanServiceProxy:
     def __init__(self, svc: ConnmanService, bus: BaseMessageBus) -> None:
         self._bus = bus
-        self._svc = svc
+        self.service = svc
 
     async def connect(self) -> None:
         return await (await self._get_service_iface()).call_connect()
@@ -26,8 +26,10 @@ class ConnmanServiceProxy:
         return await (await self._get_service_iface()).call_disconnect()
 
     async def _get_service_iface(self) -> BaseProxyInterface:
-        introspection = await self._bus.introspect("net.connman", self._svc.path)
-        proxy = self._bus.get_proxy_object("net.connman", self._svc.path, introspection)
+        introspection = await self._bus.introspect("net.connman", self.service.path)
+        proxy = self._bus.get_proxy_object(
+            "net.connman", self.service.path, introspection
+        )
         iface = proxy.get_interface("net.connman.Service")
         return iface
 
@@ -56,19 +58,23 @@ class ConnmanTechnologyProxy:
 
 class ConnmanManagerImpl(ConnmanManager):
     technologies: List[ConnmanTechnology]
-    services: List[ConnmanService]
     _manager_props: Dict[str, Variant]
 
     _tech_change_handlers: List[weakref.WeakMethod]
     _svc_change_handlers: List[weakref.WeakMethod]
 
+    _svc_proxies: Dict[str, ConnmanServiceProxy]
+    _svc_order: List[str]
+
     def __init__(self, bus: BaseMessageBus) -> None:
         self._bus = bus
         self.technologies = []
-        self.services = []
         self._manager_props = {}
         self._tech_change_handlers = []
         self._svc_change_handlers = []
+
+        self._svc_proxies = {}
+        self._svc_order = []
 
     async def setup(self) -> None:
         introspection = await self._bus.introspect("net.connman", "/")
@@ -83,16 +89,26 @@ class ConnmanManagerImpl(ConnmanManager):
     def teardown(self) -> None:
         self._unsubscribe_events(self._manager_iface)
 
+    def list_services(self) -> Sequence[model.ConnmanService]:
+        svcs = []
+        for path in self._svc_order:
+            sp = self._svc_proxies[path]
+            svcs.append(sp.service)
+        return svcs
+
     async def connect(self, service: ConnmanService) -> None:
-        await ConnmanServiceProxy(service, self._bus).connect()
+        svcp = self._svc_proxies[service.path]
+        await svcp.connect()
         await self._refresh_services()
 
     async def remove(self, service: ConnmanService) -> None:
-        await ConnmanServiceProxy(service, self._bus).remove()
+        svcp = self._svc_proxies[service.path]
+        await svcp.remove()
         await self._refresh_services()
 
     async def disconnect(self, service: ConnmanService) -> None:
-        await ConnmanServiceProxy(service, self._bus).disconnect()
+        svcp = self._svc_proxies[service.path]
+        await svcp.disconnect()
         await self._refresh_services()
 
     async def power(self, tech: ConnmanTechnology, on: bool) -> None:
@@ -156,15 +172,15 @@ class ConnmanManagerImpl(ConnmanManager):
         return await iface.call_get_properties()
 
     async def _refresh_services(self) -> None:
-        self.services = await self._fetch_services(self._manager_iface)
-        self._fire_svc_changed()
+        svcs = await self._manager_iface.call_get_services()
 
-    async def _fetch_services(self, iface: BaseProxyInterface) -> List[ConnmanService]:
-        svcs = await iface.call_get_services()
-        res = []
-        for path, svc in svcs:
-            res.append(model.create_service_from_props(path, svc))
-        return res
+        for path, svcprops in svcs:
+            svc = model.create_service_from_props(path, svcprops)
+            svcp = ConnmanServiceProxy(svc, self._bus)
+            self._svc_proxies[path] = svcp
+            self._svc_order.append(path)
+
+        self._fire_svc_changed()
 
     def _notify_property_changed(self, name: str, value: Variant) -> None:
         self._manager_props[name] = value
@@ -172,19 +188,18 @@ class ConnmanManagerImpl(ConnmanManager):
     def _notify_service_changed(
         self, changed: List[Tuple[str, Dict[str, Variant]]], removed: List[str]
     ):
-        svcmap = {svc.path: svc for svc in self.services}
-
         # Update props
         for path, dbusprops in changed:
-            svc = svcmap.get(path)
-            if svc is None:
+            svcp = self._svc_proxies.get(path)
+            if svcp is None:
                 svc = model.create_service_from_props(path, dbusprops)
-                svcmap[path] = svc
+                svcp = ConnmanServiceProxy(svc, self._bus)
+                self._svc_proxies[path] = svcp
             else:
+                svc = svcp.service
                 model.update_service_from_props(svc, dbusprops)
 
-        # Change order. This will also remove any removed services
-        self.services = [svcmap[path] for path, _ in changed]
+        self._svc_order = [path for path, _ in changed]
         self._fire_svc_changed()
 
     def _notify_tech_added(self, path: str, props: Dict[str, Any]) -> None:

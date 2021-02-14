@@ -20,7 +20,7 @@ class ConnmanServiceIndicator:
         await self._manager.setup()
 
     def _handle_svcs_changed(self) -> None:
-        svcs = self._manager.services
+        svcs = self._manager.list_services()
         if not svcs:
             self._no_connection()
             return

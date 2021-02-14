@@ -47,7 +47,10 @@ class ConnmanService:
 
 class ConnmanManager(Protocol):
     technologies: Sequence[ConnmanTechnology]
-    services: Sequence[ConnmanService]
+
+    @abstractmethod
+    def list_services(self) -> Sequence[ConnmanService]:
+        pass
 
     @abstractmethod
     async def setup(self) -> None:
