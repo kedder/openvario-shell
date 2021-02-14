@@ -13,11 +13,13 @@ from .api import ConnmanManager, ConnmanService, ConnmanState, ConnmanTechnology
 
 class ConnmanServiceProxy:
     _iface: Optional[BaseProxyInterface]
+    _change_handlers: List[weakref.WeakMethod]
 
     def __init__(self, svc: ConnmanService, bus: BaseMessageBus) -> None:
+        self.service = svc
         self._bus = bus
         self._iface = None
-        self.service = svc
+        self._change_handlers = []
 
     async def connect(self) -> None:
         return await (await self._get_service_iface()).call_connect()
@@ -37,8 +39,22 @@ class ConnmanServiceProxy:
             return
         self._iface.off_property_changed(self._on_property_changed)
 
+    def on_change(self, handler: Callable[[ConnmanService], None]) -> None:
+        assert isinstance(handler, types.MethodType)
+        self._change_handlers.append(weakref.WeakMethod(handler))
+
+    def off_change(self, handler: Callable[[ConnmanService], None]) -> None:
+        self._change_handlers = [wh for wh in self._change_handlers if wh() == handler]
+
+    def _fire_changed(self) -> None:
+        for wh in self._change_handlers:
+            h = wh()
+            if h is not None:
+                h(self.service)
+
     def _on_property_changed(self, name: str, value: Variant) -> None:
         model.update_service_from_props(self.service, {name: value})
+        self._fire_changed()
 
     async def _get_service_iface(self) -> BaseProxyInterface:
         if self._iface is not None:
@@ -117,10 +133,17 @@ class ConnmanManagerImpl(ConnmanManager):
             svcs.append(sp.service)
         return svcs
 
-    async def on_service_property_changed(
+    def on_service_property_changed(
         self, service: ConnmanService, handler: Callable[[model.ConnmanService], None]
     ) -> None:
         svcp = self._svc_proxies[service.path]
+        svcp.on_change(handler)
+
+    def off_service_property_changed(
+        self, service: ConnmanService, handler: Callable[[ConnmanService], None]
+    ) -> None:
+        svcp = self._svc_proxies[service.path]
+        svcp.off_change(handler)
 
     async def connect(self, service: ConnmanService) -> None:
         svcp = self._svc_proxies[service.path]

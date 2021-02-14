@@ -61,7 +61,13 @@ class ConnmanManager(Protocol):
         pass
 
     @abstractmethod
-    async def on_service_property_changed(
+    def on_service_property_changed(
+        self, service: ConnmanService, handler: Callable[[ConnmanService], None]
+    ) -> None:
+        pass
+
+    @abstractmethod
+    def off_service_property_changed(
         self, service: ConnmanService, handler: Callable[[ConnmanService], None]
     ) -> None:
         pass
