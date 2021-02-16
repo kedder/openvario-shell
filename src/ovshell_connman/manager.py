@@ -20,6 +20,7 @@ class ConnmanServiceProxy:
         self._bus = bus
         self._iface = None
         self._change_handlers = []
+        self._tracking = False
 
     async def connect(self) -> None:
         return await (await self._get_service_iface()).call_connect()
@@ -31,6 +32,10 @@ class ConnmanServiceProxy:
         return await (await self._get_service_iface()).call_disconnect()
 
     async def start_tracking(self) -> None:
+        if self._tracking:
+            return
+
+        self._tracking = True
         iface = await self._get_service_iface()
         iface.on_property_changed(self._on_property_changed)
 
