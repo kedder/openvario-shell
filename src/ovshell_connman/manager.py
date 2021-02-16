@@ -251,7 +251,7 @@ class ConnmanManagerImpl(ConnmanManager):
                 svc = svcp.service
                 model.update_service_from_props(svc, dbusprops)
 
-        self._svc_order = [path for path, _ in changed]
+        self._svc_order = [path for path, _ in changed if path in self._svc_proxies]
         asyncio.create_task(self._start_tracking_services(unseen))
         self._fire_svc_changed()
 
