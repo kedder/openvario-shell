@@ -40,8 +40,20 @@ jobs:
       - run:
           name: Generate reports
           when: on_success
+          environment:
+            COVERALLS_PARALLEL: true
           command: |
             coveralls
+  build-complete:
+    executor:
+      name: python/default
+      tag: "3.8"
+    steps:
+      - run:
+          name: Complete coveralls report
+          command: |
+            pip install coveralls[yaml]
+            coveralls --finish
 
 workflows:
   main:
@@ -50,3 +62,6 @@ workflows:
           matrix:
             parameters:
               python_ver: ["3.7", "3.8", "3.9"]
+      - build-complete:
+          requires:
+            - build-and-test
