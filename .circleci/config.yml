@@ -23,7 +23,7 @@ jobs:
           name: Install dependencies
           command: |
             pip install pipenv coveralls[yaml]
-            pipenv install --dev
+            pipenv install --dev --python=`pyenv which python`
       - save_cache:
           key: pipenv-{{ checksum "Pipfile.lock" }}-{{ checksum ".cache-key" }}
           paths:
