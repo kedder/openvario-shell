@@ -96,6 +96,11 @@ class ScreenManagerStub(api.ScreenManager):
         self._activities.append(activity)
 
     def pop_activity(self) -> None:
+        if self._dialog is not None:
+            # If dialog is open, close it
+            self._dialog = None
+            return
+
         self._activities.pop()
 
     def push_modal(self, activity: api.Activity, options: api.ModalOptions) -> None:
@@ -281,10 +286,12 @@ class OpenVarioOSStub(api.OpenVarioOS):
     _stub_run_stdout: bytes = b""
     _stub_run_stderr: bytes = b""
     _stub_bus: Optional[MessageBusStub] = None
+    _stub_bus_connected: "asyncio.Future[MessageBusStub]"
 
     def __init__(self, log: List[str], rootfs: str) -> None:
         self._log = log
         self._rootfs = rootfs
+        self._stub_bus_connected = asyncio.Future()
 
     def mount_boot(self) -> None:
         self._log.append("OS: Mount /boot")
@@ -322,11 +329,17 @@ class OpenVarioOSStub(api.OpenVarioOS):
         self._stub_run_stderr = stderr
 
     async def get_system_bus(self) -> BaseMessageBus:
-        return self._stub_bus
+        return await self._stub_bus_connected
 
     def stub_connect_bus(self) -> MessageBusStub:
         self._stub_bus = MessageBusStub()
+        self._stub_bus_connected.set_result(self._stub_bus)
         return self._stub_bus
+
+    def stub_fail_bus(self) -> None:
+        self._stub_bus_connected.set_exception(
+            api.DBusNotAvailableException("Stub connection failed")
+        )
 
 
 class NMEAStreamStub(api.NMEAStream):
