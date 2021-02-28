@@ -53,6 +53,9 @@ class ConnmanServiceIndicator:
                 self._manager.on_service_property_changed(
                     top_svc, self._service_changed
                 )
+        else:
+            self._manager.on_service_property_changed(top_svc, self._service_changed)
+
         self._tracked_service = top_svc
 
     def _indicate_connection(self, svc: ConnmanService) -> None:
