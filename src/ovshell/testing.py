@@ -215,31 +215,6 @@ class MessageBusIntrospectionStub:
         self.path = path
 
 
-class MessageBusProxyInterfaceStub:
-    def __init__(self, name: str, impl: Any) -> None:
-        self.__name = name
-        self.__impl = impl
-
-    def __getattr__(self, name: str) -> Any:
-        if name.startswith("on_"):
-            return self.__get_register_handler(name)
-        if name.startswith("call_"):
-            return self.__get_call_handler(name)
-
-    def __get_register_handler(self, name: str) -> Callable:
-        def register_handler(handler):
-            pass
-
-        return register_handler
-
-    def __get_call_handler(self, name: str) -> Callable:
-        async def call_method(*args, **kwargs):
-            meth = getattr(self.__impl, name[5:])
-            return await meth(*args, **kwargs)
-
-        return call_method
-
-
 class MessageBusProxyObjectStub:
     def __init__(
         self,
@@ -253,8 +228,9 @@ class MessageBusProxyObjectStub:
         self.__introspection = introspection
         self.__impls = impls
 
-    def get_interface(self, name: str) -> MessageBusProxyInterfaceStub:
-        return MessageBusProxyInterfaceStub(name, self.__impls[name])
+    def get_interface(self, name: str):
+        return self.__impls[name]
+        # return MessageBusProxyInterfaceStub(name, self.__impls[name])
 
 
 class MessageBusStub:
@@ -262,7 +238,6 @@ class MessageBusStub:
 
     def __init__(self) -> None:
         self._impls = {}
-        pass
 
     async def introspect(
         self, bus_name: str, path: str, timeout: float = 30.0
