@@ -35,7 +35,7 @@ class ConnmanAgentInterface(ServiceInterface):
         agent, because when this method gets called it has
         already been unregistered.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: nocover
 
     @method("ReportError")
     def report_error(self, service: "o", error: "s"):  # type: ignore
@@ -47,7 +47,7 @@ class ConnmanAgentInterface(ServiceInterface):
 
         Possible Errors: net.connman.Agent.Error.Retry
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: nocover
 
     @method("ReportPeerError")
     def report_peer_error(peer: "o", error: "s"):  # type: ignore
@@ -59,7 +59,7 @@ class ConnmanAgentInterface(ServiceInterface):
 
         Possible Errors: net.connman.Agent.Error.Retry
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: nocover
 
     @method("RequestBrowser")
     def request_browser(service: "o", url: "s"):  # type: ignore
@@ -72,7 +72,7 @@ class ConnmanAgentInterface(ServiceInterface):
 
         Possible Errors: net.connman.Agent.Error.Canceled
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: nocover
 
     @method("RequestInput")
     async def request_input(
@@ -104,19 +104,7 @@ class ConnmanAgentInterface(ServiceInterface):
         """
 
         # Fetch the service properties
-        introspection = await self._bus.introspect("net.connman", service)
-        proxy = self._bus.get_proxy_object("net.connman", service, introspection)
-        iface = proxy.get_interface("net.connman.Service")
-        props = await iface.call_get_properties()
-        svc = model.create_service_from_props(service, props)
-
-        plain_fields = unpack_variants(fields, "a{sv}")
-        try:
-            res = await self._impl.request_input(svc, plain_fields)
-        except Canceled as e:
-            raise DBusError("net.connman.Agent.Error.Canceled", str(e))
-        varres = {k: Variant("s", v) for k, v in res.items() if v is not None}
-        return varres
+        return await agent_request_input(self._bus, self._impl, service, fields)
 
     @method("RequestPeerAuthorization")
     def request_peer_authorization(self, peer: "o", fields: "a{sv}") -> "a{sv}":  # type: ignore
@@ -137,13 +125,29 @@ class ConnmanAgentInterface(ServiceInterface):
         Possible Errors: net.connman.Agent.Error.Canceled
                          net.connman.Agent.Error.Rejected
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: nocover
 
     @method("Cancel")
     def cancel(self):
         """This method gets called to indicate that the agent
         request failed before a reply was returned.
         """
+
+
+async def agent_request_input(bus: BaseMessageBus, impl: ConnmanAgent, service, fields):
+    introspection = await bus.introspect("net.connman", service)
+    proxy = bus.get_proxy_object("net.connman", service, introspection)
+    iface = proxy.get_interface("net.connman.Service")
+    props = await iface.call_get_properties()
+    svc = model.create_service_from_props(service, props)
+
+    plain_fields = unpack_variants(fields, "a{sv}")
+    try:
+        res = await impl.request_input(svc, plain_fields)
+    except Canceled as e:
+        raise DBusError("net.connman.Agent.Error.Canceled", str(e))
+    varres = {k: Variant("s", v) for k, v in res.items() if v is not None}
+    return varres
 
 
 def unpack_variants(var: Union[Variant, Any], tp: SignatureType = None) -> Any:

@@ -39,12 +39,14 @@ class NetConnmanManagerStub(NetConnmanStub):
     __technologies: BusObjList
     __services: Dict[str, Dict[str, Variant]]
     __properties: BusProps
+    __registered_agent: Optional[str]
 
     def __init__(self) -> None:
         super().__init__()
         self.__technologies = []
         self.__services = {}
         self.__properties = {}
+        self.__registered_agent = None
 
     async def call_get_properties(self) -> BusProps:
         return self.__properties
@@ -54,6 +56,9 @@ class NetConnmanManagerStub(NetConnmanStub):
 
     async def call_get_services(self) -> BusObjList:
         return [(path, props) for path, props in self.__services.items()]
+
+    async def call_register_agent(self, path) -> None:
+        self.__registered_agent = path
 
     def on_property_changed(self, handler: Callable) -> None:
         self._connect_signal("property_changed", handler)
@@ -119,10 +124,12 @@ class NetConnmanTechnologyStub(NetConnmanStub):
 
 class NetConnmanServiceStub(NetConnmanStub):
     log: List[str]
+    properties: BusProps
 
     def __init__(self) -> None:
         super().__init__()
         self.log = []
+        self.properties = {}
 
     async def call_connect(self) -> None:
         self.log.append("Connect")
@@ -133,6 +140,9 @@ class NetConnmanServiceStub(NetConnmanStub):
     async def call_disconnect(self) -> None:
         self.log.append("Disconnect")
 
+    async def call_get_properties(self) -> BusProps:
+        return self.properties
+
     def on_property_changed(self, handler: Callable) -> None:
         self._connect_signal("property_changed", handler)
 
@@ -140,6 +150,7 @@ class NetConnmanServiceStub(NetConnmanStub):
         self._disconnect_signal("property_changed", handler)
 
     def stub_properties_changed(self, updates: BusProps) -> None:
+        self.properties.update(updates)
         for name, value in updates.items():
             self._fire_signal("property_changed", name, value)
 

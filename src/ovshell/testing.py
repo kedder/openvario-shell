@@ -235,9 +235,11 @@ class MessageBusProxyObjectStub:
 
 class MessageBusStub:
     _impls: Dict[str, Dict[str, Any]]
+    _exported: Dict[str, Any]
 
     def __init__(self) -> None:
         self._impls = {}
+        self._exported = {}
 
     async def introspect(
         self, bus_name: str, path: str, timeout: float = 30.0
@@ -251,9 +253,15 @@ class MessageBusStub:
             bus_name, path, introspection, self._impls.get(path, {})
         )
 
+    def export(self, path: str, agent: Any) -> None:
+        self._exported[path] = agent
+
     def stub_register_interface(self, path: str, iface_name: str, impl: Any) -> None:
         ifaces = self._impls.setdefault(path, {})
         ifaces[iface_name] = impl
+
+    def stub_get_exported(self) -> Dict[str, Any]:
+        return self._exported
 
 
 class OpenVarioOSStub(api.OpenVarioOS):
