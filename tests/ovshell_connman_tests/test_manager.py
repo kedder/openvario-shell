@@ -1,8 +1,6 @@
 import asyncio
 from collections import Counter
-from typing import Callable
 from typing import Counter as TCounter
-from typing import Dict, List, Tuple
 
 import pytest
 from dbus_next import Variant
@@ -11,142 +9,8 @@ from ovshell import testing
 from ovshell_connman.api import ConnmanService, ConnmanServiceState, ConnmanState
 from ovshell_connman.manager import ConnmanManagerImpl
 
-BusProps = Dict[str, Variant]
-BusObjList = List[Tuple[str, BusProps]]
-
-
-class NetConnmanStub:
-    __signals: Dict[str, List[Callable]]
-
-    def __init__(self) -> None:
-        self.__signals = {}
-
-    def stub_get_signals(self):
-        return self.__signals
-
-    def _connect_signal(self, signal: str, handler: Callable) -> None:
-        hl = self.__signals.setdefault(signal, [])
-        hl.append(handler)
-
-    def _disconnect_signal(self, signal: str, handler: Callable) -> None:
-        hl = self.__signals.setdefault(signal, [])
-        hl.remove(handler)
-        if not hl:
-            del self.__signals[signal]
-
-    def _fire_signal(self, signal: str, *args, **kwargs) -> None:
-        hl = self.__signals.get(signal, [])
-        for h in hl:
-            h(*args, **kwargs)
-
-
-class NetConnmanManagerStub(NetConnmanStub):
-    __technologies: BusObjList
-    __services: Dict[str, Dict[str, Variant]]
-    __properties: BusProps
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.__technologies = []
-        self.__services = {}
-        self.__properties = {}
-
-    async def call_get_properties(self) -> BusProps:
-        return self.__properties
-
-    async def call_get_technologies(self) -> BusObjList:
-        return self.__technologies
-
-    async def call_get_services(self) -> BusObjList:
-        return [(path, props) for path, props in self.__services.items()]
-
-    def on_property_changed(self, handler: Callable) -> None:
-        self._connect_signal("property_changed", handler)
-
-    def on_services_changed(self, handler: Callable) -> None:
-        self._connect_signal("services_changed", handler)
-
-    def on_technology_added(self, handler: Callable) -> None:
-        self._connect_signal("technology_added", handler)
-
-    def on_technology_removed(self, handler: Callable) -> None:
-        self._connect_signal("technology_removed", handler)
-
-    def off_property_changed(self, handler: Callable) -> None:
-        self._disconnect_signal("property_changed", handler)
-
-    def off_services_changed(self, handler: Callable) -> None:
-        self._disconnect_signal("services_changed", handler)
-
-    def off_technology_added(self, handler: Callable) -> None:
-        self._disconnect_signal("technology_added", handler)
-
-    def off_technology_removed(self, handler: Callable) -> None:
-        self._disconnect_signal("technology_removed", handler)
-
-    def stub_set_technologies(self, techs: BusObjList) -> None:
-        for path, tech in self.__technologies:
-            self._fire_signal("technology_removed", path)
-
-        self.__technologies = techs
-
-        for path, tech in techs:
-            self._fire_signal("technology_added", path, tech)
-
-    def stub_update_services(self, updates: BusObjList, removes: List[str]) -> None:
-        for path, props in updates:
-            existing = self.__services.get(path, {})
-            existing.update(props)
-        for path in removes:
-            del self.__services[path]
-        self._fire_signal("services_changed", updates, removes)
-
-    def stub_set_properties(self, properties: BusProps) -> None:
-        self.__properties = properties
-        for name, value in properties.items():
-            self._fire_signal("property_changed", name, value)
-
-
-class NetConnmanTechnologyStub(NetConnmanStub):
-    scan_called: int = 0
-    props_updated: List[Tuple[str, Variant]]
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.props_updated = []
-
-    async def call_scan(self) -> None:
-        self.scan_called += 1
-
-    async def call_set_property(self, name: str, value: Variant) -> None:
-        self.props_updated.append((name, value))
-
-
-class NetConnmanServiceStub(NetConnmanStub):
-    log: List[str]
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.log = []
-
-    async def call_connect(self) -> None:
-        self.log.append("Connect")
-
-    async def call_remove(self) -> None:
-        self.log.append("Remove")
-
-    async def call_disconnect(self) -> None:
-        self.log.append("Disconnect")
-
-    def on_property_changed(self, handler: Callable) -> None:
-        self._connect_signal("property_changed", handler)
-
-    def off_property_changed(self, handler: Callable) -> None:
-        self._disconnect_signal("property_changed", handler)
-
-    def stub_properties_changed(self, updates: BusProps) -> None:
-        for name, value in updates.items():
-            self._fire_signal("property_changed", name, value)
+from .stubs import NetConnmanManagerStub, NetConnmanServiceStub
+from .stubs import NetConnmanTechnologyStub
 
 
 class TestConnmanManagerImpl:
