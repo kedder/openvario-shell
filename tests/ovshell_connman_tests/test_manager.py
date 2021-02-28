@@ -8,7 +8,7 @@ import pytest
 from dbus_next import Variant
 
 from ovshell import testing
-from ovshell_connman.api import ConnmanService, ConnmanServiceState
+from ovshell_connman.api import ConnmanService, ConnmanServiceState, ConnmanState
 from ovshell_connman.manager import ConnmanManagerImpl
 
 BusProps = Dict[str, Variant]
@@ -103,6 +103,8 @@ class NetConnmanManagerStub(NetConnmanStub):
 
     def stub_set_properties(self, properties: BusProps) -> None:
         self.__properties = properties
+        for name, value in properties.items():
+            self._fire_signal("property_changed", name, value)
 
 
 class NetConnmanTechnologyStub(NetConnmanStub):
@@ -167,6 +169,13 @@ class TestConnmanManagerImpl:
             "State": Variant("s", "idle"),
         }
 
+        self.sample_tech_props = {
+            "Name": Variant("s", "Ethernet"),
+            "Type": Variant("s", "ethernet"),
+            "Connected": Variant("b", False),
+            "Powered": Variant("b", False),
+        }
+
     @pytest.mark.asyncio
     async def test_setup(self, ovshell: testing.OpenVarioShellStub) -> None:
         # GIVEN
@@ -228,15 +237,7 @@ class TestConnmanManagerImpl:
         # GIVEN
         self.net_connman_manager.stub_set_technologies(
             [
-                (
-                    "/eth",
-                    {
-                        "Name": Variant("s", "Ethernet"),
-                        "Type": Variant("s", "ethernet"),
-                        "Connected": Variant("b", False),
-                        "Powered": Variant("b", False),
-                    },
-                ),
+                ("/eth", self.sample_tech_props),
                 (
                     "/wifi",
                     {
@@ -268,17 +269,7 @@ class TestConnmanManagerImpl:
     async def test_tech_power(self) -> None:
         # GIVEN
         self.net_connman_manager.stub_set_technologies(
-            [
-                (
-                    "/eth",
-                    {
-                        "Name": Variant("s", "Ethernet"),
-                        "Type": Variant("s", "ethernet"),
-                        "Connected": Variant("b", False),
-                        "Powered": Variant("b", False),
-                    },
-                ),
-            ]
+            [("/eth", self.sample_tech_props)]
         )
         net_connman_tech = NetConnmanTechnologyStub()
         self.bus.stub_register_interface(
@@ -479,3 +470,66 @@ class TestConnmanManagerImpl:
 
         # THEN
         assert svc1_iface.log == ["Disconnect"]
+
+    @pytest.mark.asyncio
+    async def test_subscribers(self) -> None:
+        # GIVEN
+
+        class EventListener:
+            def __init__(self, counter) -> None:
+                self.counter = counter
+
+            def techs_changed(self) -> None:
+                self.counter.update(["tech changed"])
+
+            def services_changed(self) -> None:
+                self.counter.update(["services changed"])
+
+        cnt: TCounter[str] = Counter()
+        listener = EventListener(cnt)
+
+        mgr = ConnmanManagerImpl(self.bus)
+        svc1_iface = NetConnmanServiceStub()
+        self.bus.stub_register_interface("/svc1", "net.connman.Service", svc1_iface)
+        await mgr.setup()
+        await asyncio.sleep(0)
+
+        # WHEN
+        mgr.on_services_changed(listener.services_changed)
+        mgr.on_technologies_changed(listener.techs_changed)
+
+        # Add tech
+        self.net_connman_manager.stub_set_technologies(
+            [("/eth0", self.sample_tech_props)]
+        )
+        # Remove and add another tech
+        self.net_connman_manager.stub_set_technologies(
+            [("/eth1", self.sample_tech_props)]
+        )
+        self.net_connman_manager.stub_update_services(
+            [("/svc1", self.sample_service_props)], []
+        )
+
+        # THEN
+        assert cnt["tech changed"] == 3  # 1 removed, 2 added
+        assert cnt["services changed"] == 1
+
+    @pytest.mark.asyncio
+    async def test_get_state(self) -> None:
+        # GIVEN
+        mgr = ConnmanManagerImpl(self.bus)
+        await mgr.setup()
+        await asyncio.sleep(0)
+
+        # WHEN
+        state = mgr.get_state()
+
+        # THEN
+        assert state == ConnmanState.UNKNOWN
+
+        # WHEN
+        self.net_connman_manager.stub_set_properties({"State": Variant("s", "online")})
+        state = mgr.get_state()
+
+        # THEN
+        assert state == ConnmanState.ONLINE
