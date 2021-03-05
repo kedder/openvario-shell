@@ -41,7 +41,7 @@ jobs:
           name: Generate reports
           when: on_success
           environment:
-            COVERALLS_PARALLEL: true
+            COVERALLS_PARALLEL: "true"
           command: |
             coveralls
   build-complete:
