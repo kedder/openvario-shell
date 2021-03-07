@@ -1,7 +1,7 @@
 Changelog for openvario-shell
 =============================
 
-0.7.0 (unreleased)
+0.7.0 (2021-03-07)
 ------------------
 
 - Implement a new "Networking" app: connect to WiFi networks and more
