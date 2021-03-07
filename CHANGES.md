@@ -4,6 +4,7 @@ Changelog for openvario-shell
 0.7.0 (unreleased)
 ------------------
 
+- Implement a new "Networking" app: connect to WiFi networks and more
 - Avoid error in backup app when rsync produces a lot of unexpected output.
 
 
