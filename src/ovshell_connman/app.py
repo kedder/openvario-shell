@@ -182,7 +182,7 @@ class ConnmanManagerActivity(api.Activity):
         # Find what actions we can perform with this service
         actions = []
         can_connect = False
-        if svc.state == ConnmanServiceState.IDLE:
+        if svc.state in (ConnmanServiceState.IDLE, ConnmanServiceState.FAILURE):
             can_connect = True
             actions.append(("Connect", self._connect))
 
