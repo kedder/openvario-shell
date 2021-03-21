@@ -1,7 +1,7 @@
 Changelog for openvario-shell
 =============================
 
-0.7.1 (unreleased)
+0.7.1 (2021-03-21)
 ------------------
 
 - Connman: fix exception when signal strength is missing from a service 
