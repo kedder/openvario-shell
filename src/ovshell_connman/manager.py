@@ -240,7 +240,7 @@ class ConnmanManagerImpl(ConnmanManager):
         for path, dbusprops in changed:
             svcp = self._svc_proxies.get(path)
             if svcp is None:
-                if "Name" not in dbusprops:
+                if "Name" not in dbusprops and "Type" not in dbusprops:
                     # This is an update message, we cannot create a service
                     continue
                 svc = model.create_service_from_props(path, dbusprops)

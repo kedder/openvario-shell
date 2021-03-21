@@ -1,6 +1,6 @@
 import enum
 from abc import abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Sequence
 
 from typing_extensions import Protocol
@@ -36,13 +36,13 @@ class ConnmanTechnology:
 @dataclass
 class ConnmanService:
     path: str
-    auto_connect: bool
-    favorite: bool
-    name: str
-    security: List[str]
-    state: ConnmanServiceState
-    strength: int
     type: str
+    name: str
+    auto_connect: bool = False
+    favorite: bool = False
+    security: List[str] = field(default_factory=list)
+    state: ConnmanServiceState = ConnmanServiceState.IDLE
+    strength: int = 0
 
 
 class ConnmanManager(Protocol):
