@@ -41,20 +41,17 @@ The easiest way to install is using `opkg` package manager on
 internet-connected Openvario device.
 
 ```sh
-echo src/gz kedder_core http://openvario.lebedev.lt/opkg/armv7vet2hf-neon >> /etc/opkg/customfeeds.conf
-echo src/gz kedder_all http://openvario.lebedev.lt/opkg/all >> /etc/opkg/customfeeds.conf
-opkg update
-opkg install openvario-shell openvario-shell-autostart --force-removal-of-dependent-packages
+wget https://raw.githubusercontent.com/kedder/openvario-shell/master/scripts/openvario-shell-install.sh -O - | sh
 ```
 
-After executing these commands, `ovshell` command should be available. It will
+After executing this command, `ovshell` command should be available. It will
 start automatically next time Openvario boots up.
 
 In case you didn't like it and would like to return to stock Openvario menu,
 run this command:
 
 ```sh
-opkg install ovmenu-ng ovmenu-ng-autostart --force-removal-of-dependent-packages
+wget https://raw.githubusercontent.com/kedder/openvario-shell/master/scripts/openvario-shell-uninstall.sh -O - | sh
 ```
 
 ## Development
