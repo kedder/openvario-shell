@@ -193,7 +193,7 @@ class TestConnmanManagerImpl:
         assert svc1.state == ConnmanServiceState.ONLINE
 
     @pytest.mark.asyncio
-    async def test_services_changed_incomplete_data(self) -> None:
+    async def test_services_changed_incomplete_data1(self) -> None:
         # GIVEN
         mgr = ConnmanManagerImpl(self.bus)
         svc1_iface = NetConnmanServiceStub()
@@ -204,12 +204,11 @@ class TestConnmanManagerImpl:
             "Name": Variant("s", "Skynet"),
             "Type": Variant("s", "ethernet"),
         }
+        # WHEN
         self.net_connman_manager.stub_update_services(
             [("/svc1", incomplete_props,)], [],
         )
         await asyncio.sleep(0)
-
-        # WHEN
         svcs = mgr.list_services()
 
         # THEN
@@ -218,6 +217,27 @@ class TestConnmanManagerImpl:
         assert svc1.path == "/svc1"
         assert svc1.name == "Skynet"
         assert svc1.state == ConnmanServiceState.IDLE
+
+    @pytest.mark.asyncio
+    async def test_services_changed_incomplete_data_ignore(self) -> None:
+        # GIVEN
+        mgr = ConnmanManagerImpl(self.bus)
+        svc1_iface = NetConnmanServiceStub()
+        self.bus.stub_register_interface("/svc1", "net.connman.Service", svc1_iface)
+        await mgr.setup()
+
+        incomplete_props = {
+            "Type": Variant("s", "Skynet"),
+        }
+        # WHEN
+        self.net_connman_manager.stub_update_services(
+            [("/svc1", incomplete_props,)], [],
+        )
+        await asyncio.sleep(0)
+        svcs = mgr.list_services()
+
+        # THEN
+        assert len(svcs) == 0
 
     @pytest.mark.asyncio
     async def test_track_service_props(self) -> None:
