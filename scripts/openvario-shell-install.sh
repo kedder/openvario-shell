@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/sh
 # Installation script for openvario-shell.
 #
 # Run it on your openvario-device to replace the original menu system with
