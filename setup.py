@@ -10,7 +10,7 @@ with open(path.join(here, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="openvario-shell",
-    version="0.7.2",
+    version="0.7.3.dev0",
     description="Main Menu Shell for OpenVario",
     long_description=long_description,
     long_description_content_type="text/markdown",
