@@ -1,7 +1,7 @@
 Changelog for openvario-shell
 =============================
 
-0.7.2 (unreleased)
+0.7.2 (2021-03-24)
 ------------------
 
 - Connman: fix crash when incomplete service object arrives from DBUS.
