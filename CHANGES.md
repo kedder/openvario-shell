@@ -4,7 +4,7 @@ Changelog for openvario-shell
 0.7.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Better support screens with rounded corners (add some padding to the top bar)
 
 
 0.7.2 (2021-03-24)

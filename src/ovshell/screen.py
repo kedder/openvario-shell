@@ -34,7 +34,10 @@ class TopBar(urwid.WidgetWrap):
         self.right = urwid.Text("", align="right")
         self.cols = urwid.Columns([("pack", self.left), ("weight", 1, self.right)])
         self._indicators = {}
-        super().__init__(urwid.AttrMap(self.cols, "topbar"))
+        # Add padding on the sides to look good on screens with rounded
+        # corners.
+        padded = urwid.Padding(self.cols, align=urwid.CENTER, left=1, right=1)
+        super().__init__(urwid.AttrMap(padded, "topbar"))
 
     def set_indicator(
         self, iid: str, markup: UrwidText, location: IndicatorLocation, weight: int
