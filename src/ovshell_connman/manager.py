@@ -4,6 +4,7 @@ import weakref
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from dbus_next import Variant
+from dbus_next.errors import InterfaceNotFoundError
 from dbus_next.message_bus import BaseMessageBus
 from dbus_next.proxy_object import BaseProxyInterface
 
@@ -21,6 +22,7 @@ class ConnmanServiceProxy:
         self._iface = None
         self._change_handlers = []
         self._tracking = False
+        self._tracking_lock = asyncio.Lock()
 
     async def connect(self) -> None:
         return await (await self._get_service_iface()).call_connect()
@@ -32,17 +34,24 @@ class ConnmanServiceProxy:
         return await (await self._get_service_iface()).call_disconnect()
 
     async def start_tracking(self) -> None:
-        if self._tracking:
-            return
+        async with self._tracking_lock:
+            if self._tracking:
+                return
 
-        self._tracking = True
-        iface = await self._get_service_iface()
-        iface.on_property_changed(self._on_property_changed)
+            try:
+                iface = await self._get_service_iface()
+            except InterfaceNotFoundError:
+                return
+            iface.on_property_changed(self._on_property_changed)
+            self._tracking = True
 
     def stop_tracking(self) -> None:
         if self._iface is None:
             return
         self._iface.off_property_changed(self._on_property_changed)
+
+    def is_tracking(self) -> bool:
+        return self._tracking
 
     def on_change(self, handler: Callable[[ConnmanService], None]) -> None:
         assert isinstance(handler, types.MethodType)
@@ -235,7 +244,7 @@ class ConnmanManagerImpl(ConnmanManager):
     def _notify_service_changed(
         self, changed: List[Tuple[str, Dict[str, Variant]]], removed: List[str]
     ) -> None:
-        unseen = []
+        totrack = []
         # Update props
         for path, dbusprops in changed:
             svcp = self._svc_proxies.get(path)
@@ -246,14 +255,15 @@ class ConnmanManagerImpl(ConnmanManager):
                 svc = model.create_service_from_props(path, dbusprops)
                 svcp = ConnmanServiceProxy(svc, self._bus)
                 self._svc_proxies[path] = svcp
-                unseen.append(path)
             else:
                 svc = svcp.service
                 model.update_service_from_props(svc, dbusprops)
+            if not svcp.is_tracking():
+                totrack.append(path)
 
         self._svc_order = [path for path, _ in changed if path in self._svc_proxies]
-        if unseen:
-            asyncio.create_task(self._start_tracking_services(unseen))
+        if totrack:
+            asyncio.create_task(self._start_tracking_services(totrack))
         self._fire_svc_changed()
 
     async def _start_tracking_services(self, paths: List[str]) -> None:
