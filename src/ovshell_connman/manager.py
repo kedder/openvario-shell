@@ -182,7 +182,7 @@ class ConnmanManagerImpl(ConnmanManager):
     async def scan_all(self) -> int:
         ifaces = []
         for tech in self.technologies:
-            if tech.type == "ethernet":
+            if tech.type != "wifi":
                 continue
             ifaces.append(ConnmanTechnologyProxy(tech, self._bus))
 
