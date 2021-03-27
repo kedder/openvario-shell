@@ -5,7 +5,7 @@ Changelog for openvario-shell
 ------------------
 
 - Better support screens with rounded corners (add some padding to the top bar)
-
+- Fix various traceback crashes in connman app
 
 0.7.2 (2021-03-24)
 ------------------
