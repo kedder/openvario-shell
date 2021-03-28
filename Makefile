@@ -1,4 +1,4 @@
-all: black isort test mypy
+all: black isort mypy test
 
 ctags:
 	ctags -R `pipenv --venv` src
