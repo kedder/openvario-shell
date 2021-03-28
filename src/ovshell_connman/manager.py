@@ -182,9 +182,13 @@ class ConnmanManagerImpl(ConnmanManager):
     async def scan_all(self) -> int:
         ifaces = []
         for tech in self.technologies:
+            if not tech.powered:
+                continue
             if tech.type != "wifi":
                 continue
             ifaces.append(ConnmanTechnologyProxy(tech, self._bus))
+        if not ifaces:
+            return 0
 
         (done, pending) = await asyncio.wait(
             [iface.scan() for iface in ifaces], return_when=asyncio.ALL_COMPLETED

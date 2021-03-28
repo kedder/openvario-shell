@@ -37,7 +37,7 @@ class TestConnmanManagerImpl:
             "Name": Variant("s", "Ethernet"),
             "Type": Variant("s", "ethernet"),
             "Connected": Variant("b", False),
-            "Powered": Variant("b", False),
+            "Powered": Variant("b", True),
         }
 
     @pytest.mark.asyncio
@@ -97,7 +97,40 @@ class TestConnmanManagerImpl:
         assert svc1_iface.stub_get_signals() == {}
 
     @pytest.mark.asyncio
-    async def test_scan_all(self) -> None:
+    async def test_scan_all_powered(self) -> None:
+        # GIVEN
+        self.net_connman_manager.stub_set_technologies(
+            [
+                ("/eth", self.sample_tech_props),
+                (
+                    "/wifi",
+                    {
+                        "Name": Variant("s", "Wifi"),
+                        "Type": Variant("s", "wifi"),
+                        "Connected": Variant("b", False),
+                        "Powered": Variant("b", True),
+                    },
+                ),
+            ]
+        )
+
+        net_connman_tech = NetConnmanTechnologyStub()
+        self.bus.stub_register_interface(
+            "/wifi", "net.connman.Technology", net_connman_tech
+        )
+        mgr = ConnmanManagerImpl(self.bus)
+        await mgr.setup()
+
+        # WHEN
+        assert len(mgr.technologies) > 0
+        scanned = await mgr.scan_all()
+
+        # THEN
+        assert scanned == 1  # only wifi is scanned
+        assert net_connman_tech.scan_called == 1
+
+    @pytest.mark.asyncio
+    async def test_scan_all_notpowered(self) -> None:
         # GIVEN
         self.net_connman_manager.stub_set_technologies(
             [
@@ -126,8 +159,8 @@ class TestConnmanManagerImpl:
         scanned = await mgr.scan_all()
 
         # THEN
-        assert scanned == 1  # only wifi is scanned
-        assert net_connman_tech.scan_called == 1
+        assert scanned == 0  # powered off devices are not scanned
+        assert net_connman_tech.scan_called == 0
 
     @pytest.mark.asyncio
     async def test_tech_power(self) -> None:

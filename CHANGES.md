@@ -4,7 +4,7 @@ Changelog for openvario-shell
 0.7.4 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Connman app: do not try to scan powered-off devices.
 
 
 0.7.3 (2021-03-28)
