@@ -11,6 +11,8 @@ mypy = "*"
 black = "==19.10b0"
 mock = "*"
 isort = "*"
+types-setuptools = "*"
+types-mock = "*"
 
 [packages]
 openvario-shell = {editable = true,path = "."}
