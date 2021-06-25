@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "openvario-shell"
+version = "0.7.5"
+description = "Main Menu Shell for OpenVario"
+authors = ["Andrey Lebedev <andrey@lebedev.lt>"]
+license = "LGPLv3"
+packages = [
+    { include = "ovshell", from = "src"},
+    { include = "ovshell_connman", from = "src"},
+    { include = "ovshell_core", from = "src"},
+    { include = "ovshell_fileman", from = "src"},
+    { include = "ovshell_xcsoar", from = "src"},
+]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+urwid = "^2.1.2"
+pyserial-asyncio = "^0.5"
+pyserial = "^3.5"
+dbus-next = "^0.2.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.4"
+pytest-coverage = "^0.0"
+pytest-asyncio = "^0.15.1"
+mypy = "^0.910"
+black = "^21.6b0"
+mock = "^4.0.3"
+isort = "^5.9.1"
+types-mock = "^0.1.3"
+types-setuptools = "^57.0.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
