@@ -148,7 +148,13 @@ class BackupRestoreMainActivity(api.Activity):
         self.shell.screen.spawn_task(self, self.mountwatcher.run())
 
     def _button_grid(self, buttons: List[urwid.Widget]) -> urwid.GridFlow:
-        return urwid.GridFlow(buttons, cell_width=15, h_sep=1, v_sep=1, align="left",)
+        return urwid.GridFlow(
+            buttons,
+            cell_width=15,
+            h_sep=1,
+            v_sep=1,
+            align="left",
+        )
 
     def _on_backup(self, w: urwid.Widget) -> None:
         act = BackupActivity(
@@ -173,7 +179,10 @@ class BackupRestoreMainActivity(api.Activity):
 
     def _get_rsync_modal_opts(self) -> api.ModalOptions:
         return api.ModalOptions(
-            align="center", width=("relative", 80), valign="middle", height="pack",
+            align="center",
+            width=("relative", 80),
+            valign="middle",
+            height="pack",
         )
 
     def _refresh_restore_dirs(self) -> None:

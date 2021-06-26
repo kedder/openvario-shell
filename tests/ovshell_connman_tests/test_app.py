@@ -66,7 +66,11 @@ class TestConnmanManagerActivity:
         self.urwid = UrwidMock()
 
         self.wifi_tech = ConnmanTechnology(
-            path="/tech-path", name="WiFi", type="wifi", connected=False, powered=False,
+            path="/tech-path",
+            name="WiFi",
+            type="wifi",
+            connected=False,
+            powered=False,
         )
         self.svc = ConnmanService(
             path="/svc-path",

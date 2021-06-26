@@ -67,7 +67,8 @@ class TopBar(urwid.WidgetWrap):
     def _list_indicators(self, location: IndicatorLocation) -> Sequence[TopIndicator]:
         indicators = self._indicators.values()
         return sorted(
-            [i for i in indicators if i.location == location], key=lambda i: i.weight,
+            [i for i in indicators if i.location == location],
+            key=lambda i: i.weight,
         )
 
     def _gen_markup(self, indicators: Sequence[TopIndicator]) -> UrwidText:
@@ -285,7 +286,11 @@ class DialogActivity(api.Activity, api.Dialog):
             btn, "click", self._on_button_clicked, user_args=[lambda: True]
         )
         self.buttons = urwid.GridFlow(
-            [btn], cell_width=11, h_sep=2, v_sep=1, align="center",
+            [btn],
+            cell_width=11,
+            h_sep=2,
+            v_sep=1,
+            align="center",
         )
 
         content = urwid.Pile([self.message, urwid.Divider(), self.buttons])

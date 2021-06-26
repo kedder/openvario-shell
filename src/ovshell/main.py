@@ -112,7 +112,11 @@ def run(argv) -> None:
     evl = urwid.AsyncioEventLoop(loop=asyncioloop)
 
     urwidloop = urwid.MainLoop(
-        None, palette=palette, event_loop=evl, input_filter=debounce_esc, pop_ups=True,
+        None,
+        palette=palette,
+        event_loop=evl,
+        input_filter=debounce_esc,
+        pop_ups=True,
     )
 
     screen = ScreenManagerImpl(urwidloop)

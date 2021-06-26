@@ -74,7 +74,13 @@ class TestConnmanManagerImpl:
         self.bus.stub_register_interface("/svc1", "net.connman.Service", svc1_iface)
         await mgr.setup()
         self.net_connman_manager.stub_update_services(
-            [("/svc1", self.sample_service_props,)], [],
+            [
+                (
+                    "/svc1",
+                    self.sample_service_props,
+                )
+            ],
+            [],
         )
         await asyncio.sleep(0)
 
@@ -194,7 +200,13 @@ class TestConnmanManagerImpl:
         await mgr.setup()
 
         self.net_connman_manager.stub_update_services(
-            [("/svc1", self.sample_service_props,)], [],
+            [
+                (
+                    "/svc1",
+                    self.sample_service_props,
+                )
+            ],
+            [],
         )
         await asyncio.sleep(0)
 
@@ -214,7 +226,8 @@ class TestConnmanManagerImpl:
 
         # WHEN
         self.net_connman_manager.stub_update_services(
-            [("/svc1", {"State": Variant("s", "online")})], [],
+            [("/svc1", {"State": Variant("s", "online")})],
+            [],
         )
 
         # THEN
@@ -239,7 +252,13 @@ class TestConnmanManagerImpl:
         }
         # WHEN
         self.net_connman_manager.stub_update_services(
-            [("/svc1", incomplete_props,)], [],
+            [
+                (
+                    "/svc1",
+                    incomplete_props,
+                )
+            ],
+            [],
         )
         await asyncio.sleep(0)
         svcs = mgr.list_services()
@@ -264,7 +283,13 @@ class TestConnmanManagerImpl:
         }
         # WHEN
         self.net_connman_manager.stub_update_services(
-            [("/svc1", incomplete_props,)], [],
+            [
+                (
+                    "/svc1",
+                    incomplete_props,
+                )
+            ],
+            [],
         )
         await asyncio.sleep(0)
         svcs = mgr.list_services()
@@ -281,7 +306,13 @@ class TestConnmanManagerImpl:
         await mgr.setup()
 
         self.net_connman_manager.stub_update_services(
-            [("/svc1", self.sample_service_props,)], [],
+            [
+                (
+                    "/svc1",
+                    self.sample_service_props,
+                )
+            ],
+            [],
         )
         await asyncio.sleep(0)
 
@@ -311,7 +342,13 @@ class TestConnmanManagerImpl:
         await mgr.setup()
 
         self.net_connman_manager.stub_update_services(
-            [("/svc1", self.sample_service_props,)], [],
+            [
+                (
+                    "/svc1",
+                    self.sample_service_props,
+                )
+            ],
+            [],
         )
         await asyncio.sleep(0)
 
@@ -357,7 +394,13 @@ class TestConnmanManagerImpl:
         await mgr.setup()
 
         self.net_connman_manager.stub_update_services(
-            [("/svc1", self.sample_service_props,)], [],
+            [
+                (
+                    "/svc1",
+                    self.sample_service_props,
+                )
+            ],
+            [],
         )
         await asyncio.sleep(0)
 
@@ -379,7 +422,13 @@ class TestConnmanManagerImpl:
         await mgr.setup()
 
         self.net_connman_manager.stub_update_services(
-            [("/svc1", self.sample_service_props,)], [],
+            [
+                (
+                    "/svc1",
+                    self.sample_service_props,
+                )
+            ],
+            [],
         )
         await asyncio.sleep(0)
 
@@ -401,7 +450,13 @@ class TestConnmanManagerImpl:
         await mgr.setup()
 
         self.net_connman_manager.stub_update_services(
-            [("/svc1", self.sample_service_props,)], [],
+            [
+                (
+                    "/svc1",
+                    self.sample_service_props,
+                )
+            ],
+            [],
         )
         await asyncio.sleep(0)
 

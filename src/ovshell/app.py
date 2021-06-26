@@ -35,7 +35,10 @@ class AppManagerImpl(api.AppManager):
             for app in ext.list_apps():
                 appid = f"{ext.id}.{app.name}"
                 appinfo = api.AppInfo(
-                    id=appid, app=app, extension=ext, pinned=appid in allpinned,
+                    id=appid,
+                    app=app,
+                    extension=ext,
+                    pinned=appid in allpinned,
                 )
                 appinfos.append(appinfo)
 

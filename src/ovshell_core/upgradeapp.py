@@ -88,7 +88,9 @@ class CheckForUpdatesWidget(urwid.WidgetWrap):
         )
 
         update_term = urwid.LineBox(
-            self._create_update_terminal(), title="opkg update", title_align="left",
+            self._create_update_terminal(),
+            title="opkg update",
+            title_align="left",
         )
 
         content = urwid.Pile(
@@ -119,14 +121,16 @@ class CheckForUpdatesWidget(urwid.WidgetWrap):
                 ("success message", " upgradable packages found!"),
             ]
             message_wdg = urwid.Columns(
-                [("pack", urwid.Text(message)), ("pack", continue_btn)], dividechars=1,
+                [("pack", urwid.Text(message)), ("pack", continue_btn)],
+                dividechars=1,
             )
         else:
             exit_btn = widget.PlainButton(" Exit ")
             urwid.connect_signal(exit_btn, "click", self._on_exit)
             message = [("remark", "No updates found")]
             message_wdg = urwid.Columns(
-                [("pack", urwid.Text(message)), ("pack", exit_btn)], dividechars=1,
+                [("pack", urwid.Text(message)), ("pack", exit_btn)],
+                dividechars=1,
             )
 
         self.message_line.original_widget = message_wdg
@@ -253,7 +257,9 @@ class SystemUpgradeWidget(urwid.WidgetWrap):
         )
 
         update_term = urwid.LineBox(
-            self._create_upgrade_terminal(), title="opkg upgrade", title_align="left",
+            self._create_upgrade_terminal(),
+            title="opkg upgrade",
+            title_align="left",
         )
 
         content = urwid.Pile(
@@ -275,7 +281,8 @@ class SystemUpgradeWidget(urwid.WidgetWrap):
         urwid.connect_signal(exit_btn, "click", self._on_exit)
         message = ("success message", "Upgrade completed!")
         message_wdg = urwid.Columns(
-            [("pack", urwid.Text(message)), ("pack", exit_btn)], dividechars=1,
+            [("pack", urwid.Text(message)), ("pack", exit_btn)],
+            dividechars=1,
         )
         self.message_line.original_widget = message_wdg
 

@@ -76,7 +76,9 @@ class ConnmanAgentInterface(ServiceInterface):
 
     @method("RequestInput")
     async def request_input(
-        self, service: "o", fields: "a{sv}",  # type: ignore
+        self,
+        service: "o",  # type: ignore
+        fields: "a{sv}",  # type: ignore
     ) -> "a{sv}":  # type: ignore
         """This method gets called when trying to connect to
         a service and some extra input is required. For

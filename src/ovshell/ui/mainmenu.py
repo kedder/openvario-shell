@@ -122,7 +122,8 @@ class MainMenuActivity(api.Activity):
 
     def _on_quit(self, w: urwid.Widget) -> None:
         confirm = self.shell.screen.push_dialog(
-            "Shut Down?", urwid.Text("Do you really want to shut down Openvario?"),
+            "Shut Down?",
+            urwid.Text("Do you really want to shut down Openvario?"),
         )
         confirm.add_button("Shut Down", self._on_shutdown)
         confirm.add_button("Restart", self._on_restart)
@@ -179,7 +180,11 @@ class MainMenuActivity(api.Activity):
         )
 
         # Align with main menu
-        return urwid.Padding(counter_pile, width=("relative", 80), align="center",)
+        return urwid.Padding(
+            counter_pile,
+            width=("relative", 80),
+            align="center",
+        )
 
     async def autostart_countdown(self, countdown: int, appinfo: api.AppInfo):
         empty_widget = self.autostart_counter.original_widget
