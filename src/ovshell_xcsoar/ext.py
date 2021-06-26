@@ -41,7 +41,10 @@ class XCSoarApp(api.App):
         env = self._prep_environment()
         cmdline = self._make_commandline()
         modal_opts = api.ModalOptions(
-            align="center", width=("relative", 90), valign="middle", height="pack",
+            align="center",
+            width=("relative", 90),
+            valign="middle",
+            height="pack",
         )
         try:
             message = urwid.Text("Running XCSoar...")

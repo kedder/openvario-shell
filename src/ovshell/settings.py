@@ -12,7 +12,9 @@ class StoredSettingsImpl(api.StoredSettings):
     _filename: Optional[str]
 
     def __init__(
-        self, settings: Dict[str, Optional[api.JsonType]] = None, filename: str = None,
+        self,
+        settings: Dict[str, Optional[api.JsonType]] = None,
+        filename: str = None,
     ) -> None:
         self._settings = settings or {}
         self._filename = filename

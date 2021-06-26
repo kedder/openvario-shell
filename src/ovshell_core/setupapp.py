@@ -58,7 +58,10 @@ class WelcomeWizardStep(WizardStepWidget):
             [
                 ("pack", urwid.Text(welcome_msg)),
                 ("pack", urwid.Divider()),
-                ("pack", _button_row([self.make_next_button("Start")]),),
+                (
+                    "pack",
+                    _button_row([self.make_next_button("Start")]),
+                ),
             ]
         )
         super().__init__(content)
@@ -97,7 +100,10 @@ class OrientationWizardStep(WizardStepWidget):
             [
                 ("pack", urwid.Text(msg)),
                 ("pack", urwid.Divider()),
-                ("pack", _button_row([self.make_next_button("Skip")]),),
+                (
+                    "pack",
+                    _button_row([self.make_next_button("Skip")]),
+                ),
                 ("pack", urwid.Divider()),
                 (len(orient_walker), self.orient_lb),
             ]
@@ -150,7 +156,10 @@ class CalibrateTouchWizardStep(WizardStepWidget):
             [
                 ("pack", urwid.Text(msg)),
                 ("pack", urwid.Divider()),
-                ("pack", _button_row([self.make_next_button("Skip"), cal_btn]),),
+                (
+                    "pack",
+                    _button_row([self.make_next_button("Skip"), cal_btn]),
+                ),
             ]
         )
         super().__init__(content)
@@ -193,7 +202,10 @@ class CalibrateSensorsWizardStep(WizardStepWidget):
             [
                 ("pack", urwid.Text(msg)),
                 ("pack", urwid.Divider()),
-                ("pack", _button_row([self.make_next_button("Skip"), cal_btn]),),
+                (
+                    "pack",
+                    _button_row([self.make_next_button("Skip"), cal_btn]),
+                ),
             ]
         )
         super().__init__(content)
@@ -239,7 +251,8 @@ class SetupActivity(api.Activity):
         )
 
         self.frame = urwid.Frame(
-            self.content_pile, header=widget.ActivityHeader("Setup wizard"),
+            self.content_pile,
+            header=widget.ActivityHeader("Setup wizard"),
         )
 
         self._switch_step(0)
@@ -328,7 +341,10 @@ class CommandRunnerActivity(api.Activity):
 
     def get_modal_opts(self) -> api.ModalOptions:
         return api.ModalOptions(
-            align="center", width=("relative", 90), valign="middle", height="pack",
+            align="center",
+            width=("relative", 90),
+            valign="middle",
+            height="pack",
         )
 
     def activate(self) -> None:
