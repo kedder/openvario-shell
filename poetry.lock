@@ -347,7 +347,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-mock"
-version = "0.1.3"
+version = "4.0.1"
 description = "Typing stubs for mock"
 category = "dev"
 optional = false
@@ -392,7 +392,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "ccc7df17af585672a7fad5e61b2b5c3484112e99a315a09818dcca074e0b0984"
+content-hash = "28f93db7b369c51af3cc1e1e4ba88506da3baefd0704e7997faba611baa33073"
 
 [metadata.files]
 appdirs = [
@@ -654,8 +654,8 @@ typed-ast = [
     {file = "typed_ast-1.4.3.tar.gz", hash = "sha256:fb1bbeac803adea29cedd70781399c99138358c26d05fcbd23c13016b7f5ec65"},
 ]
 types-mock = [
-    {file = "types-mock-0.1.3.tar.gz", hash = "sha256:9bdafab236c0530fed36dbf18bc942633b2033bfda16551b2e4eb767341a8b8c"},
-    {file = "types_mock-0.1.3-py2.py3-none-any.whl", hash = "sha256:e052879bb0a7d78547cce3342ffdf4ec3e8d2eff8f237911c3c8e31ac7ea8c86"},
+    {file = "types-mock-4.0.1.tar.gz", hash = "sha256:1ad09970f4f5ec45a138ab1e88d032f010e851bccef7765b34737ed390bbc5c8"},
+    {file = "types_mock-4.0.1-py3-none-any.whl", hash = "sha256:1a470543be8de673e2ea14739622de3bfb8c9b10429f50338ba9ca1e868c15e9"},
 ]
 types-setuptools = [
     {file = "types-setuptools-57.0.0.tar.gz", hash = "sha256:b3ada82b21dcb8e0cafd7658d8a16018a000e55bdb7f6f3cec033223360563ce"},
