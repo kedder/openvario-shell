@@ -5,7 +5,8 @@ from dbus_next.message_bus import BaseMessageBus
 
 from ovshell import api
 
-from .api import ConnmanManager, ConnmanService, ConnmanServiceState
+from .api import ConnmanManager, ConnmanNotAvailableException, ConnmanService
+from .api import ConnmanServiceState
 from .manager import ConnmanManagerImpl
 
 INDICATOR_ID = "connman"
@@ -21,8 +22,11 @@ class ConnmanServiceIndicator:
         self._tracked_service = None
 
     async def start(self):
-        self._manager.on_services_changed(self._handle_svcs_changed)
-        await self._manager.setup()
+        try:
+            self._manager.on_services_changed(self._handle_svcs_changed)
+            await self._manager.setup()
+        except ConnmanNotAvailableException:
+            pass
 
     def _handle_svcs_changed(self) -> None:
         svcs = self._manager.list_services()

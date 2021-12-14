@@ -6,7 +6,7 @@ from dbus_next.service import ServiceInterface, method
 from dbus_next.signature import SignatureType
 
 from . import model
-from .api import Canceled, ConnmanAgent
+from .api import Canceled, ConnmanAgent, ConnmanNotAvailableException
 
 
 class ConnmanAgentInterface(ServiceInterface):
@@ -21,7 +21,10 @@ class ConnmanAgentInterface(ServiceInterface):
         self._impl = impl
 
     async def register(self) -> None:
-        introspection = await self._bus.introspect("net.connman", "/")
+        try:
+            introspection = await self._bus.introspect("net.connman", "/")
+        except DBusError as e:
+            raise ConnmanNotAvailableException() from e
         proxy = self._bus.get_proxy_object("net.connman", "/", introspection)
         iface = proxy.get_interface("net.connman.Manager")
         self._bus.export("/org/ovshell/connman", self)

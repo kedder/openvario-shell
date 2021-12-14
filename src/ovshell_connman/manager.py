@@ -4,12 +4,13 @@ import weakref
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from dbus_next import Variant
-from dbus_next.errors import InterfaceNotFoundError
+from dbus_next.errors import DBusError, InterfaceNotFoundError
 from dbus_next.message_bus import BaseMessageBus
 from dbus_next.proxy_object import BaseProxyInterface
 
 from . import model
-from .api import ConnmanManager, ConnmanService, ConnmanState, ConnmanTechnology
+from .api import ConnmanManager, ConnmanNotAvailableException, ConnmanService
+from .api import ConnmanState, ConnmanTechnology
 
 
 class ConnmanServiceProxy:
@@ -126,9 +127,12 @@ class ConnmanManagerImpl(ConnmanManager):
         self._svc_order = []
 
     async def setup(self) -> None:
-        introspection = await self._bus.introspect("net.connman", "/")
-        proxy = self._bus.get_proxy_object("net.connman", "/", introspection)
-        self._manager_iface = proxy.get_interface("net.connman.Manager")
+        try:
+            introspection = await self._bus.introspect("net.connman", "/")
+            proxy = self._bus.get_proxy_object("net.connman", "/", introspection)
+            self._manager_iface = proxy.get_interface("net.connman.Manager")
+        except DBusError as e:
+            raise ConnmanNotAvailableException() from e
 
         self._subscribe_events(self._manager_iface)
         self._manager_props = await self._fetch_properties(self._manager_iface)

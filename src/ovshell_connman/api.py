@@ -6,6 +6,10 @@ from typing import Any, Callable, Dict, List, Sequence
 from typing_extensions import Protocol
 
 
+class ConnmanNotAvailableException(Exception):
+    pass
+
+
 class ConnmanState(enum.Enum):
     UNKNOWN = "unknown"
     OFFLINE = "offline"
@@ -50,7 +54,9 @@ class ConnmanManager(Protocol):
 
     @abstractmethod
     async def setup(self) -> None:
-        """Subscripe to signals in order to keep track of services and technologies"""
+        """Subscripe to signals in order to keep track of services and technologies
+
+        If connman service is not available, raise ConnmanNotAvailable exception"""
 
     @abstractmethod
     def teardown(self) -> None:

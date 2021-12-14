@@ -5,6 +5,7 @@ from ovshell_connman import app
 
 from .agent import ConnmanAgentImpl
 from .agentiface import ConnmanAgentInterface
+from .api import ConnmanNotAvailableException
 from .indicator import start_indicator
 
 
@@ -32,6 +33,8 @@ async def start_services(shell: api.OpenVarioShell) -> None:
 
     agent = ConnmanAgentImpl(shell.screen)
     iface = ConnmanAgentInterface(agent, bus)
-    shell.processes.start(iface.register())
-
-    shell.processes.start(start_indicator(shell.screen, bus))
+    try:
+        await iface.register()
+        shell.processes.start(start_indicator(shell.screen, bus))
+    except ConnmanNotAvailableException:
+        shell.screen.set_status(("error message", "Connman is not available."))
