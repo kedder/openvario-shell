@@ -30,6 +30,15 @@ isort = "^5.10.1"
 types-mock = "^4.0.4"
 types-setuptools = "^57.4.4"
 
+[tool.poetry.scripts]
+ovshell = 'ovshell.main:main'
+
+[tool.poetry.plugins."ovshell.extensions"]
+core = "ovshell_core:extension"
+xcsoar = "ovshell_xcsoar:extension"
+fileman = "ovshell_fileman:extension"
+connman = "ovshell_connman:extension"
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
