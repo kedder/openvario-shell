@@ -1,7 +1,7 @@
 all: black isort mypy test
 
 ctags:
-	ctags -R `pipenv --venv` src
+	ctags -R `poetry env info --path` src
 	ln -sf tags .tags
 
 test:
