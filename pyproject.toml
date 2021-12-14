@@ -28,7 +28,7 @@ black = "^21.12b0"
 mock = "^4.0.3"
 isort = "^5.10.1"
 types-mock = "^4.0.4"
-types-setuptools = "^57.4.2"
+types-setuptools = "^57.4.4"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
