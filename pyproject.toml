@@ -27,7 +27,7 @@ mypy = "^0.931"
 black = "^21.12b0"
 mock = "^4.0.3"
 isort = "^5.10.1"
-types-mock = "^4.0.5"
+types-mock = "^4.0.8"
 types-setuptools = "^57.4.7"
 
 [tool.poetry.scripts]
