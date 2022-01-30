@@ -5,11 +5,10 @@ import enum
 from abc import abstractmethod
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Callable, Coroutine, Generator, Iterable, Iterator, Optional
+from typing import Any, Callable, Coroutine, Generator, Iterable, Iterator, Optional
 from typing import Sequence, TypeVar, Union
 
 import urwid
-from dbus_next.message_bus import BaseMessageBus
 from typing_extensions import AsyncIterator, Protocol, runtime_checkable
 
 UrwidText = Union[str, tuple[str, str], list[Union[str, tuple[str, str]]]]
@@ -444,6 +443,34 @@ class DBusNotAvailableException(Exception):
     pass
 
 
+class AbstractMessageBusIntrospection(Protocol):
+    pass
+
+
+class AbstractMessageBusProxyObject(Protocol):
+    @abstractmethod
+    def get_interface(self, name: str) -> Any:
+        pass
+
+
+class AbstractMessageBus(Protocol):
+    @abstractmethod
+    async def introspect(
+        self, bus_name: str, path: str, timeout: float = 30.0
+    ) -> AbstractMessageBusIntrospection:
+        pass
+
+    @abstractmethod
+    def get_proxy_object(
+        self, bus_name: str, path: str, introspection: Any
+    ) -> AbstractMessageBusProxyObject:
+        pass
+
+    @abstractmethod
+    def export(self, path: str, agent: Any) -> None:
+        pass
+
+
 class OpenVarioOS(Protocol):
     """Operating system abstractions
 
@@ -490,7 +517,7 @@ class OpenVarioOS(Protocol):
         """Spawn a system shell"""
 
     @abstractmethod
-    async def get_system_bus(self) -> BaseMessageBus:
+    async def get_system_bus(self) -> AbstractMessageBus:
         """Return system DBUS object
 
         May raise DBusNotAvailableError.

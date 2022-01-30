@@ -6,7 +6,6 @@ from typing import Any, Callable, Coroutine, Generator, Iterable, Iterator, Opti
 from typing import TypeVar
 
 import urwid
-from dbus_next.message_bus import BaseMessageBus
 
 from ovshell import api
 
@@ -212,18 +211,18 @@ class OSPRocessStub(api.OSProcess):
         return self._returncode
 
 
-class MessageBusIntrospectionStub:
+class MessageBusIntrospectionStub(api.AbstractMessageBusIntrospection):
     def __init__(self, bus_name: str, path: str) -> None:
         self.bus_name = bus_name
         self.path = path
 
 
-class MessageBusProxyObjectStub:
+class MessageBusProxyObjectStub(api.AbstractMessageBusProxyObject):
     def __init__(
         self,
         bus_name: str,
         path: str,
-        introspection: MessageBusIntrospectionStub,
+        introspection: api.AbstractMessageBusIntrospection,
         impls: dict[str, Any],
     ) -> None:
         self.__bus_name = bus_name
@@ -233,10 +232,9 @@ class MessageBusProxyObjectStub:
 
     def get_interface(self, name: str):
         return self.__impls[name]
-        # return MessageBusProxyInterfaceStub(name, self.__impls[name])
 
 
-class MessageBusStub:
+class MessageBusStub(api.AbstractMessageBus):
     _impls: dict[str, dict[str, Any]]
     _exported: dict[str, Any]
 
@@ -250,7 +248,10 @@ class MessageBusStub:
         return MessageBusIntrospectionStub(bus_name, path)
 
     def get_proxy_object(
-        self, bus_name: str, path: str, introspection: MessageBusIntrospectionStub
+        self,
+        bus_name: str,
+        path: str,
+        introspection: api.AbstractMessageBusIntrospection,
     ) -> MessageBusProxyObjectStub:
         return MessageBusProxyObjectStub(
             bus_name, path, introspection, self._impls.get(path, {})
@@ -317,7 +318,7 @@ class OpenVarioOSStub(api.OpenVarioOS):
         self._stub_run_stdout = stdout
         self._stub_run_stderr = stderr
 
-    async def get_system_bus(self) -> BaseMessageBus:
+    async def get_system_bus(self) -> api.AbstractMessageBus:
         return await self._stub_bus_connected
 
     def stub_connect_bus(self) -> MessageBusStub:

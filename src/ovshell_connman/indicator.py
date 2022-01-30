@@ -1,8 +1,6 @@
 import asyncio
 from typing import Optional
 
-from dbus_next.message_bus import BaseMessageBus
-
 from ovshell import api
 
 from .api import ConnmanManager, ConnmanNotAvailableException, ConnmanService
@@ -84,7 +82,9 @@ class ConnmanServiceIndicator:
         self._handle_svcs_changed()
 
 
-async def start_indicator(screen: api.ScreenManager, bus: BaseMessageBus) -> None:
+async def start_indicator(
+    screen: api.ScreenManager, bus: api.AbstractMessageBus
+) -> None:
     manager = ConnmanManagerImpl(bus)
     indicator = ConnmanServiceIndicator(screen, manager)
     await indicator.start()

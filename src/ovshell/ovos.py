@@ -2,6 +2,7 @@ import asyncio
 import os
 import subprocess
 import sys
+from typing import Optional
 
 from dbus_next.aio import MessageBus
 from dbus_next.auth import AuthAnnonymous
@@ -28,7 +29,7 @@ class OSProcessImpl(api.OSProcess):
 
 
 class OpenVarioOSImpl(api.OpenVarioOS):
-    _dbus: MessageBus = None
+    _dbus: Optional[MessageBus] = None
 
     def __init__(self) -> None:
         self._dbus_connect_lock = asyncio.Lock()
@@ -55,7 +56,7 @@ class OpenVarioOSImpl(api.OpenVarioOS):
         )
         return OSProcessImpl(proc)
 
-    async def get_system_bus(self) -> MessageBus:
+    async def get_system_bus(self) -> api.AbstractMessageBus:
         if self._dbus is not None:
             return self._dbus
 

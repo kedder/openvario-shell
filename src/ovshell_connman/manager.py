@@ -1,23 +1,25 @@
 import asyncio
 import types
 import weakref
-from typing import Any, Callable, Optional, Sequence
+from typing import Any, Callable, Optional, Sequence, cast
 
 from dbus_next import Variant
 from dbus_next.errors import DBusError, InterfaceNotFoundError
-from dbus_next.message_bus import BaseMessageBus
-from dbus_next.proxy_object import BaseProxyInterface
+
+from ovshell.api import AbstractMessageBus
 
 from . import model
 from .api import ConnmanManager, ConnmanNotAvailableException, ConnmanService
 from .api import ConnmanState, ConnmanTechnology
+from .dbusiface import ConnmanManagerProxyInterface, ConnmanServiceProxyInterface
+from .dbusiface import ConnmanTechnologyProxyInterface
 
 
 class ConnmanServiceProxy:
-    _iface: Optional[BaseProxyInterface]
+    _iface: Optional[ConnmanServiceProxyInterface]
     _change_handlers: list[weakref.WeakMethod]
 
-    def __init__(self, svc: ConnmanService, bus: BaseMessageBus) -> None:
+    def __init__(self, svc: ConnmanService, bus: AbstractMessageBus) -> None:
         self.service = svc
         self._bus = bus
         self._iface = None
@@ -71,7 +73,7 @@ class ConnmanServiceProxy:
         model.update_service_from_props(self.service, {name: value})
         self._fire_changed()
 
-    async def _get_service_iface(self) -> BaseProxyInterface:
+    async def _get_service_iface(self) -> ConnmanServiceProxyInterface:
         if self._iface is not None:
             return self._iface
 
@@ -80,12 +82,12 @@ class ConnmanServiceProxy:
             "net.connman", self.service.path, introspection
         )
         iface = proxy.get_interface("net.connman.Service")
-        self._iface = iface
-        return iface
+        self._iface = cast(ConnmanServiceProxyInterface, iface)
+        return self._iface
 
 
 class ConnmanTechnologyProxy:
-    def __init__(self, tech: ConnmanTechnology, bus: BaseMessageBus) -> None:
+    def __init__(self, tech: ConnmanTechnology, bus: AbstractMessageBus) -> None:
         self._bus = bus
         self._tech = tech
 
@@ -97,13 +99,13 @@ class ConnmanTechnologyProxy:
         iface = await self._get_tech_iface()
         return await iface.call_scan()
 
-    async def _get_tech_iface(self) -> BaseProxyInterface:
+    async def _get_tech_iface(self) -> ConnmanTechnologyProxyInterface:
         introspection = await self._bus.introspect("net.connman", self._tech.path)
         proxy = self._bus.get_proxy_object(
             "net.connman", self._tech.path, introspection
         )
         iface = proxy.get_interface("net.connman.Technology")
-        return iface
+        return cast(ConnmanTechnologyProxyInterface, iface)
 
 
 class ConnmanManagerImpl(ConnmanManager):
@@ -116,7 +118,7 @@ class ConnmanManagerImpl(ConnmanManager):
     _svc_proxies: dict[str, ConnmanServiceProxy]
     _svc_order: list[str]
 
-    def __init__(self, bus: BaseMessageBus) -> None:
+    def __init__(self, bus: AbstractMessageBus) -> None:
         self._bus = bus
         self.technologies = []
         self._manager_props = {}
@@ -130,7 +132,9 @@ class ConnmanManagerImpl(ConnmanManager):
         try:
             introspection = await self._bus.introspect("net.connman", "/")
             proxy = self._bus.get_proxy_object("net.connman", "/", introspection)
-            self._manager_iface = proxy.get_interface("net.connman.Manager")
+            self._manager_iface = cast(
+                ConnmanManagerProxyInterface, proxy.get_interface("net.connman.Manager")
+            )
         except DBusError as e:
             raise ConnmanNotAvailableException() from e
 
@@ -214,13 +218,13 @@ class ConnmanManagerImpl(ConnmanManager):
         assert isinstance(handler, types.MethodType)
         self._svc_change_handlers.append(weakref.WeakMethod(handler))
 
-    def _subscribe_events(self, iface: BaseProxyInterface):
+    def _subscribe_events(self, iface: ConnmanManagerProxyInterface):
         iface.on_property_changed(self._notify_property_changed)
         iface.on_services_changed(self._notify_service_changed)
         iface.on_technology_added(self._notify_tech_added)
         iface.on_technology_removed(self._notify_tech_removed)
 
-    def _unsubscribe_events(self, iface: BaseProxyInterface):
+    def _unsubscribe_events(self, iface: ConnmanManagerProxyInterface):
         iface.off_property_changed(self._notify_property_changed)
         iface.off_services_changed(self._notify_service_changed)
         iface.off_technology_added(self._notify_tech_added)
@@ -231,7 +235,7 @@ class ConnmanManagerImpl(ConnmanManager):
         self._fire_tech_changed()
 
     async def _fetch_technologies(
-        self, iface: BaseProxyInterface
+        self, iface: ConnmanManagerProxyInterface
     ) -> list[ConnmanTechnology]:
         techs = await iface.call_get_technologies()
         res = []
@@ -240,7 +244,9 @@ class ConnmanManagerImpl(ConnmanManager):
 
         return res
 
-    async def _fetch_properties(self, iface: BaseProxyInterface) -> dict[str, Variant]:
+    async def _fetch_properties(
+        self, iface: ConnmanManagerProxyInterface
+    ) -> dict[str, Variant]:
         return await iface.call_get_properties()
 
     async def _refresh_services(self) -> None:

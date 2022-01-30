@@ -1,12 +1,13 @@
-from typing import Any, Union
+from typing import Any, Union, cast
 
 from dbus_next import DBusError, Variant
-from dbus_next.message_bus import BaseMessageBus
 from dbus_next.service import ServiceInterface, method
-from dbus_next.signature import SignatureType
+
+from ovshell.api import AbstractMessageBus
 
 from . import model
 from .api import Canceled, ConnmanAgent, ConnmanNotAvailableException
+from .dbusiface import ConnmanManagerProxyInterface, ConnmanServiceProxyInterface
 
 
 class ConnmanAgentInterface(ServiceInterface):
@@ -15,7 +16,7 @@ class ConnmanAgentInterface(ServiceInterface):
     See https://git.kernel.org/pub/scm/network/connman/connman.git/tree/doc/agent-api.txt
     """
 
-    def __init__(self, impl: ConnmanAgent, bus: BaseMessageBus) -> None:
+    def __init__(self, impl: ConnmanAgent, bus: AbstractMessageBus) -> None:
         super().__init__("net.connman.Agent")
         self._bus = bus
         self._impl = impl
@@ -26,7 +27,9 @@ class ConnmanAgentInterface(ServiceInterface):
         except DBusError as e:
             raise ConnmanNotAvailableException() from e
         proxy = self._bus.get_proxy_object("net.connman", "/", introspection)
-        iface = proxy.get_interface("net.connman.Manager")
+        iface = cast(
+            ConnmanManagerProxyInterface, proxy.get_interface("net.connman.Manager")
+        )
         self._bus.export("/org/ovshell/connman", self)
         await iface.call_register_agent("/org/ovshell/connman")
 
@@ -139,10 +142,14 @@ class ConnmanAgentInterface(ServiceInterface):
         """
 
 
-async def agent_request_input(bus: BaseMessageBus, impl: ConnmanAgent, service, fields):
+async def agent_request_input(
+    bus: AbstractMessageBus, impl: ConnmanAgent, service, fields
+):
     introspection = await bus.introspect("net.connman", service)
     proxy = bus.get_proxy_object("net.connman", service, introspection)
-    iface = proxy.get_interface("net.connman.Service")
+    iface = cast(
+        ConnmanServiceProxyInterface, proxy.get_interface("net.connman.Service")
+    )
     props = await iface.call_get_properties()
     svc = model.create_service_from_props(service, props)
 
@@ -155,7 +162,7 @@ async def agent_request_input(bus: BaseMessageBus, impl: ConnmanAgent, service, 
     return varres
 
 
-def unpack_variants(var: Union[Variant, Any], tp: SignatureType = None) -> Any:
+def unpack_variants(var: Union[Variant, Any], tp: str = None) -> Any:
     if not isinstance(var, Variant):
         if tp is None:
             return var
