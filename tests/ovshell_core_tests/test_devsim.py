@@ -1,7 +1,5 @@
 import os
 
-import pytest
-
 from ovshell import testing
 from ovshell_core import devsim
 
@@ -16,7 +14,7 @@ async def test_run_simulated_device(ovshell: testing.OpenVarioShellStub) -> None
     devsim.run_simulated_device(ovshell, samplefile)
 
     # THEN
-    devs = ovshell.devices.list()
+    devs = ovshell.devices.enumerate()
     assert len(devs) == 1
     assert isinstance(devs[0], devsim.SimulatedDeviceImpl)
 

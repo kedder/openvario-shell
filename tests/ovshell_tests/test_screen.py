@@ -1,7 +1,7 @@
 import asyncio
 from typing import List
+from unittest import mock
 
-import mock
 import pytest
 import urwid
 
@@ -151,7 +151,7 @@ async def test_spawn_task() -> None:
     act1 = ActivityStub("Main Activity")
     screen.push_activity(act1)
 
-    log: List[str] = []
+    log: list[str] = []
 
     async def infinite_loop() -> None:
         log.append("started")

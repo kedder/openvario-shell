@@ -1,8 +1,8 @@
 import os
 from pathlib import Path
 from typing import List
+from unittest import mock
 
-import mock
 import pytest
 
 from ovshell_fileman.api import DownloadFilter, FileInfo, ProgressState
@@ -10,7 +10,7 @@ from ovshell_fileman.downloader import DownloaderImpl
 
 
 class ProgressStateStub(ProgressState):
-    log: List[str]
+    log: list[str]
 
     def __init__(self):
         self.log = []

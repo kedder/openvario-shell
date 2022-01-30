@@ -23,7 +23,7 @@ class StaticChoiceSetting(api.Setting):
         pass
 
     @abstractmethod
-    def get_choices(self) -> Sequence[Tuple[str, str]]:
+    def get_choices(self) -> Sequence[tuple[str, str]]:
         pass
 
     def activate(self, activator: api.SettingActivator) -> None:
@@ -168,7 +168,7 @@ class SettingsActivity(api.Activity):
         return view
 
     def _get_settings(self) -> Sequence[api.Setting]:
-        settings: List[api.Setting] = []
+        settings: list[api.Setting] = []
         for ext in self.shell.extensions.list_extensions():
             settings.extend(ext.list_settings())
 

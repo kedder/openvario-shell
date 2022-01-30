@@ -37,7 +37,7 @@ class BackupDirectoryImpl(BackupDirectory):
         self._mountpoint = mountpoint
         self._backup_dest = os.path.join(mountpoint, BACKUP_DEST)
 
-    def get_backed_up_files(self) -> List[str]:
+    def get_backed_up_files(self) -> list[str]:
         backup_dir = self._backup_dest
         if not os.path.exists(backup_dir):
             return []
@@ -147,7 +147,7 @@ class BackupRestoreMainActivity(api.Activity):
     def activate(self) -> None:
         self.shell.screen.spawn_task(self, self.mountwatcher.run())
 
-    def _button_grid(self, buttons: List[urwid.Widget]) -> urwid.GridFlow:
+    def _button_grid(self, buttons: list[urwid.Widget]) -> urwid.GridFlow:
         return urwid.GridFlow(
             buttons,
             cell_width=15,
@@ -221,7 +221,7 @@ class RsyncProgressActivity(api.Activity):
         self.backup_dest_dir = backup_dest_dir
 
     @abstractmethod
-    def get_rsync_params(self) -> List[str]:
+    def get_rsync_params(self) -> list[str]:
         """Return params to rsync command as list of strings"""
 
     def create(self) -> urwid.Widget:
@@ -297,7 +297,7 @@ class BackupActivity(RsyncProgressActivity):
     msg_sync_cancelled = "Backup was cancelled."
     msg_sync_failed = "Backup has failed (error code: {res})."
 
-    def get_rsync_params(self) -> List[str]:
+    def get_rsync_params(self) -> list[str]:
         src_dir = self.backup_src_dir
         dest_dir = self.backup_dest_dir
 
@@ -321,7 +321,7 @@ class BackupActivity(RsyncProgressActivity):
             + ["--exclude=*", src_dir, dest_dir]
         )
 
-    def _get_all_parents(self, dir: str) -> List[str]:
+    def _get_all_parents(self, dir: str) -> list[str]:
         pdir = Path(dir)
         root = Path("/")
         parents = []
@@ -338,7 +338,7 @@ class RestoreActivity(RsyncProgressActivity):
     msg_sync_cancelled = "Restore was cancelled."
     msg_sync_failed = "Restore has failed (error code: {res})."
 
-    def get_rsync_params(self) -> List[str]:
+    def get_rsync_params(self) -> list[str]:
         dest_dir = self.backup_src_dir
         src_dir = self.backup_dest_dir
         return ["--recursive", "--times", src_dir + "/", dest_dir]
@@ -352,7 +352,7 @@ class RestoreActivity(RsyncProgressActivity):
 class RsyncProgressBar(urwid.ProgressBar):
     signals = ["done", "failed"]
 
-    def __init__(self, rsync: RsyncRunner, rsync_params: List[str]) -> None:
+    def __init__(self, rsync: RsyncRunner, rsync_params: list[str]) -> None:
         self.rsync = rsync
         self.rsync_params = rsync_params
         self._current_progress = ""

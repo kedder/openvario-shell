@@ -8,12 +8,12 @@ JT = TypeVar("JT", bound=api.JsonType)
 
 
 class StoredSettingsImpl(api.StoredSettings):
-    _settings: Dict[str, Optional[api.JsonType]]
+    _settings: dict[str, Optional[api.JsonType]]
     _filename: Optional[str]
 
     def __init__(
         self,
-        settings: Dict[str, Optional[api.JsonType]] = None,
+        settings: dict[str, Optional[api.JsonType]] = None,
         filename: str = None,
     ) -> None:
         self._settings = settings or {}
@@ -24,7 +24,7 @@ class StoredSettingsImpl(api.StoredSettings):
         if not os.path.exists(filename):
             return StoredSettingsImpl(filename=filename)
 
-        with open(filename, "r") as f:
+        with open(filename) as f:
             settings = json.load(f)
         return StoredSettingsImpl(settings, filename)
 
@@ -41,11 +41,11 @@ class StoredSettingsImpl(api.StoredSettings):
         if save:
             self.save()
 
-    def get(self, key: str, type: Type[JT], default: JT = None) -> Optional[JT]:
+    def get(self, key: str, type: type[JT], default: JT = None) -> Optional[JT]:
         v = self._settings.get(key, default)
         return v if isinstance(v, type) else None
 
-    def getstrict(self, key: str, type: Type[JT]) -> JT:
+    def getstrict(self, key: str, type: type[JT]) -> JT:
         v = self.get(key, type)
         assert v is not None
         return v

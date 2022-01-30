@@ -71,7 +71,7 @@ class CheckForUpdatesActivity(api.Activity):
 class CheckForUpdatesWidget(urwid.WidgetWrap):
     signals = ["continue", "exit"]
 
-    upgradables: List[UpgradablePackage]
+    upgradables: list[UpgradablePackage]
 
     def __init__(
         self, opkg_tools: OpkgTools, screen: api.ScreenManager, activity: api.Activity
@@ -145,11 +145,11 @@ class CheckForUpdatesWidget(urwid.WidgetWrap):
 class PackageSelectionWidget(urwid.WidgetWrap):
     signals = ["upgrade"]
 
-    selected: Set[str]
-    _upgradables: List[UpgradablePackage]
+    selected: set[str]
+    _upgradables: list[UpgradablePackage]
 
     def __init__(
-        self, upgradables: List[UpgradablePackage], screen: api.ScreenManager
+        self, upgradables: list[UpgradablePackage], screen: api.ScreenManager
     ) -> None:
         self.selected = set()
         self._upgradables = upgradables
@@ -157,7 +157,7 @@ class PackageSelectionWidget(urwid.WidgetWrap):
         content = self._create_package_list_screen()
         super().__init__(content)
 
-    def sizing(self) -> FrozenSet[str]:
+    def sizing(self) -> frozenset[str]:
         return frozenset(["box"])
 
     def _create_package_list_screen(self) -> urwid.Widget:
@@ -200,7 +200,7 @@ class PackageSelectionWidget(urwid.WidgetWrap):
         return buttons
 
     def _on_select_all(self, wdg: urwid.Widget) -> None:
-        self.selected = set(pkg.name for pkg in self._upgradables)
+        self.selected = {pkg.name for pkg in self._upgradables}
         self._update_packages()
 
     def _select_package(self, pkgname: str, cb: urwid.CheckBox, state: bool) -> None:
@@ -242,9 +242,9 @@ class PackageSelectionWidget(urwid.WidgetWrap):
 
 class SystemUpgradeWidget(urwid.WidgetWrap):
     signals = ["exit"]
-    _packages: List[str]
+    _packages: list[str]
 
-    def __init__(self, packages: List[str], opkg_tools: OpkgTools) -> None:
+    def __init__(self, packages: list[str], opkg_tools: OpkgTools) -> None:
         self.opkg_tools = opkg_tools
         self._packages = packages
 

@@ -121,7 +121,7 @@ class AboutActivity(api.Activity):
         else:
             wdg.set_text("N/A")
 
-    async def _get_any_version(self, pkgs: List[str]) -> Optional[str]:
+    async def _get_any_version(self, pkgs: list[str]) -> Optional[str]:
         for pkgname in pkgs:
             ver = await self.sys_info.get_installed_package_version(pkgname)
             if ver is not None:

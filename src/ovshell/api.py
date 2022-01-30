@@ -12,9 +12,9 @@ import urwid
 from dbus_next.message_bus import BaseMessageBus
 from typing_extensions import AsyncIterator, Protocol, runtime_checkable
 
-UrwidText = Union[str, Tuple[str, str], List[Union[str, Tuple[str, str]]]]
+UrwidText = Union[str, tuple[str, str], list[Union[str, tuple[str, str]]]]
 BasicType = Union[int, str, float]
-JsonType = Union[BasicType, List[BasicType], Dict[str, BasicType]]
+JsonType = Union[BasicType, list[BasicType], dict[str, BasicType]]
 
 JT = TypeVar("JT", bound=JsonType)
 
@@ -43,7 +43,7 @@ class StoredSettings(Protocol):
         """
 
     @abstractmethod
-    def get(self, key: str, type: Type[JT], default: JT = None) -> Optional[JT]:
+    def get(self, key: str, type: type[JT], default: JT = None) -> Optional[JT]:
         """Return the settings value for the key.
 
         If value wasn't set yet, or value in settings is of different type
@@ -51,7 +51,7 @@ class StoredSettings(Protocol):
         """
 
     @abstractmethod
-    def getstrict(self, key: str, type: Type[JT]) -> JT:
+    def getstrict(self, key: str, type: type[JT]) -> JT:
         """Return value for the key.
 
         The value must be set and must be not None. Otherwise exception
@@ -176,7 +176,7 @@ class DeviceManager(Protocol):
         all open NMEA streams"""
 
     @abstractmethod
-    def list(self) -> List[Device]:
+    def enumerate(self) -> list[Device]:
         """Enumerate all registred devices."""
 
     @abstractmethod
@@ -290,9 +290,9 @@ class ModalOptions:
     """
 
     align: str
-    width: Union[str, int, Tuple[str, int]]
+    width: Union[str, int, tuple[str, int]]
     valign: str
-    height: Union[str, int, Tuple[str, int]]
+    height: Union[str, int, tuple[str, int]]
     min_width: Optional[int] = None
     min_height: Optional[int] = None
     left: int = 0
@@ -360,7 +360,7 @@ class ScreenManager(Protocol):
 
     @abstractmethod
     def push_activity(
-        self, activity: Activity, palette: Optional[List[Tuple]] = None
+        self, activity: Activity, palette: Optional[list[tuple]] = None
     ) -> None:
         """Push new activity to the activity stack.
 
@@ -470,7 +470,7 @@ class OpenVarioOS(Protocol):
         """
 
     @abstractmethod
-    async def run(self, command: str, args: List[str]) -> OSProcess:
+    async def run(self, command: str, args: list[str]) -> OSProcess:
         """Run a system command and return instance, representing a running process"""
 
     @abstractmethod
@@ -560,7 +560,7 @@ class AppManager(Protocol):
     """
 
     @abstractmethod
-    def list(self) -> Iterable[AppInfo]:
+    def list_apps(self) -> Iterable[AppInfo]:
         """Return list of all available applications"""
 
     @abstractmethod

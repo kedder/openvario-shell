@@ -11,7 +11,7 @@ class RsyncRunnerImpl(RsyncRunner):
     def __init__(self, rsync_path: str) -> None:
         self.rsync_path = rsync_path
 
-    async def run(self, params: List[str]) -> AsyncGenerator[RsyncStatusLine, None]:
+    async def run(self, params: list[str]) -> AsyncGenerator[RsyncStatusLine, None]:
         proc = await asyncio.create_subprocess_exec(
             self.rsync_path,
             "--info=progress2",

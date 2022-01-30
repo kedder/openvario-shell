@@ -9,10 +9,10 @@ class AutomountWatcherStub(AutomountWatcher):
     stub_running = False
     mountpoint: str = ""
 
-    _mount_handlers: List[Callable[[], None]]
-    _unmount_handlers: List[Callable[[], None]]
-    _device_in_handlers: List[Callable[[], None]]
-    _device_out_handlers: List[Callable[[], None]]
+    _mount_handlers: list[Callable[[], None]]
+    _unmount_handlers: list[Callable[[], None]]
+    _device_in_handlers: list[Callable[[], None]]
+    _device_out_handlers: list[Callable[[], None]]
 
     def __init__(self):
         self._mount_handlers = []
@@ -57,11 +57,11 @@ class AutomountWatcherStub(AutomountWatcher):
 
 class RsyncRunnerStub(RsyncRunner):
     def __init__(
-        self, progress: List[Union[RsyncStatusLine, RsyncFailedException]] = None
+        self, progress: list[Union[RsyncStatusLine, RsyncFailedException]] = None
     ) -> None:
         self.progress = progress or []
 
-    async def run(self, params: List[str]) -> AsyncGenerator[RsyncStatusLine, None]:
+    async def run(self, params: list[str]) -> AsyncGenerator[RsyncStatusLine, None]:
         for line in self.progress:
             if isinstance(line, RsyncFailedException):
                 raise line
@@ -71,12 +71,12 @@ class RsyncRunnerStub(RsyncRunner):
 
 
 class BackupDirectoryStub(BackupDirectory):
-    backed_up_files: List[str]
+    backed_up_files: list[str]
 
     def __init__(self) -> None:
         self.backed_up_files = []
 
-    def get_backed_up_files(self) -> List[str]:
+    def get_backed_up_files(self) -> list[str]:
         return self.backed_up_files
 
     def ensure_backup_destination(self) -> str:

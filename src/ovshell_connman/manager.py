@@ -15,7 +15,7 @@ from .api import ConnmanState, ConnmanTechnology
 
 class ConnmanServiceProxy:
     _iface: Optional[BaseProxyInterface]
-    _change_handlers: List[weakref.WeakMethod]
+    _change_handlers: list[weakref.WeakMethod]
 
     def __init__(self, svc: ConnmanService, bus: BaseMessageBus) -> None:
         self.service = svc
@@ -107,14 +107,14 @@ class ConnmanTechnologyProxy:
 
 
 class ConnmanManagerImpl(ConnmanManager):
-    technologies: List[ConnmanTechnology]
-    _manager_props: Dict[str, Variant]
+    technologies: list[ConnmanTechnology]
+    _manager_props: dict[str, Variant]
 
-    _tech_change_handlers: List[weakref.WeakMethod]
-    _svc_change_handlers: List[weakref.WeakMethod]
+    _tech_change_handlers: list[weakref.WeakMethod]
+    _svc_change_handlers: list[weakref.WeakMethod]
 
-    _svc_proxies: Dict[str, ConnmanServiceProxy]
-    _svc_order: List[str]
+    _svc_proxies: dict[str, ConnmanServiceProxy]
+    _svc_order: list[str]
 
     def __init__(self, bus: BaseMessageBus) -> None:
         self._bus = bus
@@ -232,7 +232,7 @@ class ConnmanManagerImpl(ConnmanManager):
 
     async def _fetch_technologies(
         self, iface: BaseProxyInterface
-    ) -> List[ConnmanTechnology]:
+    ) -> list[ConnmanTechnology]:
         techs = await iface.call_get_technologies()
         res = []
         for path, tech in techs:
@@ -240,7 +240,7 @@ class ConnmanManagerImpl(ConnmanManager):
 
         return res
 
-    async def _fetch_properties(self, iface: BaseProxyInterface) -> Dict[str, Variant]:
+    async def _fetch_properties(self, iface: BaseProxyInterface) -> dict[str, Variant]:
         return await iface.call_get_properties()
 
     async def _refresh_services(self) -> None:
@@ -251,7 +251,7 @@ class ConnmanManagerImpl(ConnmanManager):
         self._manager_props[name] = value
 
     def _notify_service_changed(
-        self, changed: List[Tuple[str, Dict[str, Variant]]], removed: List[str]
+        self, changed: list[tuple[str, dict[str, Variant]]], removed: list[str]
     ) -> None:
         totrack = []
         # Update props
@@ -275,12 +275,12 @@ class ConnmanManagerImpl(ConnmanManager):
             asyncio.create_task(self._start_tracking_services(totrack))
         self._fire_svc_changed()
 
-    async def _start_tracking_services(self, paths: List[str]) -> None:
+    async def _start_tracking_services(self, paths: list[str]) -> None:
         for path in paths:
             svcp = self._svc_proxies[path]
             await svcp.start_tracking()
 
-    def _notify_tech_added(self, path: str, props: Dict[str, Any]) -> None:
+    def _notify_tech_added(self, path: str, props: dict[str, Any]) -> None:
         tech = model.create_technology_from_props(path, props)
         self.technologies.append(tech)
         self._fire_tech_changed()

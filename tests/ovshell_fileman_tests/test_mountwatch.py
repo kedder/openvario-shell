@@ -10,7 +10,7 @@ from ovshell_fileman.mountwatch import AutomountWatcherImpl
 
 
 class MountHandler:
-    log: List[str]
+    log: list[str]
 
     def __init__(self) -> None:
         self.log = []

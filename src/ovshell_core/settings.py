@@ -23,7 +23,7 @@ class RotationSetting(StaticChoiceSetting):
         self._apply_rotation(value or "0")
         self.shell.settings.set(self.config_key, value, save=True)
 
-    def get_choices(self) -> Sequence[Tuple[str, str]]:
+    def get_choices(self) -> Sequence[tuple[str, str]]:
         return rotation.get_rotations()
 
     def _apply_rotation(self, new_rotation: str) -> None:
@@ -45,7 +45,7 @@ class LanguageSetting(StaticChoiceSetting):
     def store(self, value: Optional[str]) -> None:
         self.shell.settings.set(self.config_key, value, save=True)
 
-    def get_choices(self) -> Sequence[Tuple[str, str]]:
+    def get_choices(self) -> Sequence[tuple[str, str]]:
         return [
             ("en_EN.UTF-8", "English"),
             ("de_DE.UTF-8", "Deutsch"),
@@ -77,7 +77,7 @@ class ConsoleFontSetting(StaticChoiceSetting):
             apply_font(self.shell.os, value)
         self.shell.settings.set(self.config_key, value, save=True)
 
-    def get_choices(self) -> Sequence[Tuple[str, str]]:
+    def get_choices(self) -> Sequence[tuple[str, str]]:
         return [
             ("zap-ext-vga09.psf", "9x8 bold"),
             ("zap-ext-light16.psf", "16x8 light"),
@@ -102,7 +102,7 @@ class ScreenBrightnessSetting(StaticChoiceSetting):
         if not os.path.exists(br_fname):
             return None
 
-        with open(br_fname, "r") as f:
+        with open(br_fname) as f:
             br = f.read()
 
         return br.strip()
@@ -119,7 +119,7 @@ class ScreenBrightnessSetting(StaticChoiceSetting):
         with open(br_fname, "w") as f:
             f.write(value)
 
-    def get_choices(self) -> Sequence[Tuple[str, str]]:
+    def get_choices(self) -> Sequence[tuple[str, str]]:
         return [
             ("2", "20%"),
             ("3", "30%"),
@@ -148,9 +148,9 @@ class AutostartAppSetting(StaticChoiceSetting):
     def store(self, value: Optional[str]) -> None:
         self.shell.settings.set(self.config_key, value, save=True)
 
-    def get_choices(self) -> Sequence[Tuple[str, str]]:
+    def get_choices(self) -> Sequence[tuple[str, str]]:
         choices = [("", "Main Menu")]
-        for appinfo in self.shell.apps.list():
+        for appinfo in self.shell.apps.list_apps():
             choices.append((appinfo.id, appinfo.app.title))
 
         return choices
@@ -171,7 +171,7 @@ class AutostartTimeoutSetting(StaticChoiceSetting):
     def store(self, value: Optional[str]) -> None:
         self.shell.settings.set(self.config_key, int(value or 0), save=True)
 
-    def get_choices(self) -> Sequence[Tuple[str, str]]:
+    def get_choices(self) -> Sequence[tuple[str, str]]:
         return [
             ("0", "Immediately"),
             ("1", "1s"),

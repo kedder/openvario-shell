@@ -39,7 +39,7 @@ def test_unpack_variants_explicit() -> None:
 
 
 class ConnmanAgentStub(ConnmanAgent):
-    _log: List[str]
+    _log: list[str]
 
     def __init__(self) -> None:
         self._log = []
@@ -49,8 +49,8 @@ class ConnmanAgentStub(ConnmanAgent):
         self._log.append(f"Error for {service.path}: {error}")
 
     async def request_input(
-        self, service: ConnmanService, fields: Dict[str, Dict[str, str]]
-    ) -> Dict[str, Any]:
+        self, service: ConnmanService, fields: dict[str, dict[str, str]]
+    ) -> dict[str, Any]:
         """Request input from the user"""
         self._log.append(f"Request input {service.path}")
         return {n: "input" for n, v in fields.items()}

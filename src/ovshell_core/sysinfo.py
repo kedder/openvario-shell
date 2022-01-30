@@ -28,7 +28,7 @@ class SystemInfo:
 
 
 class SystemInfoImpl(SystemInfo):
-    _installed_pkgs: Optional[Dict[str, str]] = None
+    _installed_pkgs: Optional[dict[str, str]] = None
 
     def __init__(self, ovos: api.OpenVarioOS, opkgtools: OpkgTools) -> None:
         self.os = ovos
@@ -39,7 +39,7 @@ class SystemInfoImpl(SystemInfo):
         release_fname = self.os.path("//etc/os-release")
         if not os.path.exists(release_fname):
             return None
-        with open(release_fname, "r") as f:
+        with open(release_fname) as f:
             release = f.read()
         m = re.search(r"VERSION=\"(.*)\"", release)
         if m:

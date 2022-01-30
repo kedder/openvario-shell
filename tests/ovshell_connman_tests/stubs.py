@@ -6,12 +6,12 @@ from dbus_next import Variant
 from ovshell_connman.api import ConnmanManager, ConnmanService, ConnmanState
 from ovshell_connman.api import ConnmanTechnology
 
-BusProps = Dict[str, Variant]
-BusObjList = List[Tuple[str, BusProps]]
+BusProps = dict[str, Variant]
+BusObjList = list[tuple[str, BusProps]]
 
 
 class NetConnmanStub:
-    __signals: Dict[str, List[Callable]]
+    __signals: dict[str, list[Callable]]
 
     def __init__(self) -> None:
         self.__signals = {}
@@ -37,7 +37,7 @@ class NetConnmanStub:
 
 class NetConnmanManagerStub(NetConnmanStub):
     __technologies: BusObjList
-    __services: Dict[str, Dict[str, Variant]]
+    __services: dict[str, dict[str, Variant]]
     __properties: BusProps
     __registered_agent: Optional[str]
 
@@ -93,7 +93,7 @@ class NetConnmanManagerStub(NetConnmanStub):
         for path, tech in techs:
             self._fire_signal("technology_added", path, tech)
 
-    def stub_update_services(self, updates: BusObjList, removes: List[str]) -> None:
+    def stub_update_services(self, updates: BusObjList, removes: list[str]) -> None:
         for path, props in updates:
             existing = self.__services.get(path, {})
             existing.update(props)
@@ -109,7 +109,7 @@ class NetConnmanManagerStub(NetConnmanStub):
 
 class NetConnmanTechnologyStub(NetConnmanStub):
     scan_called: int = 0
-    props_updated: List[Tuple[str, Variant]]
+    props_updated: list[tuple[str, Variant]]
 
     def __init__(self) -> None:
         super().__init__()
@@ -123,7 +123,7 @@ class NetConnmanTechnologyStub(NetConnmanStub):
 
 
 class NetConnmanServiceStub(NetConnmanStub):
-    log: List[str]
+    log: list[str]
     properties: BusProps
 
     def __init__(self) -> None:
@@ -156,14 +156,14 @@ class NetConnmanServiceStub(NetConnmanStub):
 
 
 class ConnmanManagerStub(ConnmanManager):
-    technologies: List[ConnmanTechnology]
-    _services: List[ConnmanService]
-    _tech_callbacks: List[Callable[[], None]]
-    _svc_callbacks: List[Callable[[], None]]
-    _svcprop_callbacks: List[Callable[[ConnmanService], None]]
+    technologies: list[ConnmanTechnology]
+    _services: list[ConnmanService]
+    _tech_callbacks: list[Callable[[], None]]
+    _svc_callbacks: list[Callable[[], None]]
+    _svcprop_callbacks: list[Callable[[ConnmanService], None]]
 
     _scanning: Optional["asyncio.Future[int]"] = None
-    _stub_log: List[str]
+    _stub_log: list[str]
     _state = ConnmanState.UNKNOWN
 
     def __init__(self) -> None:
@@ -233,7 +233,7 @@ class ConnmanManagerStub(ConnmanManager):
         self._services.append(service)
         self._fire_svcs_changed()
 
-    def stub_set_services(self, services: List[ConnmanService]) -> None:
+    def stub_set_services(self, services: list[ConnmanService]) -> None:
         self._services = services
         self._fire_svcs_changed()
 

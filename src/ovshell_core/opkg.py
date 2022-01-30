@@ -20,11 +20,11 @@ class InstalledPackage:
 
 class OpkgTools:
     @abstractmethod
-    async def list_upgradables(self) -> List[UpgradablePackage]:
+    async def list_upgradables(self) -> list[UpgradablePackage]:
         """Return list of upgradable packages"""
 
     @abstractmethod
-    async def list_installed(self) -> List[InstalledPackage]:
+    async def list_installed(self) -> list[InstalledPackage]:
         """Return list of all installed packages"""
 
     @abstractmethod
@@ -37,7 +37,7 @@ class OpkgToolsImpl(OpkgTools):
         self.ovos = ovos
         self.opkg_binary = opkg_binary
 
-    async def list_upgradables(self) -> List[UpgradablePackage]:
+    async def list_upgradables(self) -> list[UpgradablePackage]:
         proc = await self.ovos.run(self.opkg_binary, ["list-upgradable"])
         upgradables = []
         while not proc.stdout.at_eof():
@@ -57,7 +57,7 @@ class OpkgToolsImpl(OpkgTools):
 
         return upgradables
 
-    async def list_installed(self) -> List[InstalledPackage]:
+    async def list_installed(self) -> list[InstalledPackage]:
         proc = await self.ovos.run(self.opkg_binary, ["list-installed"])
         pkgs = []
         while not proc.stdout.at_eof():

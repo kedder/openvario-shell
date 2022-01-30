@@ -57,7 +57,7 @@ def debounce_esc(keys, raw):
     return filtered
 
 
-def startui(ctx: Tuple[OpenvarioShellImpl, Optional[str]]) -> None:
+def startui(ctx: tuple[OpenvarioShellImpl, Optional[str]]) -> None:
     shell, autostart = ctx
     shell.boot()
     shell.screen.push_activity(MainMenuActivity(shell, autostart))

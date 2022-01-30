@@ -11,11 +11,11 @@ class DownloadFilter:
     igc: bool = True
     nmea: bool = False
 
-    def asdict(self) -> Dict[str, Any]:
+    def asdict(self) -> dict[str, Any]:
         return asdict(self)
 
     @classmethod
-    def fromdict(cls, state: Dict[str, Any]) -> "DownloadFilter":
+    def fromdict(cls, state: dict[str, Any]) -> "DownloadFilter":
         filt = cls()
         if "new" in state:
             filt.new = state["new"]
@@ -47,7 +47,7 @@ class ProgressState(Protocol):
 
 class Downloader(Protocol):
     @abstractmethod
-    def list_logs(self, filter: DownloadFilter) -> List[FileInfo]:
+    def list_logs(self, filter: DownloadFilter) -> list[FileInfo]:
         pass  # pragma: nocover
 
     @abstractmethod
@@ -98,13 +98,13 @@ class RsyncFailedException(Exception):
 
 class RsyncRunner(Protocol):
     @abstractmethod
-    def run(self, params: List[str]) -> AsyncGenerator[RsyncStatusLine, None]:
+    def run(self, params: list[str]) -> AsyncGenerator[RsyncStatusLine, None]:
         pass
 
 
 class BackupDirectory(Protocol):
     @abstractmethod
-    def get_backed_up_files(self) -> List[str]:
+    def get_backed_up_files(self) -> list[str]:
         pass
 
     @abstractmethod

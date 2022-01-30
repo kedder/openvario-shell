@@ -86,7 +86,7 @@ class XCSoarApp(api.App):
             prf.set_orientation(xcsoar_orient)
             prf.save()
 
-    def _prep_environment(self) -> Dict[str, str]:
+    def _prep_environment(self) -> dict[str, str]:
         env = os.environ.copy()
         lang = self.shell.settings.get("core.language", str)
         if lang is None:
@@ -100,7 +100,7 @@ class XCSoarApp(api.App):
         binary = os.path(self.shell.settings.getstrict("xcsoar.binary", str))
         return [binary, "-fly"]
 
-    def _find_xcsoar_profiles(self) -> List[str]:
+    def _find_xcsoar_profiles(self) -> list[str]:
         xcs_home = self.shell.settings.getstrict("xcsoar.home", str)
         xcs_home = self.shell.os.path(xcs_home)
 
@@ -129,7 +129,7 @@ class XCSoarProfile:
         self.filename = filename
         self._dirty = False
 
-        with open(filename, "r") as f:
+        with open(filename) as f:
             self.lines = f.readlines()
 
     def save(self) -> None:

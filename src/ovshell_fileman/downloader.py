@@ -12,7 +12,7 @@ class DownloaderImpl(Downloader):
         self.source_dir = source_dir
         self.mount_dir = mount_dir
 
-    def list_logs(self, filter: DownloadFilter) -> List[FileInfo]:
+    def list_logs(self, filter: DownloadFilter) -> list[FileInfo]:
         if not os.path.exists(self.source_dir):
             return []
         downloaded = self._find_downloaded()
@@ -61,7 +61,7 @@ class DownloaderImpl(Downloader):
             matches = matches and not fileinfo.downloaded
         return matches
 
-    def _find_downloaded(self) -> List[str]:
+    def _find_downloaded(self) -> list[str]:
         destdir = self._get_dest_dir()
         if not os.path.exists(destdir):
             return []

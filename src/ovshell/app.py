@@ -8,7 +8,7 @@ from ovshell.api import Extension, ExtensionFactory, OpenVarioShell, ScreenManag
 
 
 class ExtensionManagerImpl(api.ExtensionManager):
-    _extensions: List[Extension]
+    _extensions: list[Extension]
 
     def __init__(self):
         self._extensions = []
@@ -28,7 +28,7 @@ class AppManagerImpl(api.AppManager):
     def __init__(self, shell: OpenVarioShell) -> None:
         self.shell = shell
 
-    def list(self) -> Iterable[api.AppInfo]:
+    def list_apps(self) -> Iterable[api.AppInfo]:
         appinfos = []
         allpinned = self._get_pinned()
         for ext in self.shell.extensions.list_extensions():
@@ -46,7 +46,7 @@ class AppManagerImpl(api.AppManager):
         return appinfos
 
     def get(self, id: str) -> Optional[api.AppInfo]:
-        for appinfo in self.list():
+        for appinfo in self.list_apps():
             if appinfo.id == id:
                 return appinfo
         return None
@@ -65,10 +65,10 @@ class AppManagerImpl(api.AppManager):
         pinned.remove(app.id)
         self._set_pinned(pinned, persist)
 
-    def install_new_apps(self) -> List[api.AppInfo]:
+    def install_new_apps(self) -> list[api.AppInfo]:
         installed = self.shell.settings.get("ovshell.installed_apps", list) or []
         newapps = []
-        for appinfo in self.list():
+        for appinfo in self.list_apps():
             if appinfo.id in installed:
                 continue
 
@@ -82,10 +82,10 @@ class AppManagerImpl(api.AppManager):
 
         return newapps
 
-    def _get_pinned(self) -> Set[str]:
+    def _get_pinned(self) -> set[str]:
         return set(self.shell.settings.get("ovshell.pinned_apps", list) or [])
 
-    def _set_pinned(self, pinned: Set[str], persist: bool = False):
+    def _set_pinned(self, pinned: set[str], persist: bool = False):
         self.shell.settings.set(
             "ovshell.pinned_apps", sorted(pinned) or [], save=persist
         )

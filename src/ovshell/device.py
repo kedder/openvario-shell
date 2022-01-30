@@ -60,9 +60,9 @@ class NMEAStreamImpl(api.NMEAStream):
 
 
 class DeviceManagerImpl(api.DeviceManager):
-    _devices: Dict[str, api.Device]
-    _handlers: Dict[str, "asyncio.Task[None]"]
-    _queues: Set["asyncio.Queue[api.NMEA]"]
+    _devices: dict[str, api.Device]
+    _handlers: dict[str, "asyncio.Task[None]"]
+    _queues: set["asyncio.Queue[api.NMEA]"]
 
     def __init__(self) -> None:
         self._devices = {}
@@ -76,7 +76,7 @@ class DeviceManagerImpl(api.DeviceManager):
         self._devices[device.id] = device
         self._handlers[device.id] = asyncio.create_task(self._read_device(device))
 
-    def list(self) -> List[api.Device]:
+    def enumerate(self) -> list[api.Device]:
         return list(self._devices.values())
 
     def get(self, devid: str) -> Optional[api.Device]:
@@ -94,7 +94,7 @@ class DeviceManagerImpl(api.DeviceManager):
             while True:
                 try:
                     msg = await dev.readline()
-                except IOError:
+                except OSError:
                     break
                 self._publish(dev, msg)
         finally:
@@ -109,7 +109,7 @@ class DeviceManagerImpl(api.DeviceManager):
         try:
             nmea = parse_nmea(dev.id, msg)
         except UnicodeDecodeError as e:
-            raise IOError from e
+            raise OSError from e
         except InvalidNMEA:
             return
 

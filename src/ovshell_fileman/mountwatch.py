@@ -6,10 +6,10 @@ from .api import AutomountWatcher
 
 
 class AutomountWatcherImpl(AutomountWatcher):
-    _mount_handlers: List[Callable[[], None]]
-    _unmount_handlers: List[Callable[[], None]]
-    _device_in_handlers: List[Callable[[], None]]
-    _device_out_handlers: List[Callable[[], None]]
+    _mount_handlers: list[Callable[[], None]]
+    _unmount_handlers: list[Callable[[], None]]
+    _device_in_handlers: list[Callable[[], None]]
+    _device_out_handlers: list[Callable[[], None]]
 
     def __init__(self, device: str, mountpoint: str) -> None:
         self._mountdev = device

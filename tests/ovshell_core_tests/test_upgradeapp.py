@@ -13,18 +13,18 @@ from tests.fixtures.urwid import UrwidMock
 
 class OpkgToolsStub(OpkgTools):
     opkg_binary = "echo"
-    _upgradables: List[UpgradablePackage]
+    _upgradables: list[UpgradablePackage]
 
-    def __init__(self, upgradables: List[UpgradablePackage] = None) -> None:
+    def __init__(self, upgradables: list[UpgradablePackage] = None) -> None:
         self._upgradables = upgradables or []
 
-    async def list_upgradables(self) -> List[UpgradablePackage]:
+    async def list_upgradables(self) -> list[UpgradablePackage]:
         return self._upgradables
 
-    async def list_installed(self) -> List[InstalledPackage]:
+    async def list_installed(self) -> list[InstalledPackage]:
         return []
 
-    def stub_set_upgradables(self, upgradables: List[UpgradablePackage]) -> None:
+    def stub_set_upgradables(self, upgradables: list[UpgradablePackage]) -> None:
         self._upgradables = upgradables
 
     def get_opkg_binary(self) -> str:

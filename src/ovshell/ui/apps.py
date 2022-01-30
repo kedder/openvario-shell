@@ -34,7 +34,7 @@ class AppsActivity(api.Activity):
         header = widget.ActivityHeader("Applications")
 
         menuitems = []
-        for appinfo in self.shell.apps.list():
+        for appinfo in self.shell.apps.list_apps():
             menuitems.append(AppRowItem(appinfo))
 
         menu = urwid.Pile(menuitems)

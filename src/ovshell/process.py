@@ -3,7 +3,7 @@ from typing import Coroutine, Set
 
 
 class ProcessManagerImpl:
-    _tasks: Set[asyncio.Task]
+    _tasks: set[asyncio.Task]
 
     def __init__(self) -> None:
         self._tasks = set()

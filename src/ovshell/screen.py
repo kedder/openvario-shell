@@ -15,8 +15,8 @@ from ovshell.api import Activity, IndicatorLocation, ScreenManager, UrwidText
 class ActivityContext:
     activity: api.Activity
     widget: urwid.Widget
-    palette: Dict[str, Tuple]
-    tasks: List[asyncio.Task]
+    palette: dict[str, tuple]
+    tasks: list[asyncio.Task]
 
 
 @dataclass
@@ -28,7 +28,7 @@ class TopIndicator:
 
 
 class TopBar(urwid.WidgetWrap):
-    _indicators: Dict[str, TopIndicator]
+    _indicators: dict[str, TopIndicator]
 
     def __init__(self) -> None:
         self.left = urwid.Text("")
@@ -68,7 +68,7 @@ class TopBar(urwid.WidgetWrap):
     def _list_indicators(self, location: IndicatorLocation) -> Sequence[TopIndicator]:
         indicators = self._indicators.values()
         return sorted(
-            [i for i in indicators if i.location == location],
+            (i for i in indicators if i.location == location),
             key=lambda i: i.weight,
         )
 
@@ -103,7 +103,7 @@ class ScreenManagerImpl(ScreenManager):
         self._mainloop = mainloop
         self._main_view = urwid.WidgetPlaceholder(urwid.SolidFill(" "))
         self.layout = self._create_layout()
-        self._act_stack: List[ActivityContext] = []
+        self._act_stack: list[ActivityContext] = []
 
         self._mainloop.widget = self.layout
 
@@ -130,7 +130,7 @@ class ScreenManagerImpl(ScreenManager):
         finally:
             self._mainloop.screen.start()
 
-    def push_activity(self, activity: Activity, palette: List[Tuple] = None) -> None:
+    def push_activity(self, activity: Activity, palette: list[tuple] = None) -> None:
         self._hide_shown_activity()
 
         w = activity.create()
@@ -233,10 +233,10 @@ class ScreenManagerImpl(ScreenManager):
         topact_ctx = self._act_stack[-1]
         topact_ctx.activity.hide()
 
-    def _get_palette(self) -> Dict[str, Tuple]:
+    def _get_palette(self) -> dict[str, tuple]:
         return self._mainloop.screen._palette.copy()
 
-    def _reset_palette(self, palette: Dict[str, Tuple]):
+    def _reset_palette(self, palette: dict[str, tuple]):
         # Reset the palette for activity. We use a bit of urwid implementation
         # details here, because of lack of public way to do this.
         self._mainloop.screen._palette = palette.copy()
@@ -266,7 +266,7 @@ class ScreenManagerImpl(ScreenManager):
 
 
 class DialogActivity(api.Activity, api.Dialog):
-    button_widgets: List[urwid.Widget]
+    button_widgets: list[urwid.Widget]
 
     def __init__(
         self, screen: api.ScreenManager, title: str, message: urwid.Widget

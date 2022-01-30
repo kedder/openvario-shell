@@ -9,7 +9,7 @@ from tests.fixtures.urwid import UrwidMock
 
 
 class SystemInfoStub(SystemInfo):
-    pkg_versions: Dict[str, str]
+    pkg_versions: dict[str, str]
 
     def __init__(self) -> None:
         self.pkg_versions = {}

@@ -7,11 +7,11 @@ DEVICE_POLL_INTERVAL = 1
 
 
 async def show_device_indicators(shell: api.OpenVarioShell) -> None:
-    indicators: Set[str] = set()
+    indicators: set[str] = set()
     screen = shell.screen
 
     while True:
-        devs = shell.devices.list()
+        devs = shell.devices.enumerate()
         # Update existing indicators
         cur_indicators = set()
         for dev in devs:

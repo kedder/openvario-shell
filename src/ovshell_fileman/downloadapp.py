@@ -46,7 +46,7 @@ class LogDownloaderApp(api.App):
 
 
 class LogDownloaderActivity(api.Activity):
-    _dl_in_progress: Dict[str, urwid.WidgetPlaceholder]
+    _dl_in_progress: dict[str, urwid.WidgetPlaceholder]
     filter: DownloadFilter
 
     def __init__(

@@ -69,15 +69,15 @@ class SerialDeviceImpl(api.SerialDevice):
 
 
 async def maintain_serial_devices(shell: api.OpenVarioShell) -> NoReturn:
-    os_devs: Set[str]
+    os_devs: set[str]
     opening = {}
     builtins = [shell.os.path(dev) for dev in BUILTIN_DEVICES]
     while True:
-        os_devs = set(d.device for d in comports(include_links=False))
+        os_devs = {d.device for d in comports(include_links=False)}
         os_devs.update(d for d in builtins if os.path.exists(d))
 
         registered_devs = [
-            d.path for d in shell.devices.list() if isinstance(d, SerialDeviceImpl)
+            d.path for d in shell.devices.enumerate() if isinstance(d, SerialDeviceImpl)
         ]
 
         for dp in os_devs:

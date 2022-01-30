@@ -44,7 +44,7 @@ class ConnmanService:
     name: str
     auto_connect: bool = False
     favorite: bool = False
-    security: List[str] = field(default_factory=list)
+    security: list[str] = field(default_factory=list)
     state: ConnmanServiceState = ConnmanServiceState.IDLE
     strength: int = 0
 
@@ -132,8 +132,8 @@ class ConnmanAgent(Protocol):
 
     @abstractmethod
     async def request_input(
-        self, service: ConnmanService, fields: Dict[str, Dict[str, str]]
-    ) -> Dict[str, Any]:
+        self, service: ConnmanService, fields: dict[str, dict[str, str]]
+    ) -> dict[str, Any]:
         """Request input from the user"""
 
     @abstractmethod

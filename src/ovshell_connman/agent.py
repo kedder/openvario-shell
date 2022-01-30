@@ -16,8 +16,8 @@ class ConnmanAgentImpl(ConnmanAgent):
         print("ERROR: ", error)
 
     async def request_input(
-        self, service: ConnmanService, fields: Dict[str, Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        self, service: ConnmanService, fields: dict[str, dict[str, Any]]
+    ) -> dict[str, Any]:
         # {'Passphrase': {'Type': 'psk', 'Requirement': 'mandatory'}}
         # {'Passphrase': {'Type': 'psk', 'Requirement': 'mandatory', 'Alternates': ['WPS']}, 'WPS': {'Type': 'wpspin', 'Requirement': 'alternate'}}
 
@@ -38,13 +38,13 @@ class ConnmanAgentImpl(ConnmanAgent):
 
 
 class ConnmanInputActivity(api.Activity):
-    content: Dict[str, Any]
+    content: dict[str, Any]
 
     def __init__(
         self,
         screen: api.ScreenManager,
         service: ConnmanService,
-        fields: Dict[str, Dict[str, Any]],
+        fields: dict[str, dict[str, Any]],
     ):
         self.screen = screen
         self.service = service
@@ -76,7 +76,7 @@ class ConnmanInputActivity(api.Activity):
         if not self.done.done():
             self.done.set_exception(Canceled())
 
-    def _make_field_psk(self, name: str, desc: Dict[str, Any]) -> urwid.Widget:
+    def _make_field_psk(self, name: str, desc: dict[str, Any]) -> urwid.Widget:
         fld = urwid.Edit(multiline=False)
         urwid.connect_signal(fld, "change", self._handle_edit_change, user_args=[name])
 

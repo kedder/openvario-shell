@@ -2,8 +2,8 @@ import asyncio
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import AsyncIterator, Coroutine, List, Optional, Tuple
+from unittest import mock
 
-import mock
 import pytest
 from serial import SerialException
 
@@ -12,15 +12,15 @@ from ovshell_core import serial
 
 
 class SerialDeviceLookupStub:
-    _devices: List[str]
+    _devices: list[str]
 
     def __init__(self) -> None:
         self._devices = []
 
-    def stub_set_devices(self, devices: List[str]) -> None:
+    def stub_set_devices(self, devices: list[str]) -> None:
         self._devices = devices
 
-    def comports(self, include_links: bool) -> List:
+    def comports(self, include_links: bool) -> list:
         return [mock.Mock(device=dev) for dev in self._devices]
 
 
@@ -33,7 +33,7 @@ class SerialConnecitionOpenerStub:
 
     async def open_serial_connection(
         self, url: str, baudrate: int
-    ) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
+    ) -> tuple[asyncio.StreamReader, asyncio.StreamWriter]:
         if self.open_raises is not None:
             raise self.open_raises
         return self.reader, self.writer
@@ -88,7 +88,7 @@ async def test_maintain_serial_devices_no_devs(
 
     # THEN
     # No devices registered
-    assert len(ovshell.devices.list()) == 0
+    assert len(ovshell.devices.enumerate()) == 0
 
 
 async def test_maintain_serial_devices_bad_device(
@@ -104,7 +104,7 @@ async def test_maintain_serial_devices_bad_device(
 
     # THEN
     # No devices registered
-    assert len(ovshell.devices.list()) == 0
+    assert len(ovshell.devices.enumerate()) == 0
 
 
 async def test_maintain_serial_devices_reconnect(
@@ -115,18 +115,18 @@ async def test_maintain_serial_devices_reconnect(
     async with task_started(maintainer):
         # Device is detected
         await asyncio.sleep(0.02)
-        assert len(ovshell.devices.list()) == 1
+        assert len(ovshell.devices.enumerate()) == 1
 
         # ttyFAKE is gone
         ovshell.devices.stub_remove_device("/dev/ttyFAKE")
-        assert len(ovshell.devices.list()) == 0
+        assert len(ovshell.devices.enumerate()) == 0
         serial_testbed.lookup.stub_set_devices([])
         await asyncio.sleep(0.02)
 
         # ttyFAKE reappears
         serial_testbed.lookup.stub_set_devices(["/dev/ttyFAKE"])
         await asyncio.sleep(0.02)
-        assert len(ovshell.devices.list()) == 1
+        assert len(ovshell.devices.enumerate()) == 1
 
 
 async def test_maintain_serial_devices_opened(
@@ -141,7 +141,7 @@ async def test_maintain_serial_devices_opened(
 
     # THEN
     # One device registered
-    devs = ovshell.devices.list()
+    devs = ovshell.devices.enumerate()
     assert len(devs) == 1
     dev = devs[0]
     assert isinstance(dev, serial.SerialDeviceImpl)

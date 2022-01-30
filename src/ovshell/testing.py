@@ -14,13 +14,13 @@ JT = TypeVar("JT", bound=api.JsonType)
 
 
 class AppManagerStub(api.AppManager):
-    _app_infos: List[api.AppInfo]
+    _app_infos: list[api.AppInfo]
 
-    def __init__(self, log: List[str]) -> None:
+    def __init__(self, log: list[str]) -> None:
         self._log = log
         self._app_infos = []
 
-    def list(self) -> Iterable[api.AppInfo]:
+    def list_apps(self) -> Iterable[api.AppInfo]:
         return self._app_infos
 
     def get(self, appid: str) -> Optional[api.AppInfo]:
@@ -40,7 +40,7 @@ class AppManagerStub(api.AppManager):
 
 
 class ExtensionManagerStub(api.ExtensionManager):
-    def __init__(self, log: List[str]) -> None:
+    def __init__(self, log: list[str]) -> None:
         self._log = log
 
     def list_extensions(self) -> Iterable[api.Extension]:
@@ -51,7 +51,7 @@ class DialogStub(api.Dialog):
     def __init__(self, title: str, content: urwid.Widget):
         self.title = title
         self.content = content
-        self.buttons: Dict[str, Callable[[], bool]] = {}
+        self.buttons: dict[str, Callable[[], bool]] = {}
 
     def add_button(self, label: str, handler: Callable[[], bool]) -> None:
         self.buttons[label] = handler
@@ -72,14 +72,14 @@ class TopIndicatorStub:
 
 
 class ScreenManagerStub(api.ScreenManager):
-    _log: List[str]
-    _activities: List[api.Activity]
-    _tasks: List[Tuple[api.Activity, asyncio.Task]]
+    _log: list[str]
+    _activities: list[api.Activity]
+    _tasks: list[tuple[api.Activity, asyncio.Task]]
     _dialog: Optional[DialogStub]
-    _indicators: Dict[str, TopIndicatorStub]
+    _indicators: dict[str, TopIndicatorStub]
     _status: Optional[api.UrwidText]
 
-    def __init__(self, log: List[str]) -> None:
+    def __init__(self, log: list[str]) -> None:
         self._log = log
         self._activities = []
         self._tasks = []
@@ -95,7 +95,7 @@ class ScreenManagerStub(api.ScreenManager):
         yield
 
     def push_activity(
-        self, activity: api.Activity, palette: Optional[List[Tuple]] = None
+        self, activity: api.Activity, palette: Optional[list[tuple]] = None
     ) -> None:
         self._activities.append(activity)
 
@@ -163,7 +163,7 @@ class ScreenManagerStub(api.ScreenManager):
     def stub_get_indicator(self, iid: str) -> Optional[TopIndicatorStub]:
         return self._indicators.get(iid)
 
-    def stub_list_indicators(self) -> List[TopIndicatorStub]:
+    def stub_list_indicators(self) -> list[TopIndicatorStub]:
         return list(self._indicators.values())
 
     def stub_get_status(self) -> Optional[api.UrwidText]:
@@ -171,9 +171,9 @@ class ScreenManagerStub(api.ScreenManager):
 
 
 class StoredSettingsStub(api.StoredSettings):
-    _settings: Dict[str, Optional[api.JsonType]]
+    _settings: dict[str, Optional[api.JsonType]]
 
-    def __init__(self, log: List[str]) -> None:
+    def __init__(self, log: list[str]) -> None:
         self._log = log
         self._settings = {}
 
@@ -183,11 +183,11 @@ class StoredSettingsStub(api.StoredSettings):
     def set(self, key: str, value: Optional[api.JsonType], save: bool = False):
         self._settings[key] = value
 
-    def get(self, key: str, type: Type[JT], default: JT = None) -> Optional[JT]:
+    def get(self, key: str, type: type[JT], default: JT = None) -> Optional[JT]:
         v = self._settings.get(key, default)
         return v if isinstance(v, type) else None
 
-    def getstrict(self, key: str, type: Type[JT]) -> JT:
+    def getstrict(self, key: str, type: type[JT]) -> JT:
         v = self.get(key, type)
         assert v is not None
         return v
@@ -225,7 +225,7 @@ class MessageBusProxyObjectStub:
         bus_name: str,
         path: str,
         introspection: MessageBusIntrospectionStub,
-        impls: Dict[str, Any],
+        impls: dict[str, Any],
     ) -> None:
         self.__bus_name = bus_name
         self.__path = path
@@ -238,8 +238,8 @@ class MessageBusProxyObjectStub:
 
 
 class MessageBusStub:
-    _impls: Dict[str, Dict[str, Any]]
-    _exported: Dict[str, Any]
+    _impls: dict[str, dict[str, Any]]
+    _exported: dict[str, Any]
 
     def __init__(self) -> None:
         self._impls = {}
@@ -264,7 +264,7 @@ class MessageBusStub:
         ifaces = self._impls.setdefault(path, {})
         ifaces[iface_name] = impl
 
-    def stub_get_exported(self) -> Dict[str, Any]:
+    def stub_get_exported(self) -> dict[str, Any]:
         return self._exported
 
 
@@ -275,7 +275,7 @@ class OpenVarioOSStub(api.OpenVarioOS):
     _stub_bus: Optional[MessageBusStub] = None
     _stub_bus_connected: "asyncio.Future[MessageBusStub]"
 
-    def __init__(self, log: List[str], rootfs: str) -> None:
+    def __init__(self, log: list[str], rootfs: str) -> None:
         self._log = log
         self._rootfs = rootfs
         self._stub_bus_connected = asyncio.Future()
@@ -293,7 +293,7 @@ class OpenVarioOSStub(api.OpenVarioOS):
 
         return os.path.join(self._rootfs, path[2:])
 
-    async def run(self, command: str, args: List[str]) -> api.OSProcess:
+    async def run(self, command: str, args: list[str]) -> api.OSProcess:
         self._log.append(f"OS: Running {command} {' '.join(args)}")
         return OSPRocessStub(
             self._stub_run_returncode, self._stub_run_stdout, self._stub_run_stderr
@@ -333,7 +333,7 @@ class OpenVarioOSStub(api.OpenVarioOS):
 
 
 class NMEAStreamStub(api.NMEAStream):
-    def __init__(self, nmeas: List[api.NMEA]) -> None:
+    def __init__(self, nmeas: list[api.NMEA]) -> None:
         self._nmeas = list(reversed(nmeas))
 
     async def read(self) -> api.NMEA:
@@ -347,10 +347,10 @@ class NMEAStreamStub(api.NMEAStream):
 
 
 class DeviceManagerStub(api.DeviceManager):
-    _devices: List[api.Device]
-    _nmeas: List[api.NMEA]
+    _devices: list[api.Device]
+    _nmeas: list[api.NMEA]
 
-    def __init__(self, log: List[str]) -> None:
+    def __init__(self, log: list[str]) -> None:
         self._log = log
         self._devices = list()
         self._nmeas = list()
@@ -359,14 +359,14 @@ class DeviceManagerStub(api.DeviceManager):
         self._devices.append(device)
         self._log.append(f"Registered device {device.id}")
 
-    def list(self) -> List[api.Device]:
+    def enumerate(self) -> list[api.Device]:
         return self._devices
 
     @contextmanager
     def open_nmea(self) -> Generator[api.NMEAStream, None, None]:
         yield NMEAStreamStub(self._nmeas)
 
-    def stub_add_nmea(self, nmeas: List[api.NMEA]) -> None:
+    def stub_add_nmea(self, nmeas: list[api.NMEA]) -> None:
         self._nmeas.extend(nmeas)
 
     def stub_remove_device(self, devid: str) -> None:
@@ -374,7 +374,7 @@ class DeviceManagerStub(api.DeviceManager):
 
 
 class ProcessManagerStub(api.ProcessManager):
-    def __init__(self, log: List[str]) -> None:
+    def __init__(self, log: list[str]) -> None:
         self._log = log
 
     def start(self, coro: Coroutine) -> asyncio.Task:
@@ -382,7 +382,7 @@ class ProcessManagerStub(api.ProcessManager):
 
 
 class OpenVarioShellStub(api.OpenVarioShell):
-    _log: List[str]
+    _log: list[str]
 
     def __init__(self, fsroot: str) -> None:
         self._log = []
@@ -396,7 +396,7 @@ class OpenVarioShellStub(api.OpenVarioShell):
 
         self._fsroot = fsroot
 
-    def get_stub_log(self) -> List[str]:
+    def get_stub_log(self) -> list[str]:
         return self._log
 
     def stub_teardown(self) -> None:

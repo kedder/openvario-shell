@@ -43,7 +43,7 @@ class ConnmanManagerApp(api.App):
 
 
 class ConnmanManagerActivity(api.Activity):
-    _svc_waits: Dict[str, widget.Waiting]
+    _svc_waits: dict[str, widget.Waiting]
 
     _techs_grid: Optional[urwid.GridFlow] = None
 

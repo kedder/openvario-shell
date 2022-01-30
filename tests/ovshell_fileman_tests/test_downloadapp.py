@@ -14,10 +14,10 @@ from .stubs import AutomountWatcherStub
 
 class DownloaderStub(Downloader):
     stub_last_filter: Optional[DownloadFilter] = None
-    stub_files: Optional[List[FileInfo]] = None
+    stub_files: Optional[list[FileInfo]] = None
     failing = False
 
-    def list_logs(self, filter: DownloadFilter) -> List[FileInfo]:
+    def list_logs(self, filter: DownloadFilter) -> list[FileInfo]:
         self.stub_last_filter = filter
         return self.stub_files or []
 
@@ -26,7 +26,7 @@ class DownloaderStub(Downloader):
         await asyncio.sleep(0)
         progress.progress(file.size // 2)
         if self.failing:
-            raise IOError("Download failed")
+            raise OSError("Download failed")
         await asyncio.sleep(0)
         progress.progress(file.size // 2)
 

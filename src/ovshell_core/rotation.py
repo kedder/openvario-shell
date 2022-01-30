@@ -5,7 +5,7 @@ from typing import List, Tuple
 from ovshell import api
 
 
-def get_rotations() -> List[Tuple[str, str]]:
+def get_rotations() -> list[tuple[str, str]]:
     return [
         ("0", "Landscape"),
         ("1", "Portrait (90°)"),
@@ -20,7 +20,7 @@ def apply_rotation(ovos: api.OpenVarioOS, rotation: str) -> None:
     if not os.path.exists(uenvconf_fname):
         ovos.mount_boot()
 
-    with open(uenvconf_fname, "r") as f:
+    with open(uenvconf_fname) as f:
         uenvconf = f.read()
 
     uenvconf = re.sub(r"rotation=[0-3]", "rotation=" + rotation, uenvconf)

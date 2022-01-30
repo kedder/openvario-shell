@@ -258,7 +258,7 @@ class SetupActivity(api.Activity):
         self._switch_step(0)
         return self.frame
 
-    def _setup_steps(self, steps: List[WizardStepWidget]) -> None:
+    def _setup_steps(self, steps: list[WizardStepWidget]) -> None:
         assert len(steps) > 0
         self._steps = {}
         for n, step_w in enumerate(steps):
@@ -309,13 +309,13 @@ class SetupActivity(api.Activity):
         self.shell.screen.pop_activity()
 
 
-def _button_row(buttons: List[urwid.Widget]) -> urwid.GridFlow:
+def _button_row(buttons: list[urwid.Widget]) -> urwid.GridFlow:
     return urwid.GridFlow(buttons, 14, 1, 1, "left")
 
 
 class CommandRunnerActivity(api.Activity):
-    _success_handlers: List[Callable[[], None]]
-    _failure_handlers: List[Callable[[], None]]
+    _success_handlers: list[Callable[[], None]]
+    _failure_handlers: list[Callable[[], None]]
 
     def __init__(
         self,
@@ -323,7 +323,7 @@ class CommandRunnerActivity(api.Activity):
         title: str,
         description: str,
         command: str,
-        args: List[str],
+        args: list[str],
     ) -> None:
         self.shell = shell
         self.title = title
@@ -356,7 +356,7 @@ class CommandRunnerActivity(api.Activity):
     def on_failure(self, handler: Callable[[], None]) -> None:
         self._failure_handlers.append(handler)
 
-    async def run(self, command: str, args: List[str]) -> None:
+    async def run(self, command: str, args: list[str]) -> None:
         proc = await self.shell.os.run(command, args)
         result = await proc.wait()
         loop = asyncio.get_event_loop()

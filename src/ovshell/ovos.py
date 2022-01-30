@@ -46,7 +46,7 @@ class OpenVarioOSImpl(api.OpenVarioOS):
             return fname[1:]
         return fname
 
-    async def run(self, command: str, args: List[str]) -> api.OSProcess:
+    async def run(self, command: str, args: list[str]) -> api.OSProcess:
         proc = await asyncio.create_subprocess_exec(
             self.path(command),
             *args,

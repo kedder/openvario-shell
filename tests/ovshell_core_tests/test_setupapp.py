@@ -73,7 +73,7 @@ class TestOrientationWizardStep:
         urwid_mock.keypress(step, ["down", "down", "enter"])
 
         # THEN
-        with open(ovshell.os.path("//sys/class/graphics/fbcon/rotate_all"), "r") as f:
+        with open(ovshell.os.path("//sys/class/graphics/fbcon/rotate_all")) as f:
             writtenrot = f.read()
 
         assert writtenrot == "3"

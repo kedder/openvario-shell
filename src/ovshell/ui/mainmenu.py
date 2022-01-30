@@ -93,7 +93,7 @@ class MainMenuActivity(api.Activity):
 
     def _refresh_pinned_apps(self) -> None:
         m_items = []
-        for appinfo in self.shell.apps.list():
+        for appinfo in self.shell.apps.list_apps():
             if not appinfo.pinned:
                 continue
 
@@ -164,7 +164,7 @@ class MainMenuActivity(api.Activity):
         if appinfo is not None:
             return appinfo
 
-        availapps = ", ".join([a.id for a in self.shell.apps.list()])
+        availapps = ", ".join([a.id for a in self.shell.apps.list_apps()])
         print(f"Error: app '{app_id}' does not exist. " f"Available apps: {availapps}")
         return None
 

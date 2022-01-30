@@ -10,7 +10,7 @@ from ovshell.device import format_nmea, is_nmea_valid, nmea_checksum, parse_nmea
 class DeviceStub(api.Device):
     id: str
     name: str
-    _stream: List[bytes]
+    _stream: list[bytes]
     _delay: float = 0
 
     def __init__(self, id: str, name: str) -> None:
@@ -20,14 +20,14 @@ class DeviceStub(api.Device):
 
     async def readline(self) -> bytes:
         if not self._stream:
-            raise IOError()
+            raise OSError()
         await asyncio.sleep(self._delay)
         return self._stream.pop() + b"\r\n"
 
     def write(self, data: bytes) -> None:
         pass
 
-    def stub_set_stream(self, values: List[bytes]) -> None:
+    def stub_set_stream(self, values: list[bytes]) -> None:
         self._stream = list(reversed(values))
 
     def stub_set_delay(self, delay: float) -> None:
@@ -130,7 +130,7 @@ async def test_DeviceManagerImpl_remove_device_on_error(task_running) -> None:
     devman = device.DeviceManagerImpl()
     dev = DeviceStub("one", "One")
     devman.register(dev)
-    assert len(devman.list()) == 1
+    assert len(devman.enumerate()) == 1
 
     # WHEN
     with devman.open_nmea() as nmea_stream:
@@ -139,7 +139,7 @@ async def test_DeviceManagerImpl_remove_device_on_error(task_running) -> None:
         with pytest.raises(asyncio.TimeoutError):
             await asyncio.wait_for(read, timeout=0.01)
 
-    assert len(devman.list()) == 0
+    assert len(devman.enumerate()) == 0
 
 
 async def test_DeviceManagerImpl_remove_on_binary() -> None:
@@ -155,7 +155,7 @@ async def test_DeviceManagerImpl_remove_on_binary() -> None:
         with pytest.raises(asyncio.TimeoutError):
             await asyncio.wait_for(nmea_stream.read(), timeout=0.05)
 
-    assert len(devman.list()) == 0
+    assert len(devman.enumerate()) == 0
 
 
 async def test_DeviceManagerImpl_bad_nmea() -> None:

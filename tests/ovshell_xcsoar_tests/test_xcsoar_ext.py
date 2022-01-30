@@ -22,7 +22,7 @@ def test_xcsoarprofile_simple_set(tmp_path) -> None:
     prf.save()
 
     # THEN
-    with open(os.path.join(prf_fname), "r") as f:
+    with open(os.path.join(prf_fname)) as f:
         newconf = f.read()
 
     assert 'DisplayOrientation="0"' not in newconf
@@ -43,7 +43,7 @@ def test_xcsoarprofile_empty_profile(tmp_path) -> None:
     prf.save()
 
     # THEN
-    with open(os.path.join(prf_fname), "r") as f:
+    with open(os.path.join(prf_fname)) as f:
         newconf = f.read()
 
     assert 'DisplayOrientation="3"' in newconf
