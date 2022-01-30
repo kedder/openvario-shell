@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import List, Optional, Sequence, Tuple
+from typing import Optional, Sequence
 
 import urwid
 

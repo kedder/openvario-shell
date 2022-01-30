@@ -2,7 +2,7 @@ import asyncio
 import functools
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Callable, Coroutine, Dict, Iterator, List, Sequence, Tuple
+from typing import Callable, Coroutine, Iterator, Sequence
 
 import urwid
 from urwid import signals

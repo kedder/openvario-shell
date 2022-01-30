@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, Optional, Type, TypeVar
+from typing import Optional, TypeVar
 
 from ovshell import api
 

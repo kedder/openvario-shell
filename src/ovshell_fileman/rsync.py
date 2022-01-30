@@ -1,6 +1,6 @@
 import asyncio
 import re
-from typing import AsyncGenerator, List, Optional
+from typing import AsyncGenerator, Optional
 
 from ovshell_fileman.api import RsyncFailedException, RsyncRunner, RsyncStatusLine
 

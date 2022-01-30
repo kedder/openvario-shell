@@ -1,7 +1,7 @@
 import enum
 from abc import abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Sequence
+from typing import Any, Callable, Sequence
 
 from typing_extensions import Protocol
 

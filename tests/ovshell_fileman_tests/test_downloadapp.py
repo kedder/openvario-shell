@@ -1,6 +1,6 @@
 import asyncio
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Optional
 
 import pytest
 

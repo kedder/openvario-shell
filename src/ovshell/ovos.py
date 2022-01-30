@@ -2,7 +2,6 @@ import asyncio
 import os
 import subprocess
 import sys
-from typing import List
 
 from dbus_next.aio import MessageBus
 from dbus_next.auth import AuthAnnonymous

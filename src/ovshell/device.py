@@ -1,6 +1,6 @@
 import asyncio
 from contextlib import contextmanager
-from typing import Dict, Generator, List, Optional, Set
+from typing import Generator, Optional
 
 from ovshell import api
 

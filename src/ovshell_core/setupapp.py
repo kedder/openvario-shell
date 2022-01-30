@@ -1,5 +1,5 @@
 import asyncio
-from typing import Callable, List
+from typing import Callable
 
 import urwid
 

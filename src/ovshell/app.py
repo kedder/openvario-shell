@@ -1,7 +1,6 @@
-from typing import Iterable, List, Optional, Set, cast
+from typing import Iterable, Optional, cast
 
 import pkg_resources
-import urwid
 
 from ovshell import api, device, ovos, process, settings
 from ovshell.api import Extension, ExtensionFactory, OpenVarioShell, ScreenManager

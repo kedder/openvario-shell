@@ -2,8 +2,8 @@ import asyncio
 import os
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, Callable, Coroutine, Dict, Generator, Iterable, Iterator, List
-from typing import Optional, Tuple, Type, TypeVar
+from typing import Any, Callable, Coroutine, Generator, Iterable, Iterator, Optional
+from typing import TypeVar
 
 import urwid
 from dbus_next.message_bus import BaseMessageBus
@@ -126,7 +126,6 @@ class ScreenManagerStub(api.ScreenManager):
     def remove_indicator(self, iid: str) -> None:
         if iid in self._indicators:
             del self._indicators[iid]
-        pass
 
     def spawn_task(self, activity: api.Activity, coro: Coroutine) -> asyncio.Task:
         task = asyncio.create_task(coro)

@@ -2,7 +2,7 @@ import asyncio
 import os
 import re
 from abc import abstractmethod
-from typing import Dict, Optional
+from typing import Optional
 
 from ovshell import api
 

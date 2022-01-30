@@ -1,7 +1,6 @@
 import asyncio
 import functools
 import os
-from typing import Dict, Optional
 
 import urwid
 

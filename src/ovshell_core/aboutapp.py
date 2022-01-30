@@ -1,4 +1,4 @@
-from typing import Coroutine, List, Optional
+from typing import Coroutine, Optional
 
 import urwid
 

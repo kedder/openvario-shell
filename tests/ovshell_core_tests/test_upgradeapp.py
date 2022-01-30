@@ -1,7 +1,6 @@
 import asyncio
-from typing import Callable, List
+from typing import Callable
 
-import pytest
 import urwid
 
 from ovshell import testing

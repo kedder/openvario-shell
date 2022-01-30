@@ -2,8 +2,6 @@ import asyncio
 from datetime import datetime
 from unittest import mock
 
-import pytest
-
 from ovshell import api, testing
 from ovshell_core import gpstime
 

@@ -2,8 +2,6 @@ import asyncio
 import os
 from pathlib import Path
 
-import pytest
-
 from ovshell import testing
 from ovshell_fileman.api import RsyncFailedException, RsyncStatusLine
 from ovshell_fileman.backupapp import BackupActivity, BackupDirectoryImpl

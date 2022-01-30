@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import pytest
 import urwid
 
 from ovshell import testing

@@ -1,7 +1,7 @@
 import asyncio
 import types
 import weakref
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Callable, Optional, Sequence
 
 from dbus_next import Variant
 from dbus_next.errors import DBusError, InterfaceNotFoundError

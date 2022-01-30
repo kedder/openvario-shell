@@ -2,7 +2,7 @@ import asyncio
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Generator, List, Optional
+from typing import Generator, Optional
 
 import pytest
 

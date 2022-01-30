@@ -1,6 +1,6 @@
 import asyncio
 import os
-from typing import NoReturn, Set
+from typing import NoReturn
 
 import serial
 from serial.tools.list_ports import comports

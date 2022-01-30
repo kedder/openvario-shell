@@ -2,7 +2,7 @@ import asyncio
 import os
 from abc import abstractmethod
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 import urwid
 

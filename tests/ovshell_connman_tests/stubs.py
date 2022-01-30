@@ -1,5 +1,5 @@
 import asyncio
-from typing import Callable, Dict, List, Optional, Sequence, Tuple
+from typing import Callable, Optional, Sequence
 
 from dbus_next import Variant
 

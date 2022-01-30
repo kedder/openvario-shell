@@ -1,5 +1,5 @@
 import asyncio
-from typing import Callable, Coroutine, Dict, Optional
+from typing import Callable, Coroutine, Optional
 
 import urwid
 

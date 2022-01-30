@@ -5,8 +5,8 @@ import enum
 from abc import abstractmethod
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Callable, Coroutine, Dict, Generator, Iterable, Iterator, List
-from typing import Optional, Sequence, Tuple, Type, TypeVar, Union
+from typing import Callable, Coroutine, Generator, Iterable, Iterator, Optional
+from typing import Sequence, TypeVar, Union
 
 import urwid
 from dbus_next.message_bus import BaseMessageBus

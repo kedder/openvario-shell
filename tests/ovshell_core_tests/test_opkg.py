@@ -1,5 +1,3 @@
-import pytest
-
 from ovshell import testing
 from ovshell_core.opkg import InstalledPackage, OpkgToolsImpl, UpgradablePackage
 

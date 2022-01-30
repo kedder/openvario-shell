@@ -1,6 +1,6 @@
 import os
 import subprocess
-from typing import Dict, List, Sequence
+from typing import Sequence
 
 import urwid
 

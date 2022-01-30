@@ -1,5 +1,3 @@
-from typing import FrozenSet, List, Set
-
 import urwid
 
 from ovshell import api, widget

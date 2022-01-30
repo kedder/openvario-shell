@@ -1,6 +1,4 @@
-from typing import Dict, Optional
-
-import pytest
+from typing import Optional
 
 from ovshell import testing
 from ovshell_core import aboutapp

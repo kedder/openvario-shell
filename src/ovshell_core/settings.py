@@ -1,6 +1,6 @@
 import os
 import subprocess
-from typing import Optional, Sequence, Tuple
+from typing import Optional, Sequence
 
 from ovshell import api
 from ovshell.ui.settings import StaticChoiceSetting
