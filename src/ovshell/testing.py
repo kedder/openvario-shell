@@ -2,8 +2,8 @@ import asyncio
 import os
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Any, Callable, Coroutine, Dict, Generator, Iterable, List, Optional
-from typing import Tuple, Type, TypeVar
+from typing import Any, Callable, Coroutine, Dict, Generator, Iterable, Iterator, List
+from typing import Optional, Tuple, Type, TypeVar
 
 import urwid
 from dbus_next.message_bus import BaseMessageBus
@@ -89,6 +89,10 @@ class ScreenManagerStub(api.ScreenManager):
 
     def draw(self) -> None:
         self._log.append("Screen redrawn")
+
+    @contextmanager
+    def suspended(self) -> Iterator[None]:
+        yield
 
     def push_activity(
         self, activity: api.Activity, palette: Optional[List[Tuple]] = None
@@ -303,6 +307,9 @@ class OpenVarioOSStub(api.OpenVarioOS):
 
     def restart(self) -> None:
         self._log.append("OS: Restart")
+
+    def spawn_shell(self) -> None:
+        self._log.append("OS: Run shell")
 
     def stub_expect_run(
         self, result: int = 0, stdout: bytes = b"", stderr: bytes = b""

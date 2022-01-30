@@ -1,4 +1,5 @@
 import asyncio
+import subprocess
 from typing import Optional
 
 import urwid
@@ -127,7 +128,7 @@ class MainMenuActivity(api.Activity):
         )
         confirm.add_button("Shut Down", self._on_shutdown)
         confirm.add_button("Restart", self._on_restart)
-        confirm.add_button("Shell", self._on_exit)
+        confirm.add_button("Shell", self._on_shell)
         confirm.add_button("Cancel", lambda: True)
 
     def _on_shutdown(self) -> bool:
@@ -137,8 +138,9 @@ class MainMenuActivity(api.Activity):
         self.shell.os.shut_down()
         return False
 
-    def _on_exit(self) -> bool:
-        self.shell.quit()
+    def _on_shell(self) -> bool:
+        with self.shell.screen.suspended():
+            self.shell.os.spawn_shell()
         return True
 
     def _on_restart(self) -> bool:

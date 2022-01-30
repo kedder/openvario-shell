@@ -85,6 +85,11 @@ class OpenVarioOSImpl(api.OpenVarioOS):
     def restart(self) -> None:
         subprocess.run(["systemctl", "reboot"])
 
+    def spawn_shell(self) -> None:
+        subprocess.run(["clear"])
+        print("Type 'exit' or press Ctrl-D to return to menu.")
+        subprocess.run(["bash", "-l"])
+
 
 class OpenVarioOSSimulator(OpenVarioOSImpl):
     def __init__(self, rootfs: str) -> None:

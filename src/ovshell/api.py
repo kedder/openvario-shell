@@ -5,8 +5,8 @@ import enum
 from abc import abstractmethod
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Callable, Coroutine, Dict, Generator, Iterable, List, Optional
-from typing import Sequence, Tuple, Type, TypeVar, Union
+from typing import Callable, Coroutine, Dict, Generator, Iterable, Iterator, List
+from typing import Optional, Sequence, Tuple, Type, TypeVar, Union
 
 import urwid
 from dbus_next.message_bus import BaseMessageBus
@@ -351,6 +351,14 @@ class ScreenManager(Protocol):
         """Force screen redraw."""
 
     @abstractmethod
+    @contextmanager
+    def suspended(self) -> Iterator[None]:
+        """Context manager that suspends the screen management
+
+        Useful to run shell apps that require full control over the screen.
+        """
+
+    @abstractmethod
     def push_activity(
         self, activity: Activity, palette: Optional[List[Tuple]] = None
     ) -> None:
@@ -476,6 +484,10 @@ class OpenVarioOS(Protocol):
     @abstractmethod
     def restart(self) -> None:
         """Perform a system reboot"""
+
+    @abstractmethod
+    def spawn_shell(self) -> None:
+        """Spawn a system shell"""
 
     @abstractmethod
     async def get_system_bus(self) -> BaseMessageBus:

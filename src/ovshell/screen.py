@@ -1,7 +1,8 @@
 import asyncio
 import functools
+from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Callable, Coroutine, Dict, List, Sequence, Tuple
+from typing import Callable, Coroutine, Dict, Iterator, List, Sequence, Tuple
 
 import urwid
 from urwid import signals
@@ -120,6 +121,14 @@ class ScreenManagerImpl(ScreenManager):
 
     def draw(self) -> None:
         self._mainloop.draw_screen()
+
+    @contextmanager
+    def suspended(self) -> Iterator[None]:
+        self._mainloop.screen.stop()
+        try:
+            yield
+        finally:
+            self._mainloop.screen.start()
 
     def push_activity(self, activity: Activity, palette: List[Tuple] = None) -> None:
         self._hide_shown_activity()
