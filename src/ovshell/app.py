@@ -111,6 +111,3 @@ class OpenvarioShellImpl(OpenVarioShell):
         # Start extensions
         for ext in self.extensions.list_extensions():
             ext.start()
-
-    def quit(self) -> None:
-        raise urwid.ExitMainLoop()

@@ -589,7 +589,3 @@ class OpenVarioShell(Protocol):
     os: OpenVarioOS
     devices: DeviceManager
     processes: ProcessManager
-
-    @abstractmethod
-    def quit(self) -> None:
-        """Quit shell"""

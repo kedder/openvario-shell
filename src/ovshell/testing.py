@@ -396,9 +396,6 @@ class OpenVarioShellStub(api.OpenVarioShell):
 
         self._fsroot = fsroot
 
-    def quit(self) -> None:
-        self._log.append("Shell: Quit")
-
     def get_stub_log(self) -> List[str]:
         return self._log
 
