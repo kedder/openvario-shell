@@ -65,7 +65,6 @@ def test_app_start(ovshell: testing.OpenVarioShellStub) -> None:
     assert isinstance(act, LogDownloaderActivity)
 
 
-@pytest.mark.asyncio
 async def test_activity_fs_mounting(
     activity_testbed: LogDownloaderActivityTestbed,
 ) -> None:
@@ -80,7 +79,6 @@ async def test_activity_fs_mounting(
     assert "Please insert USB storage" in urwid_mock.render(w)
 
 
-@pytest.mark.asyncio
 async def test_activity_list_files(
     activity_testbed: LogDownloaderActivityTestbed,
 ) -> None:
@@ -104,7 +102,6 @@ async def test_activity_list_files(
     assert "two.igc" in rendered
 
 
-@pytest.mark.asyncio
 async def test_activity_unmount(
     activity_testbed: LogDownloaderActivityTestbed,
 ) -> None:
@@ -128,7 +125,6 @@ async def test_activity_unmount(
     assert "Please insert USB storage" in urwid_mock.render(w)
 
 
-@pytest.mark.asyncio
 async def test_activity_change_settings(
     activity_testbed: LogDownloaderActivityTestbed,
 ) -> None:
@@ -152,7 +148,6 @@ async def test_activity_change_settings(
     assert filt == {"new": False, "igc": False, "nmea": False}
 
 
-@pytest.mark.asyncio
 async def test_activity_download(
     activity_testbed: LogDownloaderActivityTestbed,
 ) -> None:
@@ -179,7 +174,6 @@ async def test_activity_download(
     assert "Done" in urwid_mock.render(w)
 
 
-@pytest.mark.asyncio
 async def test_activity_download_error(
     activity_testbed: LogDownloaderActivityTestbed,
 ) -> None:

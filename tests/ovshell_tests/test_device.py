@@ -69,7 +69,6 @@ def test_DeviceManagerImpl_open_nmea_empty() -> None:
         assert nmea is not None
 
 
-@pytest.mark.asyncio
 async def test_DeviceManagerImpl_get() -> None:
     # GIVEN
     devman = device.DeviceManagerImpl()
@@ -82,7 +81,6 @@ async def test_DeviceManagerImpl_get() -> None:
     assert devman.get("two") is None
 
 
-@pytest.mark.asyncio
 async def test_DeviceManagerImpl_open_nmea_stream(task_running) -> None:
     # GIVEN
     devman = device.DeviceManagerImpl()
@@ -99,7 +97,6 @@ async def test_DeviceManagerImpl_open_nmea_stream(task_running) -> None:
     assert nmea.raw_message == "$PGRMZ,+51.1,m,3*10"
 
 
-@pytest.mark.asyncio
 async def test_DeviceManagerImpl_multidevice(task_running) -> None:
     # GIVEN
     devman = device.DeviceManagerImpl()
@@ -128,7 +125,6 @@ async def test_DeviceManagerImpl_multidevice(task_running) -> None:
     assert nmea3.raw_message == "$PFLAU,0,0,0,1,0,,0,,,*4F"
 
 
-@pytest.mark.asyncio
 async def test_DeviceManagerImpl_remove_device_on_error(task_running) -> None:
     # GIVEN
     devman = device.DeviceManagerImpl()
@@ -146,7 +142,6 @@ async def test_DeviceManagerImpl_remove_device_on_error(task_running) -> None:
     assert len(devman.list()) == 0
 
 
-@pytest.mark.asyncio
 async def test_DeviceManagerImpl_remove_on_binary() -> None:
     # When non-ascii is received on device, drop it and try to reconnect again
     devman = device.DeviceManagerImpl()
@@ -163,7 +158,6 @@ async def test_DeviceManagerImpl_remove_on_binary() -> None:
     assert len(devman.list()) == 0
 
 
-@pytest.mark.asyncio
 async def test_DeviceManagerImpl_bad_nmea() -> None:
     # GIVEN
     devman = device.DeviceManagerImpl()

@@ -40,7 +40,6 @@ class TestConnmanManagerImpl:
             "Powered": Variant("b", True),
         }
 
-    @pytest.mark.asyncio
     async def test_setup(self, ovshell: testing.OpenVarioShellStub) -> None:
         # GIVEN
         mgr = ConnmanManagerImpl(await ovshell.os.get_system_bus())
@@ -66,7 +65,6 @@ class TestConnmanManagerImpl:
         # THEN
         assert len(mgr.technologies) == 1
 
-    @pytest.mark.asyncio
     async def test_teardown(self, ovshell: testing.OpenVarioShellStub) -> None:
         # GIVEN
         mgr = ConnmanManagerImpl(await ovshell.os.get_system_bus())
@@ -102,7 +100,6 @@ class TestConnmanManagerImpl:
         assert signals == {}
         assert svc1_iface.stub_get_signals() == {}
 
-    @pytest.mark.asyncio
     async def test_scan_all_powered(self) -> None:
         # GIVEN
         self.net_connman_manager.stub_set_technologies(
@@ -135,7 +132,6 @@ class TestConnmanManagerImpl:
         assert scanned == 1  # only wifi is scanned
         assert net_connman_tech.scan_called == 1
 
-    @pytest.mark.asyncio
     async def test_scan_all_notpowered(self) -> None:
         # GIVEN
         self.net_connman_manager.stub_set_technologies(
@@ -168,7 +164,6 @@ class TestConnmanManagerImpl:
         assert scanned == 0  # powered off devices are not scanned
         assert net_connman_tech.scan_called == 0
 
-    @pytest.mark.asyncio
     async def test_tech_power(self) -> None:
         # GIVEN
         self.net_connman_manager.stub_set_technologies(
@@ -191,7 +186,6 @@ class TestConnmanManagerImpl:
         # THEN
         assert net_connman_tech.props_updated == [("Powered", Variant("b", True))]
 
-    @pytest.mark.asyncio
     async def test_services_changed(self) -> None:
         # GIVEN
         mgr = ConnmanManagerImpl(self.bus)
@@ -238,7 +232,6 @@ class TestConnmanManagerImpl:
         assert svc1.name == "Skynet"
         assert svc1.state == ConnmanServiceState.ONLINE
 
-    @pytest.mark.asyncio
     async def test_services_changed_incomplete_data1(self) -> None:
         # GIVEN
         mgr = ConnmanManagerImpl(self.bus)
@@ -270,7 +263,6 @@ class TestConnmanManagerImpl:
         assert svc1.name == "Skynet"
         assert svc1.state == ConnmanServiceState.IDLE
 
-    @pytest.mark.asyncio
     async def test_services_changed_incomplete_data_ignore(self) -> None:
         # GIVEN
         mgr = ConnmanManagerImpl(self.bus)
@@ -297,7 +289,6 @@ class TestConnmanManagerImpl:
         # THEN
         assert len(svcs) == 0
 
-    @pytest.mark.asyncio
     async def test_track_service_props(self) -> None:
         # GIVEN
         mgr = ConnmanManagerImpl(self.bus)
@@ -333,7 +324,6 @@ class TestConnmanManagerImpl:
         assert svc1.state == ConnmanServiceState.ONLINE
         assert svc1.strength == 56
 
-    @pytest.mark.asyncio
     async def test_on_service_prop_changed(self) -> None:
         # GIVEN
         mgr = ConnmanManagerImpl(self.bus)
@@ -386,7 +376,6 @@ class TestConnmanManagerImpl:
         # Changes are not registered anymore
         assert cnt["changed"] == 2
 
-    @pytest.mark.asyncio
     async def test_svc_connect(self) -> None:
         mgr = ConnmanManagerImpl(self.bus)
         svc1_iface = NetConnmanServiceStub()
@@ -414,7 +403,6 @@ class TestConnmanManagerImpl:
         # THEN
         assert svc1_iface.log == ["Connect"]
 
-    @pytest.mark.asyncio
     async def test_svc_remove(self) -> None:
         mgr = ConnmanManagerImpl(self.bus)
         svc1_iface = NetConnmanServiceStub()
@@ -442,7 +430,6 @@ class TestConnmanManagerImpl:
         # THEN
         assert svc1_iface.log == ["Remove"]
 
-    @pytest.mark.asyncio
     async def test_svc_disconnect(self) -> None:
         mgr = ConnmanManagerImpl(self.bus)
         svc1_iface = NetConnmanServiceStub()
@@ -470,7 +457,6 @@ class TestConnmanManagerImpl:
         # THEN
         assert svc1_iface.log == ["Disconnect"]
 
-    @pytest.mark.asyncio
     async def test_subscribers(self) -> None:
         # GIVEN
 
@@ -513,7 +499,6 @@ class TestConnmanManagerImpl:
         assert cnt["tech changed"] == 3  # 1 removed, 2 added
         assert cnt["services changed"] == 1
 
-    @pytest.mark.asyncio
     async def test_get_state(self) -> None:
         # GIVEN
         mgr = ConnmanManagerImpl(self.bus)

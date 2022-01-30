@@ -5,7 +5,6 @@ from ovshell_core.opkg import InstalledPackage, OpkgToolsImpl, UpgradablePackage
 
 
 class TestOpkgToolsImpl:
-    @pytest.mark.asyncio
     async def test_list_upgradables(self, ovshell: testing.OpenVarioShellStub) -> None:
         # GIVEN
         opkg_list_upgradables_out = (
@@ -23,7 +22,6 @@ class TestOpkgToolsImpl:
             UpgradablePackage("package_two", "0.6-r0", "0.6-r1"),
         ]
 
-    @pytest.mark.asyncio
     async def test_list_installed(self, ovshell: testing.OpenVarioShellStub) -> None:
         opkg_list_installed_out = (
             b"package-one - 1.4.0-r0\n"

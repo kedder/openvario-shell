@@ -59,7 +59,6 @@ def test_app_start(ovshell: testing.OpenVarioShellStub) -> None:
     assert isinstance(act, BackupRestoreMainActivity)
 
 
-@pytest.mark.asyncio
 async def test_activity_mounting(ovshell: testing.OpenVarioShellStub) -> None:
     # GIVEN
     urwid_mock = UrwidMock()
@@ -89,7 +88,6 @@ async def test_activity_mounting(ovshell: testing.OpenVarioShellStub) -> None:
     assert "file_two" in urwid_mock.render(w)
 
 
-@pytest.mark.asyncio
 async def test_activity_backup(ovshell: testing.OpenVarioShellStub) -> None:
     # GIVEN
     urwid_mock = UrwidMock()
@@ -111,7 +109,6 @@ async def test_activity_backup(ovshell: testing.OpenVarioShellStub) -> None:
     assert isinstance(pact, BackupActivity)
 
 
-@pytest.mark.asyncio
 async def test_activity_restore(ovshell: testing.OpenVarioShellStub) -> None:
     # GIVEN
     urwid_mock = UrwidMock()
@@ -133,7 +130,6 @@ async def test_activity_restore(ovshell: testing.OpenVarioShellStub) -> None:
     assert isinstance(pact, RestoreActivity)
 
 
-@pytest.mark.asyncio
 async def test_backup_act_create(ovshell: testing.OpenVarioShellStub) -> None:
     # GIVEN
     urwid_mock = UrwidMock()
@@ -202,7 +198,6 @@ def test_restore_act_get_rsync_args(ovshell: testing.OpenVarioShellStub) -> None
     ]
 
 
-@pytest.mark.asyncio
 async def test_restore_show_progress(ovshell: testing.OpenVarioShellStub) -> None:
     urwid_mock = UrwidMock()
     rsync = RsyncRunnerStub()
@@ -231,7 +226,6 @@ async def test_restore_show_progress(ovshell: testing.OpenVarioShellStub) -> Non
     assert ovshell.screen.stub_top_activity() is None
 
 
-@pytest.mark.asyncio
 async def test_restore_cancel(ovshell: testing.OpenVarioShellStub) -> None:
     urwid_mock = UrwidMock()
     rsync = RsyncRunnerStub()
@@ -263,7 +257,6 @@ async def test_restore_cancel(ovshell: testing.OpenVarioShellStub) -> None:
     assert ovshell.screen.stub_top_activity() is None
 
 
-@pytest.mark.asyncio
 async def test_restore_failure(ovshell: testing.OpenVarioShellStub) -> None:
     urwid_mock = UrwidMock()
     rsync = RsyncRunnerStub()

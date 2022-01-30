@@ -8,7 +8,6 @@ from ovshell import api, testing
 from ovshell_core import gpstime
 
 
-@pytest.mark.asyncio
 async def test_clock_indicator(
     ovshell: testing.OpenVarioShellStub, monkeypatch
 ) -> None:
@@ -38,7 +37,6 @@ async def test_clock_indicator(
     task.cancel()
 
 
-@pytest.mark.asyncio
 async def test_gps_time_sync(ovshell: testing.OpenVarioShellStub, monkeypatch) -> None:
     # GIVEN
     subpr_mock = mock.Mock()

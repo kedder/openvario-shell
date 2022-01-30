@@ -32,7 +32,6 @@ class TestSystemInfoImpl:
         self.ovshell = ovshell
         self.sysinfo = SystemInfoImpl(ovshell.os, create_opkg_tools(ovshell.os))
 
-    @pytest.mark.asyncio
     async def test_get_openvario_version(self) -> None:
         # GIVEN
         etcpath = Path(self.ovshell.os.path("//")) / "etc"
@@ -46,7 +45,6 @@ class TestSystemInfoImpl:
         # THEN
         assert ver == "12345 (ov-test)"
 
-    @pytest.mark.asyncio
     async def test_get_installed_package_version_simple(self) -> None:
         # GIVEN
         self.ovshell.os.stub_expect_run(0, stdout=OPKG_LIST_INSTALLED_OUTPUT.encode())
@@ -57,7 +55,6 @@ class TestSystemInfoImpl:
         # THEN
         assert ver == "6.8.14"
 
-    @pytest.mark.asyncio
     async def test_get_installed_package_version_concurrent(self) -> None:
         # GIVEN
         self.ovshell.os.stub_expect_run(0, stdout=OPKG_LIST_INSTALLED_OUTPUT.encode())
@@ -80,14 +77,12 @@ class TestSystemInfoImpl:
             "OS: Running //usr/bin/opkg list-installed",
         ]
 
-    @pytest.mark.asyncio
     async def test_get_kernel_version(self) -> None:
         # WHEN
         ver = await self.sysinfo.get_kernel_version()
         # THEN
         assert ver is not None
 
-    @pytest.mark.asyncio
     async def test_get_hostname(self) -> None:
         # WHEN
         ver = await self.sysinfo.get_hostname()

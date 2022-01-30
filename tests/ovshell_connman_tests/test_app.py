@@ -18,7 +18,6 @@ class TestConnmanManagerApp:
     def setup(self, ovshell: testing.OpenVarioShellStub) -> None:
         self.ovshell = ovshell
 
-    @pytest.mark.asyncio
     async def test_launch(self) -> None:
         # GIVEN
         app = ConnmanManagerApp(self.ovshell)
@@ -37,7 +36,6 @@ class TestConnmanManagerApp:
         activity = self.ovshell.screen.stub_top_activity()
         assert isinstance(activity, ConnmanManagerActivity)
 
-    @pytest.mark.asyncio
     async def test_failed_dbus(self) -> None:
         # GIVEN
         app = ConnmanManagerApp(self.ovshell)
@@ -83,7 +81,6 @@ class TestConnmanManagerActivity:
             type="wifi",
         )
 
-    @pytest.mark.asyncio
     async def test_initial_view(self) -> None:
         # GIVEN
         wdg = self.activity.create()
@@ -99,7 +96,6 @@ class TestConnmanManagerActivity:
         assert "Service" in rendered
         assert "State" in rendered
 
-    @pytest.mark.asyncio
     async def test_techs_displayed(self) -> None:
         # GIVEN
         wdg = self.activity.create()
@@ -115,7 +111,6 @@ class TestConnmanManagerActivity:
         assert "WiFi" in rendered
         assert "Scan" in rendered
 
-    @pytest.mark.asyncio
     async def test_tech_power_on(self) -> None:
         # GIVEN
         wdg = self.activity.create()
@@ -133,7 +128,6 @@ class TestConnmanManagerActivity:
         assert "[X] WiFi" in rendered
         assert self.manager.stub_get_log() == ["Power /tech-path on"]
 
-    @pytest.mark.asyncio
     async def test_scan(self) -> None:
         # GIVEN
         wdg = self.activity.create()
@@ -156,7 +150,6 @@ class TestConnmanManagerActivity:
 
         assert self.manager.stub_get_log() == ["Scanning...", "Scanning completed"]
 
-    @pytest.mark.asyncio
     async def test_show_services(self) -> None:
         # GIVEN
         wdg = self.activity.create()
@@ -174,7 +167,6 @@ class TestConnmanManagerActivity:
         assert "Service One" in rendered
         assert "idle" in rendered
 
-    @pytest.mark.asyncio
     async def test_service_connect_regular(self) -> None:
         # GIVEN
         wdg = self.activity.create()
@@ -191,7 +183,6 @@ class TestConnmanManagerActivity:
 
         assert self.manager.stub_get_log() == ["Connect to /svc-path"]
 
-    @pytest.mark.asyncio
     async def test_service_connect_favorite(self) -> None:
         # GIVEN
         wdg = self.activity.create()
@@ -213,7 +204,6 @@ class TestConnmanManagerActivity:
         await asyncio.sleep(0)
         assert self.manager.stub_get_log() == ["Connect to /svc-path"]
 
-    @pytest.mark.asyncio
     async def test_service_disconnect(self) -> None:
         # GIVEN
         wdg = self.activity.create()
@@ -236,7 +226,6 @@ class TestConnmanManagerActivity:
         await asyncio.sleep(0)
         assert self.manager.stub_get_log() == ["Disconnect /svc-path"]
 
-    @pytest.mark.asyncio
     async def test_service_forget(self) -> None:
         # GIVEN
         wdg = self.activity.create()
@@ -259,7 +248,6 @@ class TestConnmanManagerActivity:
         await asyncio.sleep(0)
         assert self.manager.stub_get_log() == ["Remove /svc-path"]
 
-    @pytest.mark.asyncio
     async def test_teardown_on_exit(self) -> None:
         # WHEN
         self.activity.destroy()

@@ -88,7 +88,6 @@ class TestCalibrateTouchWizardStep:
     def setup_method(self):
         self.completed = False
 
-    @pytest.mark.asyncio
     async def test_calibrate(self, ovshell: testing.OpenVarioShellStub) -> None:
         # GIVEN
         urwid_mock = UrwidMock()
@@ -116,7 +115,6 @@ class TestCalibrateSensorsWizardStep:
     def setup_method(self):
         self.completed = False
 
-    @pytest.mark.asyncio
     async def test_calibrate(self, ovshell: testing.OpenVarioShellStub) -> None:
         # GIVEN
         urwid_mock = UrwidMock()
@@ -144,7 +142,6 @@ class TestCommandRunnerActivity:
     def setup_method(self):
         self.completed = False
 
-    @pytest.mark.asyncio
     async def test_success(self, ovshell: testing.OpenVarioShellStub) -> None:
         # GIVEN
         urwid_mock = UrwidMock()
@@ -162,7 +159,6 @@ class TestCommandRunnerActivity:
         # THEN
         assert ovshell.screen.stub_top_activity() is None
 
-    @pytest.mark.asyncio
     async def test_failure(self, ovshell: testing.OpenVarioShellStub) -> None:
         # GIVEN
         urwid_mock = UrwidMock()

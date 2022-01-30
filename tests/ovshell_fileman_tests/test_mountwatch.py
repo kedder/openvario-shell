@@ -70,7 +70,6 @@ def watcher_testbed(tmp_path: Path, monkeypatch) -> AutomountWatcherTestbed:
     return testbed
 
 
-@pytest.mark.asyncio
 async def test_mounted_inital(watcher_testbed: AutomountWatcherTestbed) -> None:
     # WHEN
     with watcher_testbed.started():
@@ -80,7 +79,6 @@ async def test_mounted_inital(watcher_testbed: AutomountWatcherTestbed) -> None:
         assert watcher_testbed.handler.log == []
 
 
-@pytest.mark.asyncio
 async def test_mounted_mount(watcher_testbed: AutomountWatcherTestbed) -> None:
     # GIVEN
     with watcher_testbed.started():
@@ -96,7 +94,6 @@ async def test_mounted_mount(watcher_testbed: AutomountWatcherTestbed) -> None:
     assert watcher_testbed.handler.log == ["mount"]
 
 
-@pytest.mark.asyncio
 async def test_mounted_unmounted(watcher_testbed: AutomountWatcherTestbed) -> None:
     # GIVEN
     with watcher_testbed.started():

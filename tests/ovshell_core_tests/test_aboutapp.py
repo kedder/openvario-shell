@@ -41,7 +41,6 @@ class TestAboutApp:
 
 
 class TestAboutActivity:
-    @pytest.mark.asyncio
     async def test_wizard_diplay(self, ovshell: testing.OpenVarioShellStub) -> None:
         # GIVEN
         urwid_mock = UrwidMock()

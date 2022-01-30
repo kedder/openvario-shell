@@ -56,7 +56,6 @@ def test_activity_initial_view(ovshell: testing.OpenVarioShellStub) -> None:
     assert "System update" in view
 
 
-@pytest.mark.asyncio
 async def test_activity_no_updates(ovshell: testing.OpenVarioShellStub) -> None:
     urwid_mock = UrwidMock()
     act = CheckForUpdatesActivity(ovshell, OpkgToolsStub())
@@ -84,7 +83,6 @@ async def test_activity_no_updates(ovshell: testing.OpenVarioShellStub) -> None:
     assert ovshell.screen.stub_top_activity() is None
 
 
-@pytest.mark.asyncio
 async def test_full_upgrade(ovshell: testing.OpenVarioShellStub) -> None:
     urwid_mock = UrwidMock()
     opkgstub = OpkgToolsStub(
@@ -126,7 +124,6 @@ async def test_full_upgrade(ovshell: testing.OpenVarioShellStub) -> None:
     assert ovshell.screen.stub_top_activity() is None
 
 
-@pytest.mark.asyncio
 async def test_PackageSelectionWidget_nothing_selected(
     ovshell: testing.OpenVarioShellStub,
 ) -> None:

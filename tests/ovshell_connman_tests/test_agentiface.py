@@ -84,7 +84,6 @@ class TestConnmanAgentInterface:
             "State": Variant("s", "idle"),
         }
 
-    @pytest.mark.asyncio
     async def test_register(self) -> None:
         # WHEN
         await self.agentiface.register()
@@ -93,7 +92,6 @@ class TestConnmanAgentInterface:
         exported = self.bus.stub_get_exported()
         assert exported.keys() == {"/org/ovshell/connman"}
 
-    @pytest.mark.asyncio
     async def test_agent_request_input(self) -> None:
         # GIVEN
         self.svc_iface.stub_properties_changed(self.sample_service_props)

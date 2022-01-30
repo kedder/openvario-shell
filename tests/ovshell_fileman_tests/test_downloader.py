@@ -85,7 +85,6 @@ def test_list_logs_filtering(tmp_path: Path) -> None:
     assert [x.name for x in logs] == ["three.NMEA"]
 
 
-@pytest.mark.asyncio
 async def test_download(tmp_path: Path) -> None:
     # GIVEN
     srcdir = tmp_path / "source"

@@ -143,7 +143,6 @@ def test_push_dialog() -> None:
     assert "Dialog Title" not in urwid_mock.render(mainloop.widget)
 
 
-@pytest.mark.asyncio
 async def test_spawn_task() -> None:
     # GIVEN
     mainloop = mock.Mock(name="MainLoop")

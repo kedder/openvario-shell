@@ -18,7 +18,6 @@ class SampleDevice(api.Device):
         pass
 
 
-@pytest.mark.asyncio
 async def test_nodevs(ovshell: testing.OpenVarioShellStub, monkeypatch) -> None:
     # GIVEN
     monkeypatch.setattr("ovshell_core.devindicators.DEVICE_POLL_INTERVAL", 0.01)
@@ -35,7 +34,6 @@ async def test_nodevs(ovshell: testing.OpenVarioShellStub, monkeypatch) -> None:
     assert task.cancelled()
 
 
-@pytest.mark.asyncio
 async def test_dev_indicators(ovshell: testing.OpenVarioShellStub, monkeypatch) -> None:
     # GIVEN
     monkeypatch.setattr("ovshell_core.devindicators.DEVICE_POLL_INTERVAL", 0.01)
@@ -56,7 +54,6 @@ async def test_dev_indicators(ovshell: testing.OpenVarioShellStub, monkeypatch) 
     assert task.cancelled()
 
 
-@pytest.mark.asyncio
 async def test_remove_indicators(
     ovshell: testing.OpenVarioShellStub, monkeypatch
 ) -> None:

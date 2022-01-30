@@ -8,7 +8,6 @@ from ovshell_core import devsim
 HERE = os.path.dirname(__file__)
 
 
-@pytest.mark.asyncio
 async def test_run_simulated_device(ovshell: testing.OpenVarioShellStub) -> None:
     # GIVEN
     samplefile = os.path.join(HERE, "samples", "sample.nmea")
@@ -22,7 +21,6 @@ async def test_run_simulated_device(ovshell: testing.OpenVarioShellStub) -> None
     assert isinstance(devs[0], devsim.SimulatedDeviceImpl)
 
 
-@pytest.mark.asyncio
 async def test_SimulatedDeviceImpl_readline_infinite(
     ovshell: testing.OpenVarioShellStub, monkeypatch
 ) -> None:

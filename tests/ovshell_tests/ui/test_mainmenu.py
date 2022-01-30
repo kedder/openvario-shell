@@ -74,7 +74,6 @@ def test_mainmenu_exit(ovshell: testing.OpenVarioShellStub) -> None:
     assert "OS: Shut down" in ovshell.get_stub_log()
 
 
-@pytest.mark.asyncio
 async def test_mainmenu_autostart_immediate(
     ovshell: testing.OpenVarioShellStub, nosleep: None
 ) -> None:
@@ -92,7 +91,6 @@ async def test_mainmenu_autostart_immediate(
     assert app.launched
 
 
-@pytest.mark.asyncio
 async def test_mainmenu_autostart_timeout(
     ovshell: testing.OpenVarioShellStub, nosleep: None
 ) -> None:
@@ -124,7 +122,6 @@ async def test_mainmenu_autostart_timeout(
     assert app.launched
 
 
-@pytest.mark.asyncio
 async def test_mainmenu_autostart_cancel(
     ovshell: testing.OpenVarioShellStub, nosleep: None
 ) -> None:

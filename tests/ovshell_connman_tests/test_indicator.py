@@ -37,7 +37,6 @@ class TestConnmanServiceIndicator:
             type="wifi",
         )
 
-    @pytest.mark.asyncio
     async def test_start(self) -> None:
         # WHEN
         await self.indicator.start()
@@ -46,7 +45,6 @@ class TestConnmanServiceIndicator:
         # THEN
         assert self.ovshell.screen.stub_get_indicator("connman") is None
 
-    @pytest.mark.asyncio
     async def test_association(self) -> None:
         # GIVEN
         await self.indicator.start()
@@ -62,7 +60,6 @@ class TestConnmanServiceIndicator:
         assert ind.location == api.IndicatorLocation.RIGHT
         assert ind.markup == ["(", ("ind error", "Service One"), ")"]
 
-    @pytest.mark.asyncio
     async def test_change_service(self) -> None:
         # GIVEN
         await self.indicator.start()
@@ -79,7 +76,6 @@ class TestConnmanServiceIndicator:
         assert ind is not None
         assert ind.markup == ["(", ("ind warning", "Service Two"), ")"]
 
-    @pytest.mark.asyncio
     async def test_change_state(self) -> None:
         # GIVEN
         await self.indicator.start()
@@ -96,7 +92,6 @@ class TestConnmanServiceIndicator:
         assert ind is not None
         assert ind.markup == ["(", ("ind good", "Service One"), ")"]
 
-    @pytest.mark.asyncio
     async def test_no_services(self) -> None:
         # GIVEN
         await self.indicator.start()
@@ -111,7 +106,6 @@ class TestConnmanServiceIndicator:
         ind = self.ovshell.screen.stub_get_indicator("connman")
         assert ind is None
 
-    @pytest.mark.asyncio
     async def test_not_indicated_state(self) -> None:
         # GIVEN
         await self.indicator.start()
@@ -125,7 +119,6 @@ class TestConnmanServiceIndicator:
         ind = self.ovshell.screen.stub_get_indicator("connman")
         assert ind is None
 
-    @pytest.mark.asyncio
     async def test_start_indicator(self) -> None:
         bus = self.ovshell.os.stub_connect_bus()
         net_connman_manager = NetConnmanManagerStub()

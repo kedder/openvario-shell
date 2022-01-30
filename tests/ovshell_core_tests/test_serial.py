@@ -77,7 +77,6 @@ async def task_started(coro: Coroutine) -> AsyncIterator:
             pass
 
 
-@pytest.mark.asyncio
 async def test_maintain_serial_devices_no_devs(
     ovshell: testing.OpenVarioShellStub, serial_testbed: SerialTestbed
 ) -> None:
@@ -92,7 +91,6 @@ async def test_maintain_serial_devices_no_devs(
     assert len(ovshell.devices.list()) == 0
 
 
-@pytest.mark.asyncio
 async def test_maintain_serial_devices_bad_device(
     ovshell: testing.OpenVarioShellStub, serial_testbed: SerialTestbed
 ) -> None:
@@ -109,7 +107,6 @@ async def test_maintain_serial_devices_bad_device(
     assert len(ovshell.devices.list()) == 0
 
 
-@pytest.mark.asyncio
 async def test_maintain_serial_devices_reconnect(
     ovshell: testing.OpenVarioShellStub, serial_testbed: SerialTestbed
 ) -> None:
@@ -132,7 +129,6 @@ async def test_maintain_serial_devices_reconnect(
         assert len(ovshell.devices.list()) == 1
 
 
-@pytest.mark.asyncio
 async def test_maintain_serial_devices_opened(
     ovshell: testing.OpenVarioShellStub, serial_testbed: SerialTestbed
 ) -> None:
@@ -155,7 +151,6 @@ async def test_maintain_serial_devices_opened(
     assert dev.baudrate == 9600
 
 
-@pytest.mark.asyncio
 async def test_SerialDeviceImpl_baud_autodetect(serial_testbed: SerialTestbed) -> None:
     # GIVEN
     serial_testbed.serial_opener.reader.readexactly.side_effect = [
@@ -172,7 +167,6 @@ async def test_SerialDeviceImpl_baud_autodetect(serial_testbed: SerialTestbed) -
     assert dev.baudrate == 19200
 
 
-@pytest.mark.asyncio
 async def test_SerialDeviceImpl_baud_notdetected(serial_testbed: SerialTestbed) -> None:
     # GIVEN
     serial_testbed.serial_opener.reader.readexactly.side_effect = [
@@ -191,7 +185,6 @@ async def test_SerialDeviceImpl_baud_notdetected(serial_testbed: SerialTestbed) 
         await serial.SerialDeviceImpl.open("/dev/ttyFAKE")
 
 
-@pytest.mark.asyncio
 async def test_SerialDeviceImpl_readline(serial_testbed: SerialTestbed) -> None:
     # GIVEN
     dev = await serial.SerialDeviceImpl.open("/dev/ttyFAKE")
@@ -204,7 +197,6 @@ async def test_SerialDeviceImpl_readline(serial_testbed: SerialTestbed) -> None:
     assert data == b"hello\r\n"
 
 
-@pytest.mark.asyncio
 async def test_SerialDeviceImpl_write(serial_testbed: SerialTestbed) -> None:
     # GIVEN
     dev = await serial.SerialDeviceImpl.open("/dev/ttyFAKE")

@@ -9,7 +9,6 @@ from tests.fixtures.urwid import UrwidMock
 
 
 class TestConnmanAgentImpl:
-    @pytest.mark.asyncio
     async def test_request_input(self, ovshell: testing.OpenVarioShellStub) -> None:
         # GIVEN
         agent = ConnmanAgentImpl(ovshell.screen)
@@ -53,7 +52,6 @@ class TestConnmanInputActivity:
             type="wifi",
         )
 
-    @pytest.mark.asyncio
     async def test_password_input(self, ovshell: testing.OpenVarioShellStub) -> None:
         urwid_mock = UrwidMock()
         fields = {"Passphrase": {"Type": "psk", "Requirement": "mandatory"}}

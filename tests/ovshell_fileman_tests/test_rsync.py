@@ -24,7 +24,6 @@ echo "Rsync output doesn't contain progress"
 
 
 class TestRsyncRunnerImpl:
-    @pytest.mark.asyncio
     async def test_run_success(self, tmp_path: Path) -> None:
         # GIVEN
         rsync_path = tmp_path / "rsync-stub"
@@ -44,7 +43,6 @@ class TestRsyncRunnerImpl:
         # THEN
         assert len(progress) == 3
 
-    @pytest.mark.asyncio
     async def test_run_error(self, tmp_path: Path) -> None:
         # GIVEN
         rsync_path = tmp_path / "rsync-stub"
@@ -69,7 +67,6 @@ class TestRsyncRunnerImpl:
         assert exc.returncode == 42
         assert exc.errors == "rsync has failed\n"
 
-    @pytest.mark.asyncio
     async def test_run_no_progress(self, tmp_path: Path) -> None:
         # GIVEN
         rsync_path = tmp_path / "rsync-stub"
