@@ -61,7 +61,7 @@ workflows:
       - build-and-test:
           matrix:
             parameters:
-              python_ver: ["3.7", "3.8", "3.9"]
+              python_ver: ["3.9", "3.10"]
       - build-complete:
           requires:
             - build-and-test
