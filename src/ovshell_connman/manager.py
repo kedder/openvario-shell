@@ -194,8 +194,9 @@ class ConnmanManagerImpl(ConnmanManager):
         if not ifaces:
             return 0
 
+        scantasks = [asyncio.create_task(iface.scan()) for iface in ifaces]
         (done, pending) = await asyncio.wait(
-            [iface.scan() for iface in ifaces], return_when=asyncio.ALL_COMPLETED
+            scantasks, return_when=asyncio.ALL_COMPLETED
         )
         return len([res.result for res in done])
 

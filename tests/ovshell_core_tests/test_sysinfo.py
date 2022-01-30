@@ -60,12 +60,12 @@ class TestSystemInfoImpl:
         self.ovshell.os.stub_expect_run(0, stdout=OPKG_LIST_INSTALLED_OUTPUT.encode())
 
         # WHEN
-        done, _ = await asyncio.wait(
-            [
-                self.sysinfo.get_installed_package_version("xcsoar"),
-                self.sysinfo.get_installed_package_version("xcsoar-menu"),
-            ]
-        )
+        coros = [
+            self.sysinfo.get_installed_package_version("xcsoar"),
+            self.sysinfo.get_installed_package_version("xcsoar-menu"),
+        ]
+
+        done, _ = await asyncio.wait([asyncio.create_task(coro) for coro in coros])
 
         # THEN
         assert len(done) == 2
