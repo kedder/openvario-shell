@@ -7,7 +7,7 @@ from typing import Optional
 from dbus_next.aio import MessageBus
 from dbus_next.auth import AuthAnnonymous
 from dbus_next.constants import BusType
-from dbus_next.errors import AuthError
+from dbus_next.errors import AuthError, InvalidAddressError
 
 from ovshell import api
 
@@ -69,7 +69,7 @@ class OpenVarioOSImpl(api.OpenVarioOS):
                     bus = await MessageBus(
                         bus_type=BusType.SYSTEM, auth=AuthAnnonymous()
                     ).connect()
-            except OSError as e:
+            except (InvalidAddressError, OSError) as e:
                 raise api.DBusNotAvailableException() from e
             self._dbus = bus
 
