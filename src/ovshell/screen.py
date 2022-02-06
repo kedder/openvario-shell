@@ -122,6 +122,9 @@ class ScreenManagerImpl(ScreenManager):
     def draw(self) -> None:
         self._mainloop.draw_screen()
 
+    def get_size(self) -> tuple[int, int]:
+        return self._mainloop.screen_size
+
     @contextmanager
     def suspended(self) -> Iterator[None]:
         self._mainloop.screen.stop()

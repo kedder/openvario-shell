@@ -89,6 +89,9 @@ class ScreenManagerStub(api.ScreenManager):
     def draw(self) -> None:
         self._log.append("Screen redrawn")
 
+    def get_size(self) -> tuple[int, int]:
+        return (60, 100)
+
     @contextmanager
     def suspended(self) -> Iterator[None]:
         yield

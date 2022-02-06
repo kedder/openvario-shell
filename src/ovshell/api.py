@@ -358,6 +358,10 @@ class ScreenManager(Protocol):
         """
 
     @abstractmethod
+    def get_size(self) -> tuple[int, int]:
+        """Return the size of the screen as (width, height) tuple"""
+
+    @abstractmethod
     def push_activity(
         self, activity: Activity, palette: Optional[list[tuple]] = None
     ) -> None:
