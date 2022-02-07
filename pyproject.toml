@@ -28,7 +28,7 @@ black = "^21.12b0"
 mock = "^4.0.3"
 isort = "^5.10.1"
 types-mock = "^4.0.10"
-types-setuptools = "^57.4.7"
+types-setuptools = "^57.4.9"
 
 [tool.poetry.scripts]
 ovshell = 'ovshell.main:main'
