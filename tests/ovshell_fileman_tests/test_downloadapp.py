@@ -44,8 +44,6 @@ class LogDownloaderActivityTestbed:
 def activity_testbed(
     ovshell: testing.OpenVarioShellStub,
 ) -> LogDownloaderActivityTestbed:
-    ovshell.settings.set("xcsoar.home", "//home/xcsoar")
-
     dl = DownloaderStub()
     mw = AutomountWatcherStub()
     act = LogDownloaderActivity(ovshell, mw, dl)
@@ -54,7 +52,6 @@ def activity_testbed(
 
 def test_app_start(ovshell: testing.OpenVarioShellStub) -> None:
     # GIVEN
-    ovshell.settings.set("xcsoar.home", "//home/xcsoar")
     app = LogDownloaderApp(ovshell)
 
     # WHEN

@@ -13,15 +13,9 @@ class XCSoarExtension(api.Extension):
     def __init__(self, id: str, shell: api.OpenVarioShell):
         self.id = id
         self.shell = shell
-        self._init_settings()
 
     def list_apps(self) -> Sequence[api.App]:
         return [XCSoarApp(self.shell)]
-
-    def _init_settings(self) -> None:
-        config = self.shell.settings
-        config.setdefault("xcsoar.binary", "//opt/XCSoar/bin/xcsoar")
-        config.setdefault("xcsoar.home", "//home/root/.xcsoar")
 
 
 class XCSoarApp(api.App):
@@ -37,7 +31,6 @@ class XCSoarApp(api.App):
         self.shell.apps.pin(appinfo)
 
     def launch(self) -> None:
-        self._set_orientation_in_profile()
         env = self._prep_environment()
         cmdline = self._make_commandline()
         modal_opts = api.ModalOptions(
@@ -69,23 +62,6 @@ class XCSoarApp(api.App):
                 modal_opts,
             )
 
-    def _set_orientation_in_profile(self) -> None:
-        # Map from ovshell orientation to xcsoar orientation
-        orient_map = {
-            "0": "0",  # normal
-            "1": "1",  # portrait (90)
-            "2": "4",  # landscape (180)
-            "3": "3",  # portrait (270)
-        }
-
-        orientation = self.shell.settings.getstrict("core.screen_orientation", str)
-        xcsoar_orient = orient_map[orientation]
-
-        for prf_fname in self._find_xcsoar_profiles():
-            prf = XCSoarProfile(prf_fname)
-            prf.set_orientation(xcsoar_orient)
-            prf.save()
-
     def _prep_environment(self) -> dict[str, str]:
         env = os.environ.copy()
         lang = self.shell.settings.get("core.language", str)
@@ -96,20 +72,8 @@ class XCSoarApp(api.App):
         return env
 
     def _make_commandline(self) -> Sequence[str]:
-        os = self.shell.os
-        binary = os.path(self.shell.settings.getstrict("xcsoar.binary", str))
+        binary = os.environ.get("XCSOAR_BIN", "/usr/bin/xcsoar")
         return [binary, "-fly"]
-
-    def _find_xcsoar_profiles(self) -> list[str]:
-        xcs_home = self.shell.settings.getstrict("xcsoar.home", str)
-        xcs_home = self.shell.os.path(xcs_home)
-
-        profiles = []
-        for fname in os.listdir(xcs_home):
-            if fname.endswith(".prf"):
-                profiles.append(os.path.join(xcs_home, fname))
-
-        return profiles
 
 
 class AppOutputActivity(api.Activity):
