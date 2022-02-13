@@ -36,7 +36,7 @@ class LogDownloaderApp(api.App):
 
     def launch(self) -> None:
         mountwatcher = make_usbstick_watcher(self.shell.os)
-        xcsdir = self.shell.os.path(self.shell.settings.getstrict("xcsoar.home", str))
+        xcsdir = os.environ.get("XCSOAR_HOME", "/home/root/.xcsoar")
         mntdir = mountwatcher.get_mountpoint()
         downloader = DownloaderImpl(os.path.join(xcsdir, "logs"), mntdir)
 

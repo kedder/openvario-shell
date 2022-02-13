@@ -13,15 +13,9 @@ class XCSoarExtension(api.Extension):
     def __init__(self, id: str, shell: api.OpenVarioShell):
         self.id = id
         self.shell = shell
-        self._init_settings()
 
     def list_apps(self) -> Sequence[api.App]:
         return [XCSoarApp(self.shell)]
-
-    def _init_settings(self) -> None:
-        config = self.shell.settings
-        config.setdefault("xcsoar.binary", "//opt/XCSoar/bin/xcsoar")
-        config.setdefault("xcsoar.home", "//home/root/.xcsoar")
 
 
 class XCSoarApp(api.App):
@@ -78,10 +72,8 @@ class XCSoarApp(api.App):
         return env
 
     def _make_commandline(self) -> Sequence[str]:
-        os = self.shell.os
-        binary = os.path(self.shell.settings.getstrict("xcsoar.binary", str))
+        binary = os.environ.get("XCSOAR_BIN", "/usr/bin/xcsoar")
         return [binary, "-fly"]
-
 
 
 class AppOutputActivity(api.Activity):
