@@ -27,12 +27,5 @@ def apply_rotation(ovos: api.OpenVarioOS, rotation: str) -> None:
     with open(uenvconf_fname, "w") as f:
         f.write(uenvconf)
 
-    # For some weird reason 90 degree rotation is inverted for fbcon
-    fbcon_rotmap = {
-        "0": "0",  # normal
-        "1": "3",  # portrait (90)
-        "2": "2",  # landscape (180)
-        "3": "1",  # portrait (270)
-    }
     with open(ovos.path("//sys/class/graphics/fbcon/rotate_all"), "w") as f:
-        f.write(fbcon_rotmap[rotation])
+        f.write(rotation)

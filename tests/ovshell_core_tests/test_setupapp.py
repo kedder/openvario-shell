@@ -75,7 +75,7 @@ class TestOrientationWizardStep:
         with open(ovshell.os.path("//sys/class/graphics/fbcon/rotate_all")) as f:
             writtenrot = f.read()
 
-        assert writtenrot == "3"
+        assert writtenrot == "1"
 
         setting = ovshell.settings.getstrict("core.screen_orientation", str)
         assert setting == "1"
