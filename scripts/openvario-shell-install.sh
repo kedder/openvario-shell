@@ -9,7 +9,7 @@ FEED_FILENAME="/etc/opkg/customfeeds.conf"
 grep -q "kedder_core" $FEED_FILENAME
 if [[ $? != 0 ]]; then
     echo Installing opkg feeds to $FEED_FILENAME...
-    echo src/gz kedder_core http://openvario.lebedev.lt/opkg/armv7vet2hf-neon >> $FEED_FILENAME
+    echo src/gz kedder_core http://openvario.lebedev.lt/opkg/cortexa7hf-neon-vfpv4 -neon >> $FEED_FILENAME
     echo src/gz kedder_all http://openvario.lebedev.lt/opkg/all >> $FEED_FILENAME
 fi
 
