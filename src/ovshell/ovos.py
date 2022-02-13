@@ -34,12 +34,6 @@ class OpenVarioOSImpl(api.OpenVarioOS):
     def __init__(self) -> None:
         self._dbus_connect_lock = asyncio.Lock()
 
-    def mount_boot(self) -> None:
-        subprocess.run(["mount", "/dev/mmcblk0p1", "/boot"], check=True)
-
-    def unmount_boot(self) -> None:
-        subprocess.run(["umount", "/boot"], check=True)
-
     def path(self, fname: str) -> str:
         assert fname.startswith("/"), "Absolute path is required"
         if fname.startswith("//"):
@@ -95,15 +89,6 @@ class OpenVarioOSSimulator(OpenVarioOSImpl):
     def __init__(self, rootfs: str) -> None:
         super().__init__()
         self._rootfs = rootfs
-
-    def mount_boot(self) -> None:
-        fd = os.open(self._rootfs, os.O_RDONLY)
-        os.symlink("boot.unmounted", "boot", dir_fd=fd)
-        os.close(fd)
-
-    def unmount_boot(self) -> None:
-        mountpath = os.path.join(self._rootfs, "boot")
-        os.unlink(mountpath)
 
     def path(self, fname: str) -> str:
         assert fname.startswith("/"), "Absolute path is required"

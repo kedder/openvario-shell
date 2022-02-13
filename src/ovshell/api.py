@@ -480,14 +480,6 @@ class OpenVarioOS(Protocol):
     """
 
     @abstractmethod
-    def mount_boot(self) -> None:
-        """Mount /boot filesystem"""
-
-    @abstractmethod
-    def unmount_boot(self) -> None:
-        """Unmount /boot filesystem"""
-
-    @abstractmethod
     def path(self, path: str) -> str:
         """Return absolute path
 

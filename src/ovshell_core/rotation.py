@@ -1,4 +1,3 @@
-import os
 import re
 
 from ovshell import api
@@ -16,8 +15,6 @@ def get_rotations() -> list[tuple[str, str]]:
 def apply_rotation(ovos: api.OpenVarioOS, rotation: str) -> None:
 
     uenvconf_fname = ovos.path("//boot/config.uEnv")
-    if not os.path.exists(uenvconf_fname):
-        ovos.mount_boot()
 
     with open(uenvconf_fname) as f:
         uenvconf = f.read()

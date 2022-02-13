@@ -280,12 +280,6 @@ class OpenVarioOSStub(api.OpenVarioOS):
         self._rootfs = rootfs
         self._stub_bus_connected = asyncio.Future()
 
-    def mount_boot(self) -> None:
-        self._log.append("OS: Mount /boot")
-
-    def unmount_boot(self) -> None:
-        self._log.append("OS: Unmount /boot")
-
     def path(self, path: str) -> str:
         assert path.startswith("/"), "Absolute path is required"
         if not path.startswith("//"):
