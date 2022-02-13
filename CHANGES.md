@@ -4,7 +4,7 @@ Changelog for openvario-shell
 0.7.5 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- XCSoar app: adapt to new openvario image.
 
 
 0.7.4 (2021-03-28)
