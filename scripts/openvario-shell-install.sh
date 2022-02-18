@@ -20,5 +20,3 @@ set -e
 opkg install openvario-shell openvario-shell-autostart --force-removal-of-dependent-packages
 
 echo
-echo
-echo openvario-shell is installed. Reboot your device.
