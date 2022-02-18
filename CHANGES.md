@@ -1,7 +1,7 @@
 Changelog for openvario-shell
 =============================
 
-0.7.7 (unreleased)
+0.7.7 (2022-02-19)
 ------------------
 
 - Correct screen rotation setting.
