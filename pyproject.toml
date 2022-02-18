@@ -22,7 +22,7 @@ dbus-next = "^0.2.2"
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
 pytest-coverage = "^0.0"
-pytest-asyncio = "^0.17.2"
+pytest-asyncio = "^0.18.1"
 mypy = "^0.931"
 black = "^21.12b0"
 mock = "^4.0.3"
