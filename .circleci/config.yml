@@ -18,23 +18,23 @@ jobs:
           command: |
             pyenv version > .cache-key
       - restore_cache:
-          key: build-{{ checksum "poetry.lock" }}-{{ checksum ".cache-key" }}
+          key: build-{{ checksum "Pipfile.lock" }}-{{ checksum ".cache-key" }}
       - run:
           name: Install dependencies
           command: |
-            pip install poetry coveralls[yaml]
-            poetry install --no-interaction --no-ansi
+            pip install pipenv coveralls[yaml]
+            pipenv sync --dev --bare
       - save_cache:
-          key: build-{{ checksum "poetry.lock" }}-{{ checksum ".cache-key" }}
+          key: build-{{ checksum "Pipfile.lock" }}-{{ checksum ".cache-key" }}
           paths:
             - /home/circleci/.cache
       - run:
           name: Test
           command: |
-             poetry run pytest --junit-xml var/test-results/results.xml --cov=ovshell --cov=ovshell_core --cov=ovshell_xcsoar --cov=ovshell_fileman --cov=ovshell_connman --cov-report=term tests
-             poetry run black --check setup.py src tests
-             poetry run mypy src tests
-             poetry run isort --check-only setup.py src tests
+             pipenv run pytest --junit-xml var/test-results/results.xml --cov=ovshell --cov=ovshell_core --cov=ovshell_xcsoar --cov=ovshell_fileman --cov=ovshell_connman --cov-report=term tests
+             pipenv run black --check setup.py src tests
+             pipenv run mypy src tests
+             pipenv run isort --check-only setup.py src tests
       - store_test_results:
           path: var/test-results
       - run:
