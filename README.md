@@ -63,19 +63,18 @@ of free options for Windows as well.
 
 ### Setting up the development environment
 
-`ovshell` uses `poetry` for managing dependencies and dev environment. If you
+`ovshell` uses `pipenv` for managing dependencies and dev environment. If you
 don't have it yet, install with:
 
 ```sh
-pip install poetry  # or pip3 if you don't have "pip"
+pip install pipenv  # or pip3 if you don't have "pip"
 ```
 
 After checking out the sources, `cd` to `openvario-shell` directory and run:
 
 ```sh
-poetry shell
-poetry install
-set -a; source .env; set +a
+pipenv shell
+pipenv sync
 ```
 
 After that, your development environment is ready, you should be able to run

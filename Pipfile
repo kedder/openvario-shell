@@ -1,0 +1,23 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+urwid = "*"
+typing-extensions = "*"
+pyserial-asyncio = "*"
+pyserial = "*"
+dbus-next = "*"
+
+[dev-packages]
+pytest = "*"
+pytest-coverage = "*"
+pytest-asyncio = "*"
+mypy = "*"
+black = "*"
+mock = "*"
+isort = "*"
+types-mock = "*"
+types-setuptools = "*"
+openvario-shell = {editable = true, path = "."}
