@@ -94,9 +94,6 @@ class CheckForUpdatesWidget(urwid.WidgetWrap):
         content = urwid.Pile(
             [("pack", self.message_line), ("pack", urwid.Divider()), update_term]
         )
-        # Force pack to be selectable, even though no widget is selectable at
-        # the moment.
-        content._selectable = True
         return content
 
     def _create_update_terminal(self) -> urwid.Widget:
@@ -132,6 +129,8 @@ class CheckForUpdatesWidget(urwid.WidgetWrap):
             )
 
         self.message_line.original_widget = message_wdg
+        # Allow widget to handle kyboard now, as we have selectable controls
+        self._w._selectable = True
 
     def _on_continue(self, wdg: urwid.Widget) -> None:
         self._emit("continue")
@@ -263,9 +262,6 @@ class SystemUpgradeWidget(urwid.WidgetWrap):
         content = urwid.Pile(
             [("pack", self.message_line), ("pack", urwid.Divider()), update_term]
         )
-        # Force pack to be selectable, even though no widget is selectable at
-        # the moment.
-        content._selectable = True
         return content
 
     def _create_upgrade_terminal(self) -> urwid.Widget:
@@ -283,6 +279,8 @@ class SystemUpgradeWidget(urwid.WidgetWrap):
             dividechars=1,
         )
         self.message_line.original_widget = message_wdg
+        # Allow widget to handle kyboard now, as we have selectable controls
+        self._w._selectable = True
 
     def _on_exit(self, wdg: urwid.Widget) -> None:
         self._emit("exit")
