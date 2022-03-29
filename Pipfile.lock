@@ -228,7 +228,7 @@
                 "sha256:dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb",
                 "sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522"
             ],
-            "markers": "python_full_version >= '3.6.0'",
+            "markers": "python_version >= '3.6'",
             "version": "==21.3"
         },
         "pathspec": {
@@ -251,7 +251,7 @@
                 "sha256:4224373bacce55f955a878bf9cfa763c1e360858e330072059e10bad68531159",
                 "sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3"
             ],
-            "markers": "python_full_version >= '3.6.0'",
+            "markers": "python_version >= '3.6'",
             "version": "==1.0.0"
         },
         "py": {
@@ -267,7 +267,7 @@
                 "sha256:18ee9022775d270c55187733956460083db60b37d0d0fb357445f3094eed3eea",
                 "sha256:a6c06a88f252e6c322f65faf8f418b16213b51bdfaece0524c1c1bc30c63c484"
             ],
-            "markers": "python_full_version >= '3.6.0'",
+            "markers": "python_version >= '3.6'",
             "version": "==3.0.7"
         },
         "pyserial": {
@@ -296,18 +296,19 @@
         },
         "pytest-asyncio": {
             "hashes": [
-                "sha256:20db0bdd3d7581b2e11f5858a5d9541f2db9cd8c5853786f94ad273d466c8c6d",
-                "sha256:fc8e4190f33fee7797cc7f1829f46a82c213f088af5d1bb5d4e454fe87e6cdc2"
+                "sha256:16cf40bdf2b4fb7fc8e4b82bd05ce3fbcd454cbf7b92afc445fe299dabb88213",
+                "sha256:7659bdb0a9eb9c6e3ef992eef11a2b3e69697800ad02fb06374a210d85b29f91",
+                "sha256:8fafa6c52161addfd41ee7ab35f11836c5a16ec208f93ee388f752bea3493a84"
             ],
             "index": "pypi",
-            "version": "==0.18.2"
+            "version": "==0.18.3"
         },
         "pytest-cov": {
             "hashes": [
                 "sha256:578d5d15ac4a25e5f961c938b85a05b09fdaae9deef3bb6de9a6e766622ca7a6",
                 "sha256:e7f0f5b1617d2210a2cabc266dfe2f4c75a8d32fb89eafb7ad9d06f6d076d470"
             ],
-            "markers": "python_full_version >= '3.6.0'",
+            "markers": "python_version >= '3.6'",
             "version": "==3.0.0"
         },
         "pytest-cover": {
