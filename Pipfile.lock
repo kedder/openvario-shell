@@ -228,7 +228,7 @@
                 "sha256:dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb",
                 "sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522"
             ],
-            "markers": "python_full_version >= '3.6.0'",
+            "markers": "python_version >= '3.6'",
             "version": "==21.3"
         },
         "pathspec": {
@@ -251,7 +251,7 @@
                 "sha256:4224373bacce55f955a878bf9cfa763c1e360858e330072059e10bad68531159",
                 "sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3"
             ],
-            "markers": "python_full_version >= '3.6.0'",
+            "markers": "python_version >= '3.6'",
             "version": "==1.0.0"
         },
         "py": {
@@ -267,7 +267,7 @@
                 "sha256:18ee9022775d270c55187733956460083db60b37d0d0fb357445f3094eed3eea",
                 "sha256:a6c06a88f252e6c322f65faf8f418b16213b51bdfaece0524c1c1bc30c63c484"
             ],
-            "markers": "python_full_version >= '3.6.0'",
+            "markers": "python_version >= '3.6'",
             "version": "==3.0.7"
         },
         "pyserial": {
@@ -307,7 +307,7 @@
                 "sha256:578d5d15ac4a25e5f961c938b85a05b09fdaae9deef3bb6de9a6e766622ca7a6",
                 "sha256:e7f0f5b1617d2210a2cabc266dfe2f4c75a8d32fb89eafb7ad9d06f6d076d470"
             ],
-            "markers": "python_full_version >= '3.6.0'",
+            "markers": "python_version >= '3.6'",
             "version": "==3.0.0"
         },
         "pytest-cover": {
@@ -339,11 +339,11 @@
         },
         "types-mock": {
             "hashes": [
-                "sha256:1d87d4d9d4dfda7bf77029b60f79fe0aef75d5d519169dccb742f8446213dcbd",
-                "sha256:c670c4c1700ee0cee50d25a68b55de7ef1f3758711de43228f04e278ec827ecc"
+                "sha256:81f98e66bddde1b2a8d96c15c084d5d3ed96cf6137bca9ba8aabc6b6865b9ca7",
+                "sha256:f8b1dbe128dc2d5aa038876a8b497dfd1a9405210a5eb3dc4b4757c2e254627c"
             ],
             "index": "pypi",
-            "version": "==4.0.11"
+            "version": "==4.0.12"
         },
         "types-setuptools": {
             "hashes": [
