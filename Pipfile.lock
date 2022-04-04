@@ -96,11 +96,11 @@
         },
         "click": {
             "hashes": [
-                "sha256:19a4baa64da924c5e0cd889aba8e947f280309f1a2ce0947a3e3a7bcb7cc72d6",
-                "sha256:977c213473c7665d3aa092b41ff12063227751c41d7b17165013e10069cc5cd2"
+                "sha256:24e1a4a9ec5bf6299411369b208c1df2188d9eb8d916302fe6bf03faed227f1e",
+                "sha256:479707fe14d9ec9a0757618b7a100a0ae4c4e236fac5b7f80ca68028141a1a72"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==8.1.0"
+            "version": "==8.1.2"
         },
         "coverage": {
             "extras": [
@@ -340,11 +340,11 @@
         },
         "types-mock": {
             "hashes": [
-                "sha256:1d87d4d9d4dfda7bf77029b60f79fe0aef75d5d519169dccb742f8446213dcbd",
-                "sha256:c670c4c1700ee0cee50d25a68b55de7ef1f3758711de43228f04e278ec827ecc"
+                "sha256:7c1db9f937109d96da14e5ed95c89920c3e4913eeff44a4adfea38eb335d0c99",
+                "sha256:82c819a5ba384c47a65c148df062138f38790b61d7e6b40eaeb8f2179f28f842"
             ],
             "index": "pypi",
-            "version": "==4.0.11"
+            "version": "==4.0.13"
         },
         "types-setuptools": {
             "hashes": [
