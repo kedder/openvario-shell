@@ -335,7 +335,7 @@
                 "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc",
                 "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"
             ],
-            "markers": "python_version < '3.11'",
+            "markers": "python_full_version < '3.11.0a7'",
             "version": "==2.0.1"
         },
         "types-mock": {
@@ -348,11 +348,11 @@
         },
         "types-setuptools": {
             "hashes": [
-                "sha256:325d8db7eee39f67f78b7f000683cc81d651300060f67e6e93058e17c6951a9a",
-                "sha256:93caeaae4d61d7a4e70b07831145e3eeb0102aa16bcc9b174ebdf1bea78e1bbb"
+                "sha256:affd968a3a7218e1c96f1806eb457f4027eac803b3caaddccf98a4e5776b1724",
+                "sha256:b0341c29c7f44f7625204532b8829bd92ebb5fd48aa9f3e2052177e743e990b1"
             ],
             "index": "pypi",
-            "version": "==57.4.16"
+            "version": "==62.6.1"
         },
         "typing-extensions": {
             "hashes": [
