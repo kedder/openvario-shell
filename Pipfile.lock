@@ -348,11 +348,11 @@
         },
         "types-setuptools": {
             "hashes": [
-                "sha256:affd968a3a7218e1c96f1806eb457f4027eac803b3caaddccf98a4e5776b1724",
-                "sha256:b0341c29c7f44f7625204532b8829bd92ebb5fd48aa9f3e2052177e743e990b1"
+                "sha256:2957a40addfca5c7125fd8d386a9efda5379098c6e66a08e02257fd1cea42131",
+                "sha256:eca7cbdd8db15e0ec37174a7dcfc9c8cbc87106f453066340e31729ec853cd63"
             ],
             "index": "pypi",
-            "version": "==62.6.1"
+            "version": "==63.2.1"
         },
         "typing-extensions": {
             "hashes": [
