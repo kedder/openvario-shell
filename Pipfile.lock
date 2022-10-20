@@ -344,16 +344,16 @@
                 "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc",
                 "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"
             ],
-            "markers": "python_full_version < '3.11.0a7'",
+            "markers": "python_version < '3.11'",
             "version": "==2.0.1"
         },
         "types-mock": {
             "hashes": [
-                "sha256:4535fbb3912b88a247d43cdb41db0c8b2e187138986f6f01a989717e56105848",
-                "sha256:a849bc2d966063f4946013bf404822ee2b96f77a8dccda4174b70ab61c5293fe"
+                "sha256:3bd7e805fdf5f994052aa574bc84db65dfaa668332d71cc8acbf37af17635530",
+                "sha256:c9fae8ffcfec0e0f036f58a9e6cce49fba338111592de34bd1504134a00800ea"
             ],
             "index": "pypi",
-            "version": "==4.0.15"
+            "version": "==4.0.15.1"
         },
         "types-setuptools": {
             "hashes": [
