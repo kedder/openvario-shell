@@ -167,14 +167,6 @@
             "index": "pypi",
             "version": "==0.2.3"
         },
-        "exceptiongroup": {
-            "hashes": [
-                "sha256:2e3c3fc1538a094aab74fad52d6c33fc94de3dfee3ee01f187c0e0c72aec5337",
-                "sha256:9086a4a21ef9b31c72181c77c040a074ba0889ee56a7b289ff0afb0d97655f96"
-            ],
-            "markers": "python_version < '3.11'",
-            "version": "==1.0.0rc9"
-        },
         "iniconfig": {
             "hashes": [
                 "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3",
@@ -337,14 +329,6 @@
             "editable": true,
             "path": "."
         },
-        "tomli": {
-            "hashes": [
-                "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc",
-                "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"
-            ],
-            "markers": "python_version >= '3.7'",
-            "version": "==2.0.1"
-        },
         "types-mock": {
             "hashes": [
                 "sha256:39d489b6d9361b75448677680a3087701c0cfab61260363cfc0f646d2bf0a8b2",
@@ -355,11 +339,11 @@
         },
         "types-setuptools": {
             "hashes": [
-                "sha256:17769171f5f2a2dc69b25c0d3106552a5cda767bbf6b36cb6212b26dae5aa9fc",
-                "sha256:9254c32b0cc91c486548e7d7561243b5bd185402a383e93c6691e1b9bc8d86e2"
+                "sha256:a03cf72f336929c9405f485dd90baef31a401776675f785f69a5a519f0b099ca",
+                "sha256:c957599502195ab98e90f0560466fa963f6a23373905e6d4e1772dbfaf1e44b7"
             ],
             "index": "pypi",
-            "version": "==65.5.0.3"
+            "version": "==65.6.0.1"
         },
         "typing-extensions": {
             "hashes": [
