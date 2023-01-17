@@ -2,7 +2,7 @@ import asyncio
 import functools
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Callable, Coroutine, Iterator, Sequence
+from typing import Callable, Coroutine, Iterator, Optional, Sequence
 
 import urwid
 from urwid import signals
@@ -130,7 +130,9 @@ class ScreenManagerImpl(ScreenManager):
         finally:
             self._mainloop.screen.start()
 
-    def push_activity(self, activity: Activity, palette: list[tuple] = None) -> None:
+    def push_activity(
+        self, activity: Activity, palette: Optional[list[tuple]] = None
+    ) -> None:
         self._hide_shown_activity()
 
         w = activity.create()

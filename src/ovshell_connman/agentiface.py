@@ -1,4 +1,4 @@
-from typing import Any, Union, cast
+from typing import Any, Optional, Union, cast
 
 from dbus_next import DBusError, Variant
 from dbus_next.service import ServiceInterface, method
@@ -162,7 +162,7 @@ async def agent_request_input(
     return varres
 
 
-def unpack_variants(var: Union[Variant, Any], tp: str = None) -> Any:
+def unpack_variants(var: Union[Variant, Any], tp: Optional[str] = None) -> Any:
     if not isinstance(var, Variant):
         if tp is None:
             return var

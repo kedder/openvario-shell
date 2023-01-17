@@ -13,8 +13,8 @@ class StoredSettingsImpl(api.StoredSettings):
 
     def __init__(
         self,
-        settings: dict[str, Optional[api.JsonType]] = None,
-        filename: str = None,
+        settings: Optional[dict[str, Optional[api.JsonType]]] = None,
+        filename: Optional[str] = None,
     ) -> None:
         self._settings = settings or {}
         self._filename = filename
@@ -41,7 +41,9 @@ class StoredSettingsImpl(api.StoredSettings):
         if save:
             self.save()
 
-    def get(self, key: str, type: type[JT], default: JT = None) -> Optional[JT]:
+    def get(
+        self, key: str, type: type[JT], default: Optional[JT] = None
+    ) -> Optional[JT]:
         v = self._settings.get(key, default)
         return v if isinstance(v, type) else None
 

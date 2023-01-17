@@ -27,7 +27,9 @@ class MainMenuActivity(api.Activity):
     autostart_countdown_task: Optional[asyncio.Task] = None
     autostart_canceller: "AutostartCanceller"
 
-    def __init__(self, shell: api.OpenVarioShell, autostart_app_id: str = None) -> None:
+    def __init__(
+        self, shell: api.OpenVarioShell, autostart_app_id: Optional[str] = None
+    ) -> None:
         self.shell = shell
         self.autostart_app_id = autostart_app_id
 
