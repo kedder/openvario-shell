@@ -1,5 +1,5 @@
 import asyncio
-from typing import Optional, AsyncGenerator, Callable, Union
+from typing import AsyncGenerator, Callable, Optional, Union
 
 from ovshell_fileman.api import AutomountWatcher, BackupDirectory, RsyncFailedException
 from ovshell_fileman.api import RsyncRunner, RsyncStatusLine

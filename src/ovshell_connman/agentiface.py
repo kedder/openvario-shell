@@ -1,4 +1,4 @@
-from typing import Optional, Any, Union, cast
+from typing import Any, Optional, Union, cast
 
 from dbus_next import DBusError, Variant
 from dbus_next.service import ServiceInterface, method

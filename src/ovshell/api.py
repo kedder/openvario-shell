@@ -30,18 +30,15 @@ class StoredSettings(Protocol):
     method.
     """
 
-    @abstractmethod
     def setdefault(self, key: str, value: JsonType) -> None:
         """Set the value if it wasn't set before"""
 
-    @abstractmethod
     def set(self, key: str, value: Optional[JsonType], save: bool = False):
         """Set the settings value.
 
         if save is True, also store the settings on disk.
         """
 
-    @abstractmethod
     def get(
         self, key: str, type: type[JT], default: Optional[JT] = None
     ) -> Optional[JT]:
@@ -51,7 +48,6 @@ class StoredSettings(Protocol):
         than requested by `type` argument, return `default` value.
         """
 
-    @abstractmethod
     def getstrict(self, key: str, type: type[JT]) -> JT:
         """Return value for the key.
 
@@ -59,7 +55,6 @@ class StoredSettings(Protocol):
         will be raised.
         """
 
-    @abstractmethod
     def save(self) -> None:
         """Store the settings on permanent storage.
 
@@ -68,11 +63,9 @@ class StoredSettings(Protocol):
 
 
 class SettingActivator(Protocol):
-    @abstractmethod
     def open_value_popup(self, content: urwid.Widget, width: int, height: int) -> None:
         pass
 
-    @abstractmethod
     def close_value_popup(self) -> None:
         pass
 
@@ -100,7 +93,6 @@ class Device(Protocol):
     id: str
     name: str
 
-    @abstractmethod
     async def readline(self) -> bytes:
         """Read one line from the device
 
@@ -108,7 +100,6 @@ class Device(Protocol):
         broken and device is removed from the `DeviceManager`.
         """
 
-    @abstractmethod
     def write(self, data: bytes) -> None:
         """Write data to the device
 
@@ -169,18 +160,15 @@ class DeviceManager(Protocol):
     to clients.
     """
 
-    @abstractmethod
     def register(self, device: Device) -> None:
         """Register new device.
 
         NMEA stream from this device will be available immediately in
         all open NMEA streams"""
 
-    @abstractmethod
     def enumerate(self) -> list[Device]:
         """Enumerate all registred devices."""
 
-    @abstractmethod
     @contextmanager
     def open_nmea(self) -> Generator[NMEAStream, None, None]:
         """Open new NMEA stream.
@@ -198,7 +186,6 @@ class ProcessManager(Protocol):
     handles task failures.
     """
 
-    @abstractmethod
     def start(self, coro: Coroutine) -> asyncio.Task:
         """Start coroutine as asyncio task and register it with the manager."""
 
@@ -225,8 +212,8 @@ class App(Protocol):
         This method is run on openvario shell startup when application is
         found in one of the extensions for the first time.
         """
+        return
 
-    @abstractmethod
     def launch(self) -> None:
         """Start the application"""
 
@@ -243,7 +230,6 @@ class Activity(Protocol):
     events outside of its direct control.
     """
 
-    @abstractmethod
     def create(self) -> urwid.Widget:
         """Create an urwid widget for this activity.
 
@@ -263,11 +249,13 @@ class Activity(Protocol):
         """Lifecycle method called when activity is activated for the first
         time.
         """
+        return
 
     def destroy(self) -> None:
         """Lifecycle method called when activity is removed from the activity
         stack.
         """
+        return
 
     def hide(self) -> None:
         """Lifecycle method called when activity is being replaced by another
@@ -275,12 +263,14 @@ class Activity(Protocol):
 
         This activity will not receive input until shown again.
         """
+        return
 
     def show(self) -> None:
         """Lifecycle method called when activity is shown for the first time
         and every time it ends up on top of the activity stack (allowing user
         to interact with it).
         """
+        return
 
 
 @dataclass
@@ -310,7 +300,6 @@ class Dialog(Protocol):
     that may return True to close the dialog or False to keep it visible.
     """
 
-    @abstractmethod
     def add_button(self, label: str, handler: Callable[[], bool]) -> None:
         """Add a button to the dialog.
 
@@ -318,7 +307,6 @@ class Dialog(Protocol):
         or False to leave it open.
         """
 
-    @abstractmethod
     def no_buttons(self) -> None:
         """Instructs to make dialog with no buttons
 
@@ -347,11 +335,9 @@ class ScreenManager(Protocol):
     is alive.
     """
 
-    @abstractmethod
     def draw(self) -> None:
         """Force screen redraw."""
 
-    @abstractmethod
     @contextmanager
     def suspended(self) -> Iterator[None]:
         """Context manager that suspends the screen management
@@ -359,7 +345,6 @@ class ScreenManager(Protocol):
         Useful to run shell apps that require full control over the screen.
         """
 
-    @abstractmethod
     def push_activity(
         self, activity: Activity, palette: Optional[list[tuple]] = None
     ) -> None:
@@ -370,14 +355,12 @@ class ScreenManager(Protocol):
         pressing "Excape" button.
         """
 
-    @abstractmethod
     def pop_activity(self) -> None:
         """Explitily destroy the current top activity.
 
         Previous activity will pop to the top of the stack and will be shown.
         """
 
-    @abstractmethod
     def push_modal(self, activity: Activity, options: ModalOptions) -> None:
         """Push new modal activity.
 
@@ -385,7 +368,6 @@ class ScreenManager(Protocol):
         specified in `options`) will still be visible, but not interactive
         """
 
-    @abstractmethod
     def push_dialog(self, title: str, content: urwid.Widget) -> Dialog:
         """Push special modal activity as a `Dialog`.
 
@@ -396,7 +378,6 @@ class ScreenManager(Protocol):
         More than one button can be added that way.
         """
 
-    @abstractmethod
     def set_indicator(
         self, iid: str, markup: UrwidText, location: IndicatorLocation, weight: int
     ) -> None:
@@ -409,18 +390,15 @@ class ScreenManager(Protocol):
         Indicators of the same location are ordered by `weight` value.
         """
 
-    @abstractmethod
     def remove_indicator(self, iid: str) -> None:
         """Remvoe indicator with given `iid`.
 
         Indicator will be effectively hidden.
         """
 
-    @abstractmethod
     def set_status(self, text: UrwidText) -> None:
         """Set status message."""
 
-    @abstractmethod
     def spawn_task(self, activity: Activity, coro: Coroutine) -> asyncio.Task:
         """Spawn a task for the activity.
 
@@ -436,7 +414,6 @@ class OSProcess(Protocol):
     stdout: asyncio.streams.StreamReader
     stderr: asyncio.streams.StreamReader
 
-    @abstractmethod
     async def wait(self) -> int:
         """Wait for process to finish, return return code"""
 
@@ -450,25 +427,21 @@ class AbstractMessageBusIntrospection(Protocol):
 
 
 class AbstractMessageBusProxyObject(Protocol):
-    @abstractmethod
     def get_interface(self, name: str) -> Any:
         pass
 
 
 class AbstractMessageBus(Protocol):
-    @abstractmethod
     async def introspect(
         self, bus_name: str, path: str, timeout: float = 30.0
     ) -> AbstractMessageBusIntrospection:
         pass
 
-    @abstractmethod
     def get_proxy_object(
         self, bus_name: str, path: str, introspection: Any
     ) -> AbstractMessageBusProxyObject:
         pass
 
-    @abstractmethod
     def export(self, path: str, agent: Any) -> None:
         pass
 
@@ -481,7 +454,6 @@ class OpenVarioOS(Protocol):
     implemented for simulated or testing environment.
     """
 
-    @abstractmethod
     def path(self, path: str) -> str:
         """Return absolute path
 
@@ -490,27 +462,21 @@ class OpenVarioOS(Protocol):
         the path, specified by OVSHELL_ROOTFS environment variable.
         """
 
-    @abstractmethod
     async def run(self, command: str, args: list[str]) -> OSProcess:
         """Run a system command and return instance, representing a running process"""
 
-    @abstractmethod
     def sync(self) -> None:
         """Flush filesystem caches"""
 
-    @abstractmethod
     def shut_down(self) -> None:
         """Shut down the system"""
 
-    @abstractmethod
     def restart(self) -> None:
         """Perform a system reboot"""
 
-    @abstractmethod
     def spawn_shell(self) -> None:
         """Spawn a system shell"""
 
-    @abstractmethod
     async def get_system_bus(self) -> AbstractMessageBus:
         """Return system DBUS object
 
@@ -545,6 +511,7 @@ class Extension(Protocol):
 
     def start(self) -> None:
         """Hook called on startup when extension is loaded"""
+        return
 
 
 ExtensionFactory = Callable[[str, "OpenVarioShell"], Extension]
@@ -556,7 +523,6 @@ class ExtensionManager(Protocol):
     Enumerates and manages installed extensions.
     """
 
-    @abstractmethod
     def list_extensions(self) -> Iterable[Extension]:
         """List all currently installed extensions."""
 
@@ -580,22 +546,18 @@ class AppManager(Protocol):
     Holds registry of all applications.
     """
 
-    @abstractmethod
     def list_apps(self) -> Iterable[AppInfo]:
         """Return list of all available applications"""
 
-    @abstractmethod
     def get(self, appid: str) -> Optional[AppInfo]:
         """Retrun application by id, or None if application is not found"""
 
-    @abstractmethod
     def pin(self, app: AppInfo, persist: bool = False) -> None:
         """Pin application.
 
         Make application appear on the main menu.
         """
 
-    @abstractmethod
     def unpin(self, app: AppInfo, persist: bool = False) -> None:
         """Remove application from list of pinned ones"""
 
