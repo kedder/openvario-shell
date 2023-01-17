@@ -42,7 +42,9 @@ class StoredSettings(Protocol):
         """
 
     @abstractmethod
-    def get(self, key: str, type: type[JT], default: JT = None) -> Optional[JT]:
+    def get(
+        self, key: str, type: type[JT], default: Optional[JT] = None
+    ) -> Optional[JT]:
         """Return the settings value for the key.
 
         If value wasn't set yet, or value in settings is of different type

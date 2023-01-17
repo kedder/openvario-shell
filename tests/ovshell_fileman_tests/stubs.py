@@ -1,5 +1,5 @@
 import asyncio
-from typing import AsyncGenerator, Callable, Union
+from typing import Optional, AsyncGenerator, Callable, Union
 
 from ovshell_fileman.api import AutomountWatcher, BackupDirectory, RsyncFailedException
 from ovshell_fileman.api import RsyncRunner, RsyncStatusLine
@@ -57,7 +57,8 @@ class AutomountWatcherStub(AutomountWatcher):
 
 class RsyncRunnerStub(RsyncRunner):
     def __init__(
-        self, progress: list[Union[RsyncStatusLine, RsyncFailedException]] = None
+        self,
+        progress: Optional[list[Union[RsyncStatusLine, RsyncFailedException]]] = None,
     ) -> None:
         self.progress = progress or []
 

@@ -62,7 +62,9 @@ def parse_gps_datetime(nmea: api.NMEA) -> Optional[datetime]:
     return datetime(year4, month, day, hour, minute, second)
 
 
-def set_system_time(dt: datetime, now: datetime = None, binpath: str = "date") -> bool:
+def set_system_time(
+    dt: datetime, now: Optional[datetime] = None, binpath: str = "date"
+) -> bool:
     now = now or datetime.utcnow()
     delta = dt - now
     if abs(delta.total_seconds()) < TIME_OFF_TOLERANCE:

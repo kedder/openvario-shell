@@ -181,7 +181,9 @@ class StoredSettingsStub(api.StoredSettings):
     def set(self, key: str, value: Optional[api.JsonType], save: bool = False):
         self._settings[key] = value
 
-    def get(self, key: str, type: type[JT], default: JT = None) -> Optional[JT]:
+    def get(
+        self, key: str, type: type[JT], default: Optional[JT] = None
+    ) -> Optional[JT]:
         v = self._settings.get(key, default)
         return v if isinstance(v, type) else None
 

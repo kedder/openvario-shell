@@ -1,5 +1,5 @@
 import asyncio
-from typing import Callable
+from typing import Optional, Callable
 
 import urwid
 
@@ -14,7 +14,7 @@ class OpkgToolsStub(OpkgTools):
     opkg_binary = "echo"
     _upgradables: list[UpgradablePackage]
 
-    def __init__(self, upgradables: list[UpgradablePackage] = None) -> None:
+    def __init__(self, upgradables: Optional[list[UpgradablePackage]] = None) -> None:
         self._upgradables = upgradables or []
 
     async def list_upgradables(self) -> list[UpgradablePackage]:
