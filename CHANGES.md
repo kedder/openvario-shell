@@ -1,7 +1,7 @@
 Changelog for openvario-shell
 =============================
 
-0.7.8 (unreleased)
+0.7.8 (2023-01-17)
 ------------------
 
 - Compatibility with recent mypy (source code validator).
