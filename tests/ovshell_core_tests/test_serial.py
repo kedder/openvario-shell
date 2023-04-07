@@ -132,7 +132,6 @@ async def test_maintain_serial_devices_reconnect(
 async def test_maintain_serial_devices_opened(
     ovshell: testing.OpenVarioShellStub, serial_testbed: SerialTestbed
 ) -> None:
-
     serial_testbed.lookup.stub_set_devices(["/dev/ttyFAKE"])
     maintainer = serial.maintain_serial_devices(ovshell)
     async with task_started(maintainer):

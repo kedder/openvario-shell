@@ -9,7 +9,6 @@ from tests.fixtures.urwid import UrwidMock
 
 @pytest.fixture
 def nosleep(monkeypatch) -> None:
-
     realsleep = asyncio.sleep
 
     async def nosleep(time: float) -> None:

@@ -13,7 +13,6 @@ def get_rotations() -> list[tuple[str, str]]:
 
 
 def apply_rotation(ovos: api.OpenVarioOS, rotation: str) -> None:
-
     uenvconf_fname = ovos.path("//boot/config.uEnv")
 
     with open(uenvconf_fname) as f:
