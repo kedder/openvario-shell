@@ -98,7 +98,6 @@ class ConnmanManagerActivity(api.Activity):
 
         contents = []
         for tech in self.manager.technologies:
-
             lbl = ("enabled" if tech.powered else "disabled", tech.name)
             cb = urwid.CheckBox(lbl, state=tech.powered)
             urwid.connect_signal(
