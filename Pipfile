@@ -21,4 +21,5 @@ isort = "*"
 types-mock = "*"
 types-setuptools = "*"
 exceptiongroup = {markers="python_version < '3.11'"}
+tomli = {markers="python_version < '3.11'"}
 openvario-shell = {editable = true, path = "."}
