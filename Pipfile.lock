@@ -49,12 +49,12 @@
         },
         "urwid": {
             "hashes": [
-                "sha256:52770007d734d7387ae0421e7b7769c4c5ec67e91a5f4df54e858e314062e475",
-                "sha256:7e18c34d416fffd4e39410450347f4637222bd99cb6fb1523ffa50d77a0e22cf"
+                "sha256:1c9f5a5b47ec3fcc88032e0e224a00d7bf21704fa0060f498db395235f1731f1",
+                "sha256:4644b83747b35d4db6bb00a805f1a0fec93e5651e5a3b081ec56450121009a3a"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.8'",
-            "version": "==2.6.11"
+            "version": "==2.6.12"
         },
         "wcwidth": {
             "hashes": [
