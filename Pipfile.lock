@@ -648,12 +648,12 @@
         },
         "types-setuptools": {
             "hashes": [
-                "sha256:8f5379b9948682d72a9ab531fbe52932e84c4f38deda570255f9bae3edd766bc",
-                "sha256:e31fee7b9d15ef53980526579ac6089b3ae51a005a281acf97178e90ac71aff6"
+                "sha256:2f8d28d16ca1607080f9fdf19595bd49c942884b2bbd6529c9b8a9a8fc8db911",
+                "sha256:6b892d5441c2ed58dd255724516e3df1db54892fb20597599aea66d04c3e4d7f"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.8'",
-            "version": "==70.0.0.20240524"
+            "version": "==70.2.0.20240704"
         },
         "typing-extensions": {
             "hashes": [
