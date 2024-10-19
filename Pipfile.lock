@@ -656,12 +656,12 @@
         },
         "types-setuptools": {
             "hashes": [
-                "sha256:94ff4f0af18c7c24ac88932bcb0f5655fb7187a001b7c61e53a1bfdaf9877b54",
-                "sha256:d9d9ba2936f5d3b47b59ae9bf65942a60063ac1d6bbee180a8a79fbb43f22ce5"
+                "sha256:2e48ff3acd4919471e80d5e3f049cce5c177e108d5d36d2d4cee3fa4d4104258",
+                "sha256:86ea31b5f6df2c6b8f2dc8ae3f72b213607f62549b6fa2ed5866e5299f968694"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.8'",
-            "version": "==71.1.0.20240813"
+            "version": "==75.2.0.20241019"
         },
         "typing-extensions": {
             "hashes": [
